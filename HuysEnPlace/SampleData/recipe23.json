@@ -1,0 +1,235 @@
+{
+  "_content" : {
+    "runs" : [
+      "Hello Makes 6 Bánh Mì",
+      0,
+      " (125g unbaked)\n\nIngredients:\n450g ",
+      {
+
+      },
+      "Bread Flour",
+      1,
+      " https:\/\/amzn.to\/3zfhQ9e\n260g ",
+      {
+
+      },
+      "Water",
+      2,
+      "\n1 ",
+      {
+
+      },
+      "Whole Egg",
+      3,
+      " (50g) https:\/\/amzn.to\/3LZaPkH\n8g ",
+      {
+
+      },
+      "Instant Yeast",
+      4,
+      " https:\/\/amzn.to\/3JSrUtU\n2g ",
+      {
+
+      },
+      "Salt",
+      5,
+      " https:\/\/amzn.to\/40EMIf6\n2g ",
+      {
+
+      },
+      "Sugar",
+      6,
+      " https:\/\/amzn.to\/3JWGsIO\n1g ",
+      {
+
+      },
+      "Ascorbic Acid",
+      7,
+      " https:\/\/amzn.to\/40q71wY\n",
+      {
+
+      },
+      "Vegetable Oil",
+      8,
+      " (as needed) https:\/\/amzn.to\/42LKInd\n\nEquipment:\nLava Rocks https:\/\/amzn.to\/3omHgj9\nStand Mixer https:\/\/amzn.to\/3JV5cRB\nKitchen Scale https:\/\/amzn.to\/3KdNTNe\nPrecision Scale https:\/\/amzn.to\/3FZPofq\nBaguette Pans https:\/\/amzn.to\/40rHS5a\nRolling Pin https:\/\/amzn.to\/3lMOSKM\nPlastic Dough Scraper https:\/\/amzn.to\/40DlKV4\nSpray Bottle https:\/\/amzn.to\/3lL4AX0\nLame https:\/\/amzn.to\/3nnrCDv\nRazor Blades https:\/\/amzn.to\/3zbK1pI\n \nInstructions:\nIn a mixing bowl, add egg, water, yeast, sugar, salt and ascorbic acid. Add in ",
+      {
+
+      },
+      "flour",
+      1,
+      " and combine.\n\nIn a stand mixer, mix on low speed for 7 minutes. Then 3 minutes on high speed. Continue mixing until gluten is fully developed. (Total mixing times will vary depending on mixer).\n\nLightly oil work surface. Remove ",
+      {
+
+      },
+      "dough",
+      10,
+      " from bowl. Slap and fold the ",
+      {
+
+      },
+      "dough",
+      10,
+      " 4-6 times and form a ball. Cover and let rest for 20 minutes.\n\nDivide the ",
+      {
+
+      },
+      "dough",
+      10,
+      " into six 120g portions. Roll into small balls. Cover and let rest for 20 minutes.\n\nShape each using the method demonstrated in the video. Place the shaped ",
+      {
+
+      },
+      "dough",
+      10,
+      " onto a lightly oiled baguette pan.\n\nProof in the oven with the light on and a pot of warm water for 60 minutes. Spray with water every 15 minutes.\n\nRemove from the oven and proof on a countertop for 30 additional minutes. Meanwhile, preheat the oven to Bake 450F (no fan, bottom only if possible) with 2 trays, one with lava rocks.\n\nOnce the ",
+      {
+
+      },
+      "dough",
+      10,
+      " has grown 2.5 to 3 times in size, and the oven has preheated bowl a pot of water.  Score the loaves with a lame or razor.  Immediately spray with water after scoring.\n\nPlace the baguette pans with the ",
+      {
+
+      },
+      "dough",
+      10,
+      " into the oven. Immediately pour boiling water onto lava rocks and secondary tray.\n\nBake for 8 minutes without opening the door.\n\nOpen the door to release any leftover steam, and bake 7-8 minutes depending on desired color.\n\nRemove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.",
+      {
+
+      }
+    ],
+    "attributeTable" : [
+      {
+        "SwiftUI.Font" : {
+          "tag" : {
+            "staticModifier" : {
+              "_0" : {
+                "do" : {
+                  "_0" : {
+                    "bold" : {
+
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "value" : {
+            "value" : {
+
+            },
+            "tag" : {
+              "default" : {
+
+              }
+            }
+          }
+        }
+      },
+      {
+        "SwiftUI.ForegroundColor" : {
+          "tag" : {
+            "system" : {
+
+            }
+          },
+          "value" : {
+            "green" : {
+
+            }
+          }
+        },
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/bread-flour"
+        }
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/water"
+        }
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/whole-egg"
+        }
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/instant-yeast"
+        }
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/salt"
+        }
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/sugar"
+        }
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/ascorbic-acid"
+        }
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/vegetable-oil"
+        }
+      },
+      {
+
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/bread-flour"
+        }
+      }
+    ]
+  },
+  "_$observationRegistrar" : {
+
+  },
+  "_title" : "",
+  "_ingredients" : [
+    {
+      "name" : "Bread Flour",
+      "id" : "bread-flour"
+    },
+    {
+      "name" : "Water",
+      "id" : "water"
+    },
+    {
+      "name" : "dough",
+      "id" : "dough"
+    },
+    {
+      "name" : "Whole Egg",
+      "id" : "whole-egg"
+    },
+    {
+      "name" : "Instant Yeast",
+      "id" : "instant-yeast"
+    },
+    {
+      "name" : "Salt",
+      "id" : "salt"
+    },
+    {
+      "name" : "Sugar",
+      "id" : "sugar"
+    },
+    {
+      "name" : "Ascorbic Acid",
+      "id" : "ascorbic-acid"
+    },
+    {
+      "name" : "Vegetable Oil",
+      "id" : "vegetable-oil"
+    }
+  ],
+  "_id" : "1CA07DB2-CE4E-4EA6-A7B2-0D5EE296027B"
+}
+
