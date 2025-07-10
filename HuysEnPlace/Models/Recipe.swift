@@ -44,6 +44,42 @@ class Recipe: Identifiable, Equatable, Codable {
     }
 }
 
+
+
+// Init from a json file
+extension Recipe {
+    
+    enum RecipeError: Error {
+        case fileNotFound
+        case decodingFailed
+    }
+    /// Initialize a Recipe from a JSON file at the given URL.
+    /// - Parameter url: The file URL pointing to the JSON file.
+    /// - Throws: An error if reading or decoding fails.
+    /// - Returns: A Recipe instance decoded from the file.
+    static func fromJsonFile(at url: URL) throws -> Recipe {
+        let data = try Data(contentsOf: url)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(Recipe.self, from: data)
+    }
+    
+    static func fromJsonFile(name: String) throws -> Recipe {
+        if let url = Bundle.main.url(forResource: "recipe1", withExtension: "json") {
+            do {
+                let recipe = try Recipe.fromJsonFile(at: url)
+                print(recipe.title) // or do something with the recipe
+                return recipe
+            } catch {
+                print("Failed to load recipe: \(error)")
+                throw RecipeError.decodingFailed
+            }
+        } else {
+            throw RecipeError.fileNotFound
+        }
+    }
+}
+
 //@Model
 //final class Recipe: Identifiable {
 //    var lastModified: Date
@@ -78,3 +114,4 @@ class Recipe: Identifiable, Equatable, Codable {
 //        self.init(name: "", content: "", ingredients: [])
 //    }
 //}
+

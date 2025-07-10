@@ -19,7 +19,7 @@ struct RecipeFormattingDefinition: AttributedTextFormattingDefinition {
         // Below constraints reading the font attribute can rely on its value being
         // either `.title`, `.default.bold()`, or `nil`.
         IngredientsAreGreen(ingredients: ingredients)
-        BoldUsesAccentColor()
+//        BoldUsesAccentColor()
     }
 }
 

@@ -31,9 +31,16 @@ struct RecipeView: View {
                 }
             }
             
+//            Text("Ingredients Count: \(model.ingredients)")
+            
+            Text("content: \(model.content)")
+            
+            TextEditor(text: $model.content)
+            
             RecipeEditor(content: content)
                 .scrollContentBackground(.hidden)
                 .contentMargins(.horizontal, 16, for: .scrollContent)
+//                .id(model.id)
                 .navigationTitle(model.title)
 //                .navigationBarTitleDisplayMode(.large)
             
@@ -72,6 +79,7 @@ struct RecipeView: View {
         }
         .toolbarRole(.editor)
         .onChange(of: model) {
+            print("Model Changed")
             content = EditableRecipeText(recipe: model)
         }
         .attributedTextFormattingDefinition(
@@ -89,6 +97,18 @@ struct RecipeView: View {
             }
             
         })
+        .task {
+            model.title = "Loading..."
+            do {
+                let r = try Recipe.fromJsonFile(name: "recipe1")
+                print("LOADED HERE 1 \(r.content)")
+                model.title = "Successfully loaded"
+                model = r
+            } catch {
+                print("Error loading recipe.")
+                model.title = "Failed to load"
+            }
+        }
     }
 }
 
@@ -118,7 +138,20 @@ extension EditableRecipeText {
 
 #Preview {
     @Previewable @State var recipe = banhMiRecipe
+    
     NavigationStack {
         RecipeView(recipe: recipe)
+//            .task {
+//                recipe.title = "Loading..."
+//                do {
+//                    let r = try await Recipe.fromJsonFile(name: "recipe1")
+//                    recipe = r
+//                    recipe.title = "Successfully loaded"
+//                } catch {
+//                    print("Error loading recipe.")
+//                    recipe.title = "Failed to load"
+//                }
+//            }
     }
 }
+

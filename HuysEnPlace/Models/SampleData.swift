@@ -7,6 +7,74 @@
 
 import SwiftUI
 
+let banhMiRecipeMarkdown: String = """
+## Bánh Mì — Makes 6 (≈ 125 g unbaked each)
+
+### Ingredients
+- 450 g Bread Flour
+- 260 g Water
+- 1 Whole Egg (50 g)
+- 8 g Instant Yeast
+- 2 g Salt
+- 2 g Sugar
+- 1 g Ascorbic Acid (Vitamin C)
+- Vegetable Oil (as needed)
+
+### Equipment
+- Lava Rocks
+- Stand Mixer
+- Kitchen Scale
+- Precision Scale
+- Baguette Pans
+- Rolling Pin
+- Plastic Dough Scraper
+- Spray Bottle
+- Lame (bread-scoring tool)
+- Razor Blades
+
+### Instructions
+1. **Mix the dough**  
+   In a mixing bowl, combine egg, water, yeast, sugar, salt, and ascorbic acid.  
+   Add the flour and mix until just combined.
+
+2. **Develop gluten**  
+   Using a stand mixer, mix on low speed for **7 minutes**.  
+   Increase to high speed and mix for **3 minutes**, or until the gluten is fully developed (total time varies by mixer).
+
+3. **Bench rest**  
+   Lightly oil your work surface.  
+   Turn the dough out, slap-and-fold 4–6 times, and shape into a ball.  
+   Cover and rest for **20 minutes**.
+
+4. **Portion & pre-shape**  
+   Divide into **six 120 g** pieces. Roll each into a tight ball.  
+   Cover and rest for **20 minutes**.
+
+5. **Final shape**  
+   Shape each ball into a baguette (tapered ends, seam side down).  
+   Place on a lightly oiled baguette pan.
+
+6. **Proof**  
+   Proof in the oven **with the light on** and a pot of warm water for **60 minutes**, misting with water every 15 minutes.  
+   Remove from the oven and proof on the countertop for **30 minutes**.  
+   Meanwhile, preheat the oven to **450 °F / 232 °C** (bottom heat only if possible) with two trays—one filled with lava rocks.
+
+7. **Score & steam**  
+   When the loaves have risen to **2.5–3×** their original size and the oven is ready, bring water to a boil.  
+   Score each loaf with a lame or razor, then mist immediately with water.
+
+8. **Bake**  
+   Load the baguette pans into the oven and carefully pour boiling water over the lava rocks (and into the secondary tray if using) to generate steam.  
+   Bake **8 minutes** without opening the door.  
+   Vent the oven to release excess steam, then bake for an additional **7–8 minutes** (or until the desired color is reached).
+
+9. **Cool & crackle**  
+   Remove the loaves and cool on a rack.  
+   Signature cracks should appear within **5–10 minutes**.
+
+_Enjoy your fresh, crackly-crusted Bánh Mì!_
+"""
+
 let banhMiRecipeContent: AttributedString = """
     Makes 6 Bánh Mì (125g unbaked)
 
@@ -59,7 +127,7 @@ let banhMiRecipeContent: AttributedString = """
     """
 
 let banhMiIngredients: [Ingredient] = [
-    .init(name: "Bread Flour")
+    .init(name: "")
 ]
 
 @MainActor let banhMiRecipe = Recipe(title: "Bánh Mì Bread", content: banhMiRecipeContent, ingredients: banhMiIngredients)

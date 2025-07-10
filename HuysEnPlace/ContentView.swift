@@ -11,7 +11,8 @@ struct ContentView: View {
     @State var recipe = banhMiRecipe
     var body: some View {
         NavigationStack {
-            RecipeView(recipe: recipe)
+//            RecipeView(recipe: recipe)
+            RecipeView2()
         }
     }
 }
