@@ -101,7 +101,6 @@ struct RecipeView: View {
             model.title = "Loading..."
             do {
                 let r = try Recipe.fromJsonFile(name: "recipe1")
-                print("LOADED HERE 1 \(r.content)")
                 model.title = "Successfully loaded"
                 model = r
             } catch {

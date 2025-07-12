@@ -127,7 +127,13 @@ let banhMiRecipeContent: AttributedString = """
     """
 
 let banhMiIngredients: [Ingredient] = [
-    .init(name: "")
+    .init(id: "bread-flour", name: "Bread Flour"),
+    .init(id: "water", name: "Water"),
+    .init(id: "yeast", name: "Yeast"),
+    .init(id: "sugar", name: "Sugar"),
+    .init(id: "salt", name: "Salt"),
+    .init(id: "ascorbic-acid", name: "Ascorbic Acid"),
+    .init(id: "vegetable-oil", name: "Vegetable Oil")
 ]
 
 @MainActor let banhMiRecipe = Recipe(title: "Bánh Mì Bread", content: banhMiRecipeContent, ingredients: banhMiIngredients)

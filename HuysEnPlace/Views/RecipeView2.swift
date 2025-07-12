@@ -7,34 +7,15 @@
 
 import SwiftUI
 
-//struct RecipeView2: View {
-//    
-//    @State var recipe: Recipe
-//    
-//    var body: some View {
-////        @Bindable var recipe = recipe
-//        VStack {
-//            VStack {
-//                Text(recipe.title)
-//                    .font(.headline)
-////                Text(recipe.content)
-//                TextEditor(text: $recipe.content)
-//            }
-//        }
-//        .attributedTextFormattingDefinition(
-//            RecipeFormattingDefinition(ingredients: Set(recipe.ingredients.map(\.id)))
-//        )
-//    }
-//}
-
 struct RecipeView2: View {
     @State var editMode: EditMode = .inactive
-//    @Environment(\.editMode) private var editMode
     @Environment(\.fontResolutionContext) var fontResolutionContext
-    @State var recipe = Recipe2()
+    @State var recipe = banhMiRecipe
     @State var selection = AttributedTextSelection()
     @State var showIngredients: Bool = false
     @State var ingredientInfo: Ingredient?
+    
+    @Environment(\.self) private var environment
     
     @State private var shareJsonUrl: URL?
 
@@ -46,38 +27,25 @@ struct RecipeView2: View {
                     ShareLink("Share URL", item: url)
                 }
             }
-//            TextEditor(text: $recipe.content, selection: $selection)
-//                .contentMargins(.horizontal, 20.0, for: .scrollContent)
-//                .textEditorStyle(.plain)
-//            ScrollView {
-//
-//                Text(recipe.content)
-////                        .safeAreaPadding()
-//                    .padding(.horizontal, 5)
-//                    .padding(.vertical, 8)
-//            }
-//            .contentMargins(.horizontal, 20.0, for: .scrollContent)
-//            .onTapGesture(count: 2) {  // or single-tap if you prefer
-//                withAnimation {
-//                    editMode = .active
-//                }
-//            }
 
             if editMode == .active {
                 TextEditor(text: $recipe.content, selection: $selection)
-                    .contentMargins(.horizontal, 20.0, for: .scrollContent)
+                    .contentMargins(.horizontal, 12.0, for: .scrollContent)
                     .textEditorStyle(.plain)
             } else {
                 ScrollView {
-
-                    Text(recipe.content)
-//                        .safeAreaPadding()
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 8)
+                    let g = AttributedTextFormatting.Transferable(text: recipe.content, in: environment)
+                    if let s = try? AttributedString(transferable: g, in: environment) {
+                        Text(s)
+                        //                        .safeAreaPadding()
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 8)
+                    }
                 }
-                .contentMargins(.horizontal, 20.0, for: .scrollContent)
+                .contentMargins(.horizontal, 12.0, for: .scrollContent)
             }
         }
+        .navigationTitle(recipe.title)
         .attributedTextFormattingDefinition(
             RecipeFormattingDefinition(ingredients: Set(recipe.ingredients.map(\.id)))
         )
@@ -90,40 +58,19 @@ struct RecipeView2: View {
             ForEach(recipe.ingredients) { ingredient in
                 HStack {
                     Text("\(ingredient.name)")
-                    Button(action: {
-                        let ranges = RangeSet(self.recipe.content.characters.ranges(of: name.characters))
-                        recipe.content.transform(updating: &self.selection) { text in
-                            print("text ranges: \(text[ranges])")
-                            print("ingredient id: \(ingredient.id)")
-                            //                        text[ranges].ingredient = ingredient.id
-                            text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
-                        }
-                        showIngredients = false
-                    }, label: {
-                        Text("Link: \(ingredient.name)")
-                    })
                     
                     Button(action: {
-                        let ranges = RangeSet(self.recipe.content.characters.ranges(of: name.characters))
-                        recipe.content.transform(updating: &self.selection) { text in
-                            print("text ranges: \(text[ranges])")
-                            print("ingredient id: \(ingredient.id)")
-                            text[ranges].ingredient = ingredient.id
+//                        let ranges = RangeSet(self.recipe.content.characters.ranges(of: name.characters))
+//                        recipe.content.transform(updating: &self.selection) { text in
+//                            print("text ranges: \(text[ranges])")
+//                            print("ingredient id: \(ingredient.id)")
+//                            text[ranges].ingredient = ingredient.id
 //                            text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
-                        }
-                        showIngredients = false
-                    }, label: {
-                        Text("Ingredient only")
-                    })
-                    
-                    Button(action: {
-                        let ranges = RangeSet(self.recipe.content.characters.ranges(of: name.characters))
-                        recipe.content.transform(updating: &self.selection) { text in
-                            print("text ranges: \(text[ranges])")
-                            print("ingredient id: \(ingredient.id)")
-                            text[ranges].ingredient = ingredient.id
-                            text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
-                        }
+//                            text[ranges].foregroundColor = .red
+////                            text[ranges]
+//                        }
+//                        showIngredients = false
+                        autotag(ingredient: ingredient)
                         showIngredients = false
                     }, label: {
                         Text("Ingredient And Link")
@@ -142,10 +89,6 @@ struct RecipeView2: View {
                     text[ranges].ingredient = "new-\(nameString)"
                     text[ranges].link = .init(string: "miseenplace://ingredients/\(newIngredient.id)")
                 }
-//                recipe.content.transformAttributes(in: &selection) { container in
-//                    container.ingredient = "new-\(nameString)"
-//
-//                }
                 
                 showIngredients = false
             }, label: {
@@ -160,6 +103,19 @@ struct RecipeView2: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                
+                Button("Autotag", systemImage: "wand.and.sparkles.inverse") {
+                    let nameString = "Bake"
+                    let ranges = RangeSet(self.recipe.content.characters.ranges(of: Array(nameString)))
+                    let newIngredient = Ingredient(id: "new-\(nameString)", name: .init(nameString))
+                    recipe.ingredients.append(newIngredient)
+                    recipe.content.transform(updating: &self.selection) { text in
+//                        text[ranges].ingredient = "new-\(nameString)"
+//                        text[ranges].link = .init(string: "miseenplace://ingredients/\(newIngredient.id)")
+                        text[ranges].foregroundColor = .red
+                        
+                    }
+                }
 
                 Button("Bold", systemImage: "bold") {
                     recipe.content.transformAttributes(in: &selection) { container in
@@ -177,10 +133,13 @@ struct RecipeView2: View {
                     }
                 }
                 
-                if !selectionIsEmpty() {
-                    Button("Ingredient", systemImage: "carrot") {
-                        showIngredients.toggle()
-                    }
+//                if !selectionIsEmpty() {
+//                    Button("Ingredient", systemImage: "carrot") {
+//                        showIngredients.toggle()
+//                    }
+//                }
+                Button("Ingredient", systemImage: "carrot") {
+                    showIngredients.toggle()
                 }
                 
                 EditButton()
@@ -188,6 +147,7 @@ struct RecipeView2: View {
             
             
             ToolbarItemGroup(placement: .topBarLeading) {
+//                RecipeShareLink(recipe: recipe)
                 
                 Button("Share", systemImage: "square.and.arrow.up") {
                     if let json = recipe.toJson() {
@@ -199,25 +159,15 @@ struct RecipeView2: View {
                 }
             }
         }
-        .task {
-//            if let r = try? AttributedString(styledMarkdown: banhMiRecipeMarkdown) {
-//                recipe.content = r
-//            }
-            do {
-                let r = try Recipe2.fromJsonFile(name: "recipe23")
-                print("LOADED HERE 1 \(r.content)")
-                recipe.title = r.title
-                recipe.content = r.content
-                recipe.ingredients = r.ingredients
-            } catch {
-                print("Error loading recipe.")
-            }
-        }
 //        .task {
-//            recipe.ingredients = [
-//                .init(id: "bread-flour", name: "Bread Flour"),
-//                .init(id: "water", name: "Water")
-//            ]
+//            do {
+//                let r = try Recipe2.fromJsonFile(name: "recipe31")
+//                recipe.title = r.title
+//                recipe.content = r.content
+//                recipe.ingredients = r.ingredients
+//            } catch {
+//                print("Error loading recipe.")
+//            }
 //        }
         .environment(\.editMode, $editMode)
         .environment(\.openURL, OpenURLAction { url in
@@ -258,6 +208,20 @@ struct RecipeView2: View {
                     print("DID NOT FIND INGREDIENT")
                 }
             }
+        }
+    }
+    
+    func autotag(ingredients: [Ingredient]) {
+        
+    }
+    
+    func autotag(ingredient: Ingredient) {
+        let nameString = ingredient.name
+        let ranges = RangeSet(self.recipe.content.characters.ranges(of: Array(nameString)))
+        recipe.content.transform(updating: &self.selection) { text in
+            text[ranges].ingredient = ingredient.id
+            text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
+            text[ranges].foregroundColor = .red
         }
     }
 }

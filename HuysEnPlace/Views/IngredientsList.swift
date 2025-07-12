@@ -62,7 +62,7 @@ struct IngredientsList: View {
     private var onAdd: (() -> Void)? {
         if let ingredientNameSuggestion {
             {
-                let ingredient = Ingredient(name: ingredientNameSuggestion.suggestedName)
+                let ingredient = Ingredient(name: ingredientNameSuggestion.suggestedName.description)
                 ingredients.append(ingredient)
                 ingredientNameSuggestion.onApply(ingredient.id)
             }

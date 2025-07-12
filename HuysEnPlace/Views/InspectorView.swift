@@ -62,7 +62,7 @@ struct InspectorView: View {
     }
 
     private func addIngredient(_ suggestion: IngredientSuggestion) {
-        let ingredient = Ingredient(name: suggestion.suggestedName)
+        let ingredient = Ingredient(name: suggestion.suggestedName.description)
         recipe.ingredients.append(ingredient)
     }
 }

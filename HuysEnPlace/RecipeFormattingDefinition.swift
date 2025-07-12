@@ -20,6 +20,7 @@ struct RecipeFormattingDefinition: AttributedTextFormattingDefinition {
         // either `.title`, `.default.bold()`, or `nil`.
         IngredientsAreGreen(ingredients: ingredients)
 //        BoldUsesAccentColor()
+        IngredientsAreBold()
     }
 }
 
@@ -64,10 +65,27 @@ struct IngredientsAreGreen: AttributedTextValueConstraint {
     let ingredients: Set<Ingredient.ID>
 
     func constrain(_ container: inout Attributes) {
+        
         if let ingredient = container.ingredient, ingredients.contains(ingredient) {
+            print("INGREDIENTS ARE GREEN container: \(container)")
             container.foregroundColor = .green
         } else {
             container.foregroundColor = nil
+        }
+    }
+}
+
+struct IngredientsAreBold: AttributedTextValueConstraint {
+    typealias Scope = RecipeFormattingDefinition.Scope
+    typealias AttributeKey = AttributeScopes.SwiftUIAttributes.FontAttribute
+
+    func constrain(_ container: inout Attributes) {
+        
+        if let ingredient = container.ingredient {
+            print("LINKS ARE RED container: \(container)")
+            container.font = .default.bold()
+        } else {
+            container.font = nil
         }
     }
 }

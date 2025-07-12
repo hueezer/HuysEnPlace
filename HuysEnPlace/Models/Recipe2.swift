@@ -18,6 +18,38 @@ class Recipe2: Identifiable, Equatable, Codable {
     var content: AttributedString = ""
     var ingredients: [Ingredient] = []
     
+    init(id: String = UUID().uuidString, title: String = "", content: AttributedString = "", ingredients: [Ingredient] = []) {
+        self.id = id
+        self.title = title
+        self.content = content
+        self.ingredients = ingredients
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case title = "_title"
+        case content = "_content"
+        case ingredients = "_ingredients"
+    }
+    
+    
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(title, forKey: .title)
+        try container.encode(content, forKey: .content, configuration: AttributeScopes.RecipeModelAttributes.self)
+        try container.encode(ingredients, forKey: .ingredients)
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        content = try container.decode(AttributedString.self, forKey: .content, configuration: AttributeScopes.RecipeModelAttributes.self)
+        ingredients = try container.decode([Ingredient].self, forKey: .ingredients)
+    }
+    
     func toJson() -> String? {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
@@ -66,3 +98,4 @@ extension Recipe2 {
         }
     }
 }
+

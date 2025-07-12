@@ -9,5 +9,5 @@ import SwiftUI
 
 struct Ingredient: Identifiable, Equatable, Codable {
     var id: String = UUID().uuidString
-    var name: AttributedString
+    var name: String
 }

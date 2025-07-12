@@ -31,6 +31,8 @@ extension AttributeScopes {
         /// Recipe text can include all the attributes that ingredient names
         /// use.
         let ingredientName: IngredientNameAttributes
+        
+        let foundation: AttributeScopes.FoundationAttributes
     }
 }
 
@@ -57,6 +59,8 @@ extension AttributeScopes {
         let paragraphFormat: ParagraphFormattingAttribute
         /// An attribute for marking text as a reference to a recipe's ingredient.
         let ingredient: IngredientAttribute
+        
+//        let link: AttributeScopes.FoundationAttributes.LinkAttribute
     }
 }
 
