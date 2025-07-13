@@ -35,9 +35,7 @@ class Recipe2: Identifiable, Equatable, Codable {
         case ingredients = "_ingredients"
         case steps = "_steps"
     }
-    
-    
-    
+
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
@@ -70,6 +68,17 @@ class Recipe2: Identifiable, Equatable, Codable {
             return nil
         }
     }
+}
+
+struct IngredientQuantity: Codable {
+    var amount: String = ""
+    var ingredientText: AttributedString = ""
+    var ingredient: Ingredient?
+}
+
+struct IngredientList: Codable {
+    var title: String = ""
+    var items: [IngredientQuantity] = []
 }
 
 extension Recipe2 {
