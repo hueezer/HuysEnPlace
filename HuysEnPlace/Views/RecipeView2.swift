@@ -10,7 +10,7 @@ import SwiftUI
 struct RecipeView2: View {
     @State var editMode: EditMode = .inactive
     @Environment(\.fontResolutionContext) var fontResolutionContext
-    @State var recipe = banhMiRecipe
+    @State var recipe = Recipe2()
     @State var selection = AttributedTextSelection()
     @State var showIngredients: Bool = false
     @State var ingredientInfo: Ingredient?
@@ -34,12 +34,32 @@ struct RecipeView2: View {
                     .textEditorStyle(.plain)
             } else {
                 ScrollView {
-                    let g = AttributedTextFormatting.Transferable(text: recipe.content, in: environment)
-                    if let s = try? AttributedString(transferable: g, in: environment) {
-                        Text(s)
-                        //                        .safeAreaPadding()
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 8)
+//                    Text(recipe.content)
+//                        .padding(.horizontal, 5)
+//                        .padding(.vertical, 8)
+                    let runs = Array(recipe.content.runs)
+
+//                    runs.reduce(Text("")) { partialResult, run in
+//                        let range = run.range
+//                        let substring = recipe.content[range]
+//                        
+//                        let textView = Text(AttributedString(substring))
+//                        
+//                        if run.attributes.ingredient != nil {
+//                            return partialResult + textView + Text(" ") +  Text("New")
+//                                .bold()
+//                                .foregroundStyle(.red)
+//                        }
+//                        return partialResult + textView
+//                    }
+                    
+                    ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
+                        VStack {
+                            Text("\(index + 1). ").bold().foregroundStyle(.indigo) + Text(step)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .glassEffect(in: RoundedRectangle(cornerRadius: 20))
                     }
                 }
                 .contentMargins(.horizontal, 12.0, for: .scrollContent)
@@ -159,16 +179,17 @@ struct RecipeView2: View {
                 }
             }
         }
-//        .task {
-//            do {
-//                let r = try Recipe2.fromJsonFile(name: "recipe31")
-//                recipe.title = r.title
-//                recipe.content = r.content
-//                recipe.ingredients = r.ingredients
-//            } catch {
-//                print("Error loading recipe.")
-//            }
-//        }
+        .task {
+            do {
+                let r = try Recipe2.fromJsonFile(name: "recipe31")
+                recipe.title = r.title
+                recipe.content = r.content
+                recipe.ingredients = r.ingredients
+                recipe.steps = r.steps
+            } catch {
+                print("Error loading recipe.")
+            }
+        }
         .environment(\.editMode, $editMode)
         .environment(\.openURL, OpenURLAction { url in
             if url.scheme == "miseenplace" {

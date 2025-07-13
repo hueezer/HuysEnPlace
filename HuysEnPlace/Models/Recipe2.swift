@@ -18,11 +18,14 @@ class Recipe2: Identifiable, Equatable, Codable {
     var content: AttributedString = ""
     var ingredients: [Ingredient] = []
     
-    init(id: String = UUID().uuidString, title: String = "", content: AttributedString = "", ingredients: [Ingredient] = []) {
+    var steps: [AttributedString] = []
+    
+    init(id: String = UUID().uuidString, title: String = "", content: AttributedString = "", ingredients: [Ingredient] = [], steps: [AttributedString] = []) {
         self.id = id
         self.title = title
         self.content = content
         self.ingredients = ingredients
+        self.steps = steps
     }
     
     private enum CodingKeys: String, CodingKey {
@@ -30,6 +33,7 @@ class Recipe2: Identifiable, Equatable, Codable {
         case title = "_title"
         case content = "_content"
         case ingredients = "_ingredients"
+        case steps = "_steps"
     }
     
     
@@ -40,6 +44,7 @@ class Recipe2: Identifiable, Equatable, Codable {
         try container.encode(title, forKey: .title)
         try container.encode(content, forKey: .content, configuration: AttributeScopes.RecipeModelAttributes.self)
         try container.encode(ingredients, forKey: .ingredients)
+        try container.encode(steps, forKey: .steps, configuration: AttributeScopes.RecipeModelAttributes.self)
     }
     
     required init(from decoder: Decoder) throws {
@@ -48,6 +53,7 @@ class Recipe2: Identifiable, Equatable, Codable {
         title = try container.decode(String.self, forKey: .title)
         content = try container.decode(AttributedString.self, forKey: .content, configuration: AttributeScopes.RecipeModelAttributes.self)
         ingredients = try container.decode([Ingredient].self, forKey: .ingredients)
+        steps = try container.decode([AttributedString].self, forKey: .steps)
     }
     
     func toJson() -> String? {
