@@ -14,10 +14,13 @@ struct RecipeView2: View {
     @State var selection = AttributedTextSelection()
     @State var showIngredients: Bool = false
     @State var ingredientInfo: Ingredient?
+    @State var ingredients: [Ingredient] = allIngredients
     
     @Environment(\.self) private var environment
     
     @State private var shareJsonUrl: URL?
+    
+    @Namespace private var namespace
 
     var body: some View {
         @Bindable var recipe = recipe
@@ -27,32 +30,100 @@ struct RecipeView2: View {
                     ShareLink("Share URL", item: url)
                 }
             }
+            
+//            let runs = Array(recipe.content.runs)
+//
+//            runs.reduce(Text("")) { partialResult, run in
+//                let range = run.range
+//                let substring = recipe.content[range]
+//
+//                let textView = Text(AttributedString(substring))
+//
+//                if run.attributes.ingredient != nil {
+//                    return partialResult + textView + Text(" ") +  Text("New")
+//                        .bold()
+//                        .foregroundStyle(.red)
+//                }
+//                return partialResult + textView
+//            }
+            
+//            TextEditor(text: $recipe.content, selection: $selection)
+//                .contentMargins(.horizontal, 12.0, for: .scrollContent)
+//                .textEditorStyle(.plain)
 
-            if editMode == .active {
-                TextEditor(text: $recipe.content, selection: $selection)
-                    .contentMargins(.horizontal, 12.0, for: .scrollContent)
-                    .textEditorStyle(.plain)
-            } else {
-                ScrollView {
+            ScrollView {
 //                    Text(recipe.content)
 //                        .padding(.horizontal, 5)
 //                        .padding(.vertical, 8)
-                    let runs = Array(recipe.content.runs)
 
-//                    runs.reduce(Text("")) { partialResult, run in
-//                        let range = run.range
-//                        let substring = recipe.content[range]
-//                        
-//                        let textView = Text(AttributedString(substring))
-//                        
-//                        if run.attributes.ingredient != nil {
-//                            return partialResult + textView + Text(" ") +  Text("New")
-//                                .bold()
-//                                .foregroundStyle(.red)
-//                        }
-//                        return partialResult + textView
-//                    }
+
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("Ingredients")
+                        .font(.headline)
+                        .padding(.leading, 16)
+                    ForEach($recipe.ingredients) { $list in
+                        VStack(alignment: .leading, spacing: editMode == .active ? 16 : 0) {
+                            HStack {
+                                if editMode == .active {
+                                    Text("Title")
+                                        .frame(minWidth: 60, alignment: .trailing)
+                                        .multilineTextAlignment(.trailing)
+                                        .fixedSize()
+                                }
+                                TextField("Ingredient List Title", text: $list.title)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+//                                    .padding(.leading, 16)
+
+                                    .disabled(editMode == .inactive)
+                            }
+                            .bold()
+                            .padding(.leading, 16)
+                            .background(content: {
+                                Color.clear
+                                    .glassEffect(.regular.interactive())
+                                    .opacity(editMode == .active ? 1 : 0)
+                            })
+                            ForEach($list.items) { $item in
+                                HStack {
+                                    
+                                    TextField("Amount", text: $item.amount, prompt: Text(editMode == .active ? " " : ""))
+                                        .bold()
+                                        .fixedSize()
+                                        .frame(minWidth: 60, alignment: .trailing)
+                                        .padding(.vertical, 8)
+                                        .multilineTextAlignment(.trailing)
+                                        .disabled(editMode == .inactive)
+                                    
+                                    TextField("Ingredient Text", text: $item.ingredientText)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 8)
+                                        .disabled(editMode == .inactive)
+
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal)
+                                .background(content: {
+                                    Color.clear
+                                        .glassEffect(.regular.interactive())
+                                        .opacity(editMode == .active ? 1 : 0)
+                                })
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, editMode == .active ? 8 : 0)
+                        .background(content: {
+                            Color.clear
+                                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 24))
+                                .opacity(editMode == .active ? 0 : 1)
+                        })
+                        
+                    }
                     
+                    Text("Steps")
+                        .font(.headline)
+                        .padding(.leading, 16)
                     ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
                         VStack {
                             Text("\(index + 1). ").bold().foregroundStyle(.indigo) + Text(step)
@@ -62,12 +133,12 @@ struct RecipeView2: View {
                         .glassEffect(in: RoundedRectangle(cornerRadius: 20))
                     }
                 }
-                .contentMargins(.horizontal, 12.0, for: .scrollContent)
             }
+            .contentMargins(.horizontal, 12.0, for: .scrollContent)
         }
         .navigationTitle(recipe.title)
         .attributedTextFormattingDefinition(
-            RecipeFormattingDefinition(ingredients: Set(recipe.ingredients.map(\.id)))
+            RecipeFormattingDefinition(ingredients: Set(ingredients.map(\.id)))
         )
         .onAppear {
             recipe.content = banhMiRecipeContent
@@ -75,7 +146,7 @@ struct RecipeView2: View {
         .sheet(isPresented: $showIngredients) {
             let name = self.recipe.content[selection]
             let nameString = String(name.characters)
-            ForEach(recipe.ingredients) { ingredient in
+            ForEach(ingredients) { ingredient in
                 HStack {
                     Text("\(ingredient.name)")
                     
@@ -102,7 +173,7 @@ struct RecipeView2: View {
             Button(action: {
                 let ranges = RangeSet(self.recipe.content.characters.ranges(of: name.characters))
                 let newIngredient = Ingredient(id: "new-\(nameString)", name: .init(nameString))
-                recipe.ingredients.append(newIngredient)
+                ingredients.append(newIngredient)
                 recipe.content.transform(updating: &self.selection) { text in
                     print("text ranges: \(text[ranges])")
 //                    print("ingredient id: \(ingredient.id)")
@@ -128,7 +199,7 @@ struct RecipeView2: View {
                     let nameString = "Bake"
                     let ranges = RangeSet(self.recipe.content.characters.ranges(of: Array(nameString)))
                     let newIngredient = Ingredient(id: "new-\(nameString)", name: .init(nameString))
-                    recipe.ingredients.append(newIngredient)
+                    ingredients.append(newIngredient)
                     recipe.content.transform(updating: &self.selection) { text in
 //                        text[ranges].ingredient = "new-\(nameString)"
 //                        text[ranges].link = .init(string: "miseenplace://ingredients/\(newIngredient.id)")
@@ -221,9 +292,8 @@ struct RecipeView2: View {
         if let host = url.host() {
             if host == "ingredients" {
                 print("Tapped Ingredients")
-                print("recipe ingredients: \(recipe.ingredients)")
                 print("path components last: \(url.pathComponents.last)")
-                if let pathId = url.pathComponents.last, let ingredient = recipe.ingredients.first(where: { $0.id == pathId }) {
+                if let pathId = url.pathComponents.last, let ingredient = ingredients.first(where: { $0.id == pathId }) {
                     ingredientInfo = ingredient
                 } else {
                     print("DID NOT FIND INGREDIENT")

@@ -16,11 +16,11 @@ class Recipe2: Identifiable, Equatable, Codable {
     var id: String = UUID().uuidString
     var title: String = ""
     var content: AttributedString = ""
-    var ingredients: [Ingredient] = []
+    var ingredients: [IngredientList] = []
     
     var steps: [AttributedString] = []
     
-    init(id: String = UUID().uuidString, title: String = "", content: AttributedString = "", ingredients: [Ingredient] = [], steps: [AttributedString] = []) {
+    init(id: String = UUID().uuidString, title: String = "", content: AttributedString = "", ingredients: [IngredientList] = [], steps: [AttributedString] = []) {
         self.id = id
         self.title = title
         self.content = content
@@ -50,7 +50,7 @@ class Recipe2: Identifiable, Equatable, Codable {
         id = try container.decode(String.self, forKey: .id)
         title = try container.decode(String.self, forKey: .title)
         content = try container.decode(AttributedString.self, forKey: .content, configuration: AttributeScopes.RecipeModelAttributes.self)
-        ingredients = try container.decode([Ingredient].self, forKey: .ingredients)
+        ingredients = try container.decode([IngredientList].self, forKey: .ingredients)
         steps = try container.decode([AttributedString].self, forKey: .steps)
     }
     
@@ -70,13 +70,16 @@ class Recipe2: Identifiable, Equatable, Codable {
     }
 }
 
-struct IngredientQuantity: Codable {
+struct IngredientQuantity: Codable, Identifiable {
+    var id: String = UUID().uuidString
     var amount: String = ""
-    var ingredientText: AttributedString = ""
+    var ingredientText: String = ""
+    var note: String = ""
     var ingredient: Ingredient?
 }
 
-struct IngredientList: Codable {
+struct IngredientList: Codable, Identifiable {
+    var id: String = UUID().uuidString
     var title: String = ""
     var items: [IngredientQuantity] = []
 }

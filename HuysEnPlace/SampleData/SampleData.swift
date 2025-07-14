@@ -126,7 +126,7 @@ let banhMiRecipeContent: AttributedString = """
     Remove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.
     """
 
-let banhMiIngredients: [Ingredient] = [
+let allIngredients: [Ingredient] = [
     .init(id: "bread-flour", name: "Bread Flour"),
     .init(id: "water", name: "Water"),
     .init(id: "yeast", name: "Yeast"),
@@ -136,4 +136,4 @@ let banhMiIngredients: [Ingredient] = [
     .init(id: "vegetable-oil", name: "Vegetable Oil")
 ]
 
-@MainActor let banhMiRecipe = Recipe(title: "Bánh Mì Bread", content: banhMiRecipeContent, ingredients: banhMiIngredients)
+@MainActor let banhMiRecipe = Recipe(title: "Bánh Mì Bread", content: banhMiRecipeContent, ingredients: [])
