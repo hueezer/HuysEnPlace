@@ -49,14 +49,19 @@ struct RecipeView2: View {
 //                }
 //                return partialResult + textView
 //            }
-            
+//            
 //            TextEditor(text: $recipe.content, selection: $selection)
 //                .contentMargins(.horizontal, 12.0, for: .scrollContent)
 //                .textEditorStyle(.plain)
+            
+            
 
             ScrollView {
 
-                VStack(alignment: .center, spacing: 24) {
+                VStack(alignment: .center, spacing: 16) {
+                    Text(recipe.title)
+                        .font(.title)
+                        .bold()
                     Text("Ingredients")
                         .font(.headline)
                     ForEach($recipe.ingredients) { $list in
@@ -85,12 +90,8 @@ struct RecipeView2: View {
                         .font(.headline)
                         .padding(.leading, 16)
                     ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
-                        HStack(alignment: .top) {
-                            StepView(index: index, text: $recipe.steps[index])
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 16))
+                        StepView(index: index, text: $recipe.steps[index])
+                            .environment(recipe)
                         .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
                     }
                     
@@ -106,7 +107,6 @@ struct RecipeView2: View {
             }
             .contentMargins(.horizontal, 12.0, for: .scrollContent)
         }
-        .navigationTitle(recipe.title)
         .attributedTextFormattingDefinition(
             RecipeFormattingDefinition(ingredients: Set(ingredients.map(\.id)))
         )

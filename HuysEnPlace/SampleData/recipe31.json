@@ -14,7 +14,11 @@
                     "id": "0002",
                     "amount": "260 g",
                     "ingredientText": "Water",
-                    "note": ""
+                    "note": "",
+                    "ingredient": {
+                        "id": "water",
+                        "name": "water"
+                    }
                 },
                 {
                     "id": "0003",
@@ -147,7 +151,7 @@
       "name" : "Vegetable Oil"
     }
   ],
-  "_title" : "",
+  "_title" : "Bánh Mì Bread",
   "_content" : {
     "runs" : [
       "Hello Makes 6 Bánh Mì (125g unbaked)\n\nIngredients:\n450g ",
