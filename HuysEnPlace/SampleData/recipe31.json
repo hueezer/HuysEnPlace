@@ -43,19 +43,19 @@
                 {
                     "id": "0007",
                     "amount": "1 g",
-                    "ingredientText": "Ascorbic Acid (Vitamin C)",
-                    "note": ""
+                    "ingredientText": "Ascorbic Acid",
+                    "note": "(Vitamin C)"
                 },
                 {
                     "id": "0008",
                     "amount": "",
-                    "ingredientText": "Vegetable Oil as needed",
-                    "note": ""
+                    "ingredientText": "Vegetable Oil",
+                    "note": "as needed"
                 }
             ]
         },
         {
-            "id": "ingredient-list-1",
+            "id": "ingredient-list-2",
             "title": "Bread",
             "items": [
                 {
@@ -97,14 +97,14 @@
                 {
                     "id": "0007",
                     "amount": "1 g",
-                    "ingredientText": "Ascorbic Acid (Vitamin C)",
-                    "note": ""
+                    "ingredientText": "Ascorbic Acid",
+                    "note": "(Vitamin C)"
                 },
                 {
                     "id": "0008",
                     "amount": "",
-                    "ingredientText": "Vegetable Oil as needed",
-                    "note": ""
+                    "ingredientText": "Vegetable Oil",
+                    "note": "as needed"
                 }
             ]
         }

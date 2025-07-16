@@ -13,8 +13,11 @@ struct RecipeView2: View {
     @State var recipe = Recipe2()
     @State var selection = AttributedTextSelection()
     @State var showIngredients: Bool = false
-    @State var ingredientInfo: Ingredient?
+    
     @State var ingredients: [Ingredient] = allIngredients
+    
+    @State var ingredientInfo: IngredientQuantity?
+    @State var editingIngredientList: IngredientList?
     
     @Environment(\.self) private var environment
     
@@ -52,85 +55,52 @@ struct RecipeView2: View {
 //                .textEditorStyle(.plain)
 
             ScrollView {
-//                    Text(recipe.content)
-//                        .padding(.horizontal, 5)
-//                        .padding(.vertical, 8)
 
-
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .center, spacing: 24) {
                     Text("Ingredients")
                         .font(.headline)
-                        .padding(.leading, 16)
                     ForEach($recipe.ingredients) { $list in
-                        VStack(alignment: .leading, spacing: editMode == .active ? 16 : 0) {
-                            HStack {
-                                if editMode == .active {
-                                    Text("Title")
-                                        .frame(minWidth: 60, alignment: .trailing)
-                                        .multilineTextAlignment(.trailing)
-                                        .fixedSize()
-                                }
-                                TextField("Ingredient List Title", text: $list.title)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 8)
-//                                    .padding(.leading, 16)
-
-                                    .disabled(editMode == .inactive)
-                            }
-                            .bold()
-                            .padding(.leading, 16)
-                            .background(content: {
-                                Color.clear
-                                    .glassEffect(.regular.interactive())
-                                    .opacity(editMode == .active ? 1 : 0)
-                            })
-                            ForEach($list.items) { $item in
-                                HStack {
-                                    
-                                    TextField("Amount", text: $item.amount, prompt: Text(editMode == .active ? " " : ""))
-                                        .bold()
-                                        .fixedSize()
-                                        .frame(minWidth: 60, alignment: .trailing)
-                                        .padding(.vertical, 8)
-                                        .multilineTextAlignment(.trailing)
-                                        .disabled(editMode == .inactive)
-                                    
-                                    TextField("Ingredient Text", text: $item.ingredientText)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 8)
-                                        .disabled(editMode == .inactive)
-
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-                                .background(content: {
-                                    Color.clear
-                                        .glassEffect(.regular.interactive())
-                                        .opacity(editMode == .active ? 1 : 0)
-                                })
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, editMode == .active ? 8 : 0)
-                        .background(content: {
-                            Color.clear
-                                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 24))
-                                .opacity(editMode == .active ? 0 : 1)
+                        IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
+                            ingredientInfo = ingredientQuantity
+                        }, onTapList: { list in
+                            editingIngredientList = $list.wrappedValue
                         })
-                        
+                        .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
+                        .environment(\.editMode, $editMode)
+                    }
+                    
+                    if editMode == .active {
+                        Button(action: {
+                            recipe.ingredients.append(IngredientList(title: "", items: []))
+                            if let lastIngredientList = recipe.ingredients.last {
+                                editingIngredientList = lastIngredientList
+                            }
+                        }) {
+                            Label("Add Ingredient List", systemImage: "plus")
+                        }
+                        .buttonStyle(.glassProminent)
                     }
                     
                     Text("Steps")
                         .font(.headline)
                         .padding(.leading, 16)
                     ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
-                        VStack {
-                            Text("\(index + 1). ").bold().foregroundStyle(.indigo) + Text(step)
+                        HStack(alignment: .top) {
+                            StepView(index: index, text: $recipe.steps[index])
                         }
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 20))
+                        .glassEffect(in: RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
+                    }
+                    
+                    if editMode == .active {
+                        Button(action: {
+                            recipe.steps.append(.init())
+                        }) {
+                            Label("Add Step", systemImage: "plus")
+                        }
+                        .buttonStyle(.glassProminent)
                     }
                 }
             }
@@ -186,11 +156,17 @@ struct RecipeView2: View {
                 Text(nameString)
             })
         }
-        .sheet(item: $ingredientInfo) { ingredient in
+        .sheet(item: $ingredientInfo) { ingredientQuantity in
             VStack {
-                Text(ingredient.name)
+                Text(ingredientQuantity.ingredientText)
             }
             .presentationDetents([.medium, .large])
+        }
+        .sheet(item: $editingIngredientList) { list in
+            if let listIndex = recipe.ingredients.firstIndex(where: { $0.id == list.id }) {
+                
+                IngredientListEditor(list: $recipe.ingredients[listIndex])
+            }
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
@@ -268,7 +244,7 @@ struct RecipeView2: View {
                 print("COMPONENTS: ", url.pathComponents)
                 
                 print("PATH: ", url.path())
-                handleURL(url) // Define this method to take appropriate action.
+//                handleURL(url) // Define this method to take appropriate action.
                 return .handled
             }
             return .systemAction
@@ -286,21 +262,21 @@ struct RecipeView2: View {
         }
     }
     
-    private func handleURL(_ url: URL) {
-        // Any side effect you need—navigation, async task, analytics, …
-        print("Link tapped:", url.absoluteString)
-        if let host = url.host() {
-            if host == "ingredients" {
-                print("Tapped Ingredients")
-                print("path components last: \(url.pathComponents.last)")
-                if let pathId = url.pathComponents.last, let ingredient = ingredients.first(where: { $0.id == pathId }) {
-                    ingredientInfo = ingredient
-                } else {
-                    print("DID NOT FIND INGREDIENT")
-                }
-            }
-        }
-    }
+//    private func handleURL(_ url: URL) {
+//        // Any side effect you need—navigation, async task, analytics, …
+//        print("Link tapped:", url.absoluteString)
+//        if let host = url.host() {
+//            if host == "ingredients" {
+//                print("Tapped Ingredients")
+//                print("path components last: \(url.pathComponents.last)")
+//                if let pathId = url.pathComponents.last, let ingredient = ingredients.first(where: { $0.id == pathId }) {
+//                    ingredientInfo = ingredient
+//                } else {
+//                    print("DID NOT FIND INGREDIENT")
+//                }
+//            }
+//        }
+//    }
     
     func autotag(ingredients: [Ingredient]) {
         
@@ -378,3 +354,4 @@ extension AttributedString {
         self = output
     }
 }
+
