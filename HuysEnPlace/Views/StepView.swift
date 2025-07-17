@@ -13,9 +13,10 @@ struct StepView: View {
     var index: Int = 0
     @Binding var text: AttributedString
     @State private var showEditor = false
+    @State private var showPopover: Bool = false
 
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
             Text("\(index + 1). ").bold().foregroundStyle(.indigo) + Text(text)
         }
         .padding()
@@ -29,6 +30,22 @@ struct StepView: View {
                 showEditor = true
             }
         }
+        .environment(\.openURL, OpenURLAction { url in
+            print("openURL: \(url)")
+            if url.scheme == "miseenplace" {
+                print("SCHEME: ", url.scheme)
+                print("COMPONENTS: ", url.pathComponents)
+                
+                print("PATH: ", url.path())
+//                handleURL(url) // Define this method to take appropriate action.
+                showPopover = true
+                return .handled
+            }
+            return .systemAction
+        })
+        .popover(isPresented: $showPopover) {
+            Text("POPOVER")
+        }
     }
 }
 
@@ -37,6 +54,9 @@ struct StepEditor: View {
     @State private var selection = AttributedTextSelection()
     @FocusState private var focused: Bool
     @State private var currentText: AttributedString?
+    
+    @State private var showDebug: Bool = false
+    
     @Environment(\.dismiss) private var dismiss
     @Environment(Recipe2.self) private var recipe
     
@@ -56,10 +76,15 @@ struct StepEditor: View {
                             .frame(width: 36, height: 36)
                     })
                     
-                    Button(action: {}, label: {
+                    Button(action: {
+                        addTimer()
+                    }, label: {
                         Image(systemName: "clock")
                             .frame(width: 36, height: 36)
                     })
+                    
+                    Toggle("Debug", systemImage: "curlybraces", isOn: $showDebug)
+                        .toggleStyle(.button)
                 }
                 .padding(.horizontal, 16)
                 .frame(height: 50)
@@ -100,12 +125,53 @@ struct StepEditor: View {
                     focused = true
                     currentText = text
                 }
+            
+            if showDebug {
+                if let debugString = getDebugString(text) {
+                    Text("DEBUG")
+                        .font(.headline)
+                        .fontWeight(.light)
+                    ScrollView {
+                        VStack(spacing: 8) {
+
+                            Text(debugString)
+                                .lineLimit(nil)
+                                .textSelection(.enabled)
+                            Spacer()
+                        }
+                        .padding()
+                    }
+                    .font(.body.monospaced())
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 16))
+                }
+            }
         }
         .foregroundStyle(Color.primary)
         .padding()
         .attributedTextFormattingDefinition(
             RecipeFormattingDefinition(ingredients: [])
         )
+//        .environment(\.openURL, OpenURLAction { url in
+//            print("openURL: \(url)")
+//            if url.scheme == "miseenplace" {
+//                print("SCHEME: ", url.scheme)
+//                print("COMPONENTS: ", url.pathComponents)
+//                
+//                print("PATH: ", url.path())
+////                handleURL(url) // Define this method to take appropriate action.
+//                showPopover = true
+//                return .handled
+//            }
+//            return .systemAction
+//        })
+
+    }
+    
+    func getDebugString(_ text: AttributedString) -> String? {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted]
+        guard let data = try? encoder.encode(text) else { return nil }
+        return String(data: data, encoding: .utf8)
     }
     
     func autotag(ingredients: [Ingredient]) {
@@ -138,14 +204,21 @@ struct StepEditor: View {
         text.transform(updating: &self.selection) { text in
             text[ranges].ingredient = ingredient.id
             text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
-            text[ranges].foregroundColor = .red
+//            text[ranges].foregroundColor = .red
+        }
+    }
+    
+    func addTimer() {
+        text.transformAttributes(in: &selection) { container in
+            container.foregroundColor = .purple
         }
     }
 }
 
 
 #Preview {
-    StepView(text: .constant("Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray. Bake for 8 minutes without opening the door. Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color. Remove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes."))
+    @Previewable @State var step: AttributedString = AttributedString("Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray. Bake for 8 minutes without opening the door. Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color. Remove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.")
+    StepView(text: $step)
         .environment(\.editMode, .constant(.active))
         .environment(Recipe2(
             ingredients: [

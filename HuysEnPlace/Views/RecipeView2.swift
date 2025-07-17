@@ -238,17 +238,17 @@ struct RecipeView2: View {
             }
         }
         .environment(\.editMode, $editMode)
-        .environment(\.openURL, OpenURLAction { url in
-            if url.scheme == "miseenplace" {
-                print("SCHEME: ", url.scheme)
-                print("COMPONENTS: ", url.pathComponents)
-                
-                print("PATH: ", url.path())
-//                handleURL(url) // Define this method to take appropriate action.
-                return .handled
-            }
-            return .systemAction
-        })
+//        .environment(\.openURL, OpenURLAction { url in
+//            if url.scheme == "miseenplace" {
+//                print("SCHEME: ", url.scheme)
+//                print("COMPONENTS: ", url.pathComponents)
+//                
+//                print("PATH: ", url.path())
+////                handleURL(url) // Define this method to take appropriate action.
+//                return .handled
+//            }
+//            return .systemAction
+//        })
     }
     
     func selectionIsEmpty() -> Bool {
