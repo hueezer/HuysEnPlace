@@ -59,7 +59,7 @@ extension AttributeScopes {
         let paragraphFormat: ParagraphFormattingAttribute
         /// An attribute for marking text as a reference to a recipe's ingredient.
         let ingredient: IngredientAttribute
-        
+        let timer: TimerAttribute
 //        let link: AttributeScopes.FoundationAttributes.LinkAttribute
     }
 }
@@ -86,8 +86,17 @@ struct ParagraphFormattingAttribute: CodableAttributedStringKey {
 struct IngredientAttribute: CodableAttributedStringKey {
     typealias Value = Ingredient.ID
 
-    static let name = "SampleRecipeEditor.IngredientAttribute"
+    static let name = "MisEnPlace.IngredientAttribute"
 
+    static let inheritedByAddedText: Bool = false
+    static let invalidationConditions: Set<AttributedString.AttributeInvalidationCondition>? = [.textChanged]
+}
+
+struct TimerAttribute: CodableAttributedStringKey {
+    typealias Value = KitchenTimer.ID
+    
+    static let name = "MiseEnPlace.TimerAttribute"
+    
     static let inheritedByAddedText: Bool = false
     static let invalidationConditions: Set<AttributedString.AttributeInvalidationCondition>? = [.textChanged]
 }

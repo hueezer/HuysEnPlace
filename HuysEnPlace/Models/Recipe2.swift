@@ -18,9 +18,9 @@ class Recipe2: Identifiable, Equatable, Codable {
     var content: AttributedString = ""
     var ingredients: [IngredientList] = []
     
-    var steps: [AttributedString] = []
+    var steps: [Step] = []
     
-    init(id: String = UUID().uuidString, title: String = "", content: AttributedString = "", ingredients: [IngredientList] = [], steps: [AttributedString] = []) {
+    init(id: String = UUID().uuidString, title: String = "", content: AttributedString = "", ingredients: [IngredientList] = [], steps: [Step] = []) {
         self.id = id
         self.title = title
         self.content = content
@@ -42,7 +42,7 @@ class Recipe2: Identifiable, Equatable, Codable {
         try container.encode(title, forKey: .title)
         try container.encode(content, forKey: .content, configuration: AttributeScopes.RecipeModelAttributes.self)
         try container.encode(ingredients, forKey: .ingredients)
-        try container.encode(steps, forKey: .steps, configuration: AttributeScopes.RecipeModelAttributes.self)
+        try container.encode(steps, forKey: .steps)
     }
     
     required init(from decoder: Decoder) throws {
@@ -51,7 +51,7 @@ class Recipe2: Identifiable, Equatable, Codable {
         title = try container.decode(String.self, forKey: .title)
         content = try container.decode(AttributedString.self, forKey: .content, configuration: AttributeScopes.RecipeModelAttributes.self)
         ingredients = try container.decode([IngredientList].self, forKey: .ingredients)
-        steps = try container.decode([AttributedString].self, forKey: .steps)
+        steps = try container.decode([Step].self, forKey: .steps)
     }
     
     func toJson() -> String? {

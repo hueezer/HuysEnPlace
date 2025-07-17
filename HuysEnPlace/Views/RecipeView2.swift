@@ -90,7 +90,7 @@ struct RecipeView2: View {
                         .font(.headline)
                         .padding(.leading, 16)
                     ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
-                        StepView(index: index, text: $recipe.steps[index])
+                        StepView(index: index, step: $recipe.steps[index])
                             .environment(recipe)
                         .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
                     }
