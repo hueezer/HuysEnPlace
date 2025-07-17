@@ -51,7 +51,13 @@ struct StepView: View {
             Text("POPOVER")
         }
         .popover(item: $viewTimer, content: { timer in
-            Text("Viewing Timer: \(timer.name)")
+            VStack(alignment: .leading, spacing: 4) {
+                Text(timer.name)
+                    .font(.headline)
+                Text(formattedDuration(timer.duration))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
         })
     }
     
@@ -80,6 +86,13 @@ struct StepView: View {
             }
         }
     }
+    
+    private func formattedDuration(_ duration: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = duration >= 3600 ? [.hour, .minute, .second] : [.minute, .second]
+        formatter.unitsStyle = .full
+        return formatter.string(from: duration) ?? "\(Int(duration)) sec"
+    }
 }
 
 struct StepEditor: View {
@@ -89,6 +102,7 @@ struct StepEditor: View {
     @State private var currentText: AttributedString?
     
     @State private var showDebug: Bool = false
+    @State private var copied = false
     
     @Environment(\.dismiss) private var dismiss
     @Environment(Recipe2.self) private var recipe
@@ -161,10 +175,24 @@ struct StepEditor: View {
                 }
             
             if showDebug {
-                if let debugString = getDebugString(step.text) {
-                    Text("DEBUG")
-                        .font(.headline)
-                        .fontWeight(.light)
+                if let debugString = getStepDebugString() {
+                    HStack(spacing: 12) {
+                        Text("DEBUG")
+                            .font(.headline)
+                            .fontWeight(.light)
+                        Button(action: {
+                            UIPasteboard.general.string = debugString
+                            copied = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                copied = false
+                            }
+                        }) {
+                            Label(copied ? "Copied!" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(copied ? .green : .accentColor)
+                    }
+                    
                     ScrollView {
                         VStack(spacing: 8) {
 
@@ -205,6 +233,13 @@ struct StepEditor: View {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted]
         guard let data = try? encoder.encode(text) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+    
+    func getStepDebugString() -> String? {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted]
+        guard let data = try? encoder.encode(step) else { return nil }
         return String(data: data, encoding: .utf8)
     }
     
@@ -274,3 +309,4 @@ struct StepEditor: View {
             ]
         ))
 }
+
