@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-struct RecipeView2: View {
+struct RecipeView: View {
     @State var editMode: EditMode = .inactive
     @Environment(\.fontResolutionContext) var fontResolutionContext
-    @State var recipe = Recipe2()
+    @State var recipe = Recipe()
     @State var selection = AttributedTextSelection()
     @State var showIngredients: Bool = false
     
@@ -228,7 +228,7 @@ struct RecipeView2: View {
         }
         .task {
             do {
-                let r = try Recipe2.fromJsonFile(name: "recipe31")
+                let r = try Recipe.fromJsonFile(name: "recipe31")
                 recipe.title = r.title
                 recipe.content = r.content
                 recipe.ingredients = r.ingredients
@@ -296,7 +296,7 @@ struct RecipeView2: View {
 #Preview {
     @Previewable @State var recipe = banhMiRecipe
     NavigationStack {
-        RecipeView2()
+        RecipeView()
 //        RecipeView2(recipe: recipe)
 //            .task {
 //                recipe.title = "Loading..."

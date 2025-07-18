@@ -8,8 +8,8 @@
 import SwiftUI
 
 @Observable
-class Recipe2: Identifiable, Equatable, Codable {
-    static func == (lhs: Recipe2, rhs: Recipe2) -> Bool {
+class Recipe: Identifiable, Equatable, Codable {
+    static func == (lhs: Recipe, rhs: Recipe) -> Bool {
         lhs.id == rhs.id
     }
     
@@ -84,7 +84,7 @@ struct IngredientList: Codable, Identifiable {
     var items: [IngredientQuantity] = []
 }
 
-extension Recipe2 {
+extension Recipe {
     
     enum RecipeError: Error {
         case fileNotFound
@@ -94,17 +94,17 @@ extension Recipe2 {
     /// - Parameter url: The file URL pointing to the JSON file.
     /// - Throws: An error if reading or decoding fails.
     /// - Returns: A Recipe instance decoded from the file.
-    static func fromJsonFile(at url: URL) throws -> Recipe2 {
+    static func fromJsonFile(at url: URL) throws -> Recipe {
         let data = try Data(contentsOf: url)
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(Recipe2.self, from: data)
+        return try decoder.decode(Recipe.self, from: data)
     }
     
-    static func fromJsonFile(name: String) throws -> Recipe2 {
+    static func fromJsonFile(name: String) throws -> Recipe {
         if let url = Bundle.main.url(forResource: name, withExtension: "json") {
             do {
-                let recipe = try Recipe2.fromJsonFile(at: url)
+                let recipe = try Recipe.fromJsonFile(at: url)
                 print(recipe.title) // or do something with the recipe
                 return recipe
             } catch {

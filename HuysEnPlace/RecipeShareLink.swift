@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RecipeShareLink: View {
-    let recipe: Recipe2
+    let recipe: Recipe
     @Environment(\.self) private var environment
 
     var body: some View {

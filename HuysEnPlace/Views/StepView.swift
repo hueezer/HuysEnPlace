@@ -105,7 +105,7 @@ struct StepEditor: View {
     @State private var copied = false
     
     @Environment(\.dismiss) private var dismiss
-    @Environment(Recipe2.self) private var recipe
+    @Environment(Recipe.self) private var recipe
     
     var body: some View {
         @Bindable var recipe = recipe
@@ -251,7 +251,7 @@ struct StepEditor: View {
         }
     }
     
-    func autotag(recipe: Recipe2) {
+    func autotag(recipe: Recipe) {
         for list in recipe.ingredients {
             for item in list.items {
                 if let ingredient = item.ingredient {
@@ -307,7 +307,7 @@ struct StepEditor: View {
     @Previewable @State var step = Step(text: "Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray. Bake for 8 minutes without opening the door. Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color. Remove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.", ingredients: [], timers: [])
     StepView(step: $step)
         .environment(\.editMode, .constant(.active))
-        .environment(Recipe2(
+        .environment(Recipe(
             ingredients: [
                 .init(title: "Bread", items: [
                     .init(amount: "", ingredientText: "", ingredient: .init(id: "dough", name: "Dough"))

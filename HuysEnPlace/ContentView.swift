@@ -12,7 +12,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
 //            RecipeView(recipe: recipe)
-            RecipeView2()
+            RecipeView()
         }
     }
 }
