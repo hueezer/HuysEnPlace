@@ -136,4 +136,4 @@ let allIngredients: [Ingredient] = [
     .init(id: "vegetable-oil", name: "Vegetable Oil")
 ]
 
-@MainActor let banhMiRecipe = Recipe(title: "Bánh Mì Bread", content: banhMiRecipeContent, ingredients: [])
+@MainActor let banhMiRecipe = Recipe2(title: "Bánh Mì Bread", content: banhMiRecipeContent, ingredients: [])
