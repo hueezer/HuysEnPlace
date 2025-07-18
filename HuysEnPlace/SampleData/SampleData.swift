@@ -137,3 +137,30 @@ let allIngredients: [Ingredient] = [
 ]
 
 @MainActor let banhMiRecipe = Recipe(title: "Bánh Mì Bread", content: banhMiRecipeContent, ingredients: [])
+
+@MainActor let sampleRecipes: [Recipe] = [
+    Recipe(title: "Classic Bánh Mì", content: try! AttributedString(styledMarkdown: "A classic Vietnamese sandwich recipe."), ingredients: [
+]),
+    Recipe(title: "Chocolate Cake", content: try! AttributedString(styledMarkdown: "Rich and moist chocolate cake.")),
+    Recipe(title: "Vegan Lasagna", content: try! AttributedString(styledMarkdown: "Layers of pasta with vegan cheese.")),
+    Recipe(title: "Lemon Garlic Salmon", content: try! AttributedString(styledMarkdown: "Oven-baked salmon with lemon and garlic.")),
+    Recipe(title: "Chicken Pho", content: try! AttributedString(styledMarkdown: "Vietnamese noodle soup with chicken.")),
+    Recipe(title: "Caesar Salad", content: try! AttributedString(styledMarkdown: "Classic Caesar with homemade dressing.")),
+    Recipe(title: "Shrimp Fried Rice", content: try! AttributedString(styledMarkdown: "Quick stir-fried rice with shrimp.")),
+    Recipe(title: "Tomato Basil Soup", content: try! AttributedString(styledMarkdown: "Creamy soup with tomatoes and basil.")),
+    Recipe(title: "Mushroom Risotto", content: try! AttributedString(styledMarkdown: "Creamy risotto with wild mushrooms.")),
+    Recipe(title: "BBQ Pulled Pork", content: try! AttributedString(styledMarkdown: "Slow-cooked pork with BBQ sauce.")),
+    Recipe(title: "Spaghetti Carbonara", content: try! AttributedString(styledMarkdown: "Classic Italian pasta with bacon.")),
+    Recipe(title: "Eggplant Parmesan", content: try! AttributedString(styledMarkdown: "Baked eggplant with cheese and marinara.")),
+    Recipe(title: "Quinoa Salad", content: try! AttributedString(styledMarkdown: "Healthy salad with quinoa and veggies.")),
+    Recipe(title: "Beef Tacos", content: try! AttributedString(styledMarkdown: "Tacos filled with spiced beef.")),
+    Recipe(title: "Pad Thai", content: try! AttributedString(styledMarkdown: "Stir-fried Thai noodles with peanuts.")),
+    Recipe(title: "Shepherd’s Pie", content: try! AttributedString(styledMarkdown: "Savory pie with lamb and potatoes.")),
+    Recipe(title: "Avocado Toast", content: try! AttributedString(styledMarkdown: "Simple toast with smashed avocado.")),
+    Recipe(title: "French Toast", content: try! AttributedString(styledMarkdown: "Egg-battered bread, pan-fried to golden.")),
+    Recipe(title: "Chicken Curry", content: try! AttributedString(styledMarkdown: "Spicy curry with tender chicken pieces.")),
+    Recipe(title: "Classic Pancakes", content: try! AttributedString(styledMarkdown: "Fluffy pancakes for breakfast or brunch.")),
+]
+
+// Note: All recipes use empty 'ingredients' and 'steps' for now. Expand as needed.
+

@@ -10,7 +10,7 @@ import SwiftUI
 struct RecipeView: View {
     @State var editMode: EditMode = .inactive
     @Environment(\.fontResolutionContext) var fontResolutionContext
-    @State var recipe = Recipe()
+    var recipe: Recipe
     @State var selection = AttributedTextSelection()
     @State var showIngredients: Bool = false
     
@@ -238,17 +238,6 @@ struct RecipeView: View {
             }
         }
         .environment(\.editMode, $editMode)
-//        .environment(\.openURL, OpenURLAction { url in
-//            if url.scheme == "miseenplace" {
-//                print("SCHEME: ", url.scheme)
-//                print("COMPONENTS: ", url.pathComponents)
-//                
-//                print("PATH: ", url.path())
-////                handleURL(url) // Define this method to take appropriate action.
-//                return .handled
-//            }
-//            return .systemAction
-//        })
     }
     
     func selectionIsEmpty() -> Bool {
@@ -296,7 +285,7 @@ struct RecipeView: View {
 #Preview {
     @Previewable @State var recipe = banhMiRecipe
     NavigationStack {
-        RecipeView()
+        RecipeView(recipe: recipe)
 //        RecipeView2(recipe: recipe)
 //            .task {
 //                recipe.title = "Loading..."

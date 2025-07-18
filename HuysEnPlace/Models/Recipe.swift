@@ -8,9 +8,13 @@
 import SwiftUI
 
 @Observable
-class Recipe: Identifiable, Equatable, Codable {
+class Recipe: Identifiable, Equatable, Codable, Hashable {
     static func == (lhs: Recipe, rhs: Recipe) -> Bool {
         lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
     
     var id: String = UUID().uuidString
