@@ -124,7 +124,9 @@ struct StepEditor: View {
                     })
                     
                     Button(action: {
-                        addTimer()
+                        Task {
+                            await addTimer()
+                        }
                     }, label: {
                         Image(systemName: "clock")
                             .frame(width: 36, height: 36)
@@ -277,22 +279,26 @@ struct StepEditor: View {
         }
     }
     
-    func addTimer() {
+    func addTimer() async {
         let selectedText = String(step.text[selection].characters)
         print("selectedText: \(selectedText)")
         
         // Todo: Use a foundation model to get the name and time
+        let kitchenTimers = try await KitchenTimer.generateTimers(selectedText: selectedText, step: step)
+        print("Kitchen Timers: \(kitchenTimers)")
         
-        let name = "Example Name"
-        let duration: TimeInterval = 300
-        let timer = KitchenTimer(name: name, duration: duration)
-        step.timers.append(timer)
-        step.text.transformAttributes(in: &selection) { container in
-//            container.foregroundColor = .purple
-            container.timer = timer.id
-            container.link = .init(string: "miseenplace://timers/\(timer.id)")
-            
+        
+        if let firstTimer = kitchenTimers.first {
+            let timer = KitchenTimer(name: firstTimer.name, duration: firstTimer.duration)
+            step.timers.append(timer)
+            step.text.transformAttributes(in: &selection) { container in
+    //            container.foregroundColor = .purple
+                container.timer = timer.id
+                container.link = .init(string: "miseenplace://timers/\(timer.id)")
+                
+            }
         }
+
     }
 }
 
