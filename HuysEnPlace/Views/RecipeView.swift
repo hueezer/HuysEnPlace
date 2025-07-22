@@ -16,7 +16,7 @@ struct RecipeView: View {
     
     @State var ingredients: [Ingredient] = allIngredients
     
-    @State var ingredientInfo: IngredientQuantity?
+    @State var ingredientInfo: RecipeIngredientInfo?
     @State var editingIngredientList: IngredientList?
     
     @Environment(\.self) private var environment
@@ -66,7 +66,13 @@ struct RecipeView: View {
                         .font(.headline)
                     ForEach($recipe.ingredients) { $list in
                         IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
-                            ingredientInfo = ingredientQuantity
+                            ingredientInfo =  RecipeIngredientInfo(
+                                name: "Bread Flour",
+                                overview: AttributedString("A finely milled flour used for making bread, high in protein content for optimal gluten development."),
+                                roleTitle: "The role of bread flour in banh mi bread",
+                                roleDetails: AttributedString("Gives structure and chew to the finished loaf. Its protein forms gluten when hydrated and kneaded, trapping air bubbles for a light texture."),
+                                ingredient: Ingredient(id: "bread-flour", name: "Bread Flour")
+                            )
                         }, onTapList: { list in
                             editingIngredientList = $list.wrappedValue
                         })
@@ -156,11 +162,9 @@ struct RecipeView: View {
                 Text(nameString)
             })
         }
-        .sheet(item: $ingredientInfo) { ingredientQuantity in
-            VStack {
-                Text(ingredientQuantity.ingredientText)
-            }
-            .presentationDetents([.medium, .large])
+        .sheet(item: $ingredientInfo) { info in
+            RecipeIngredientInfoView(info: info)
+                .presentationDetents([.fraction(0.6), .large])
         }
         .sheet(item: $editingIngredientList) { list in
             if let listIndex = recipe.ingredients.firstIndex(where: { $0.id == list.id }) {
@@ -170,58 +174,154 @@ struct RecipeView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+
                 
-                Button("Autotag", systemImage: "wand.and.sparkles.inverse") {
-                    let nameString = "Bake"
-                    let ranges = RangeSet(self.recipe.content.characters.ranges(of: Array(nameString)))
-                    let newIngredient = Ingredient(id: "new-\(nameString)", name: .init(nameString))
-                    ingredients.append(newIngredient)
-                    recipe.content.transform(updating: &self.selection) { text in
-//                        text[ranges].ingredient = "new-\(nameString)"
-//                        text[ranges].link = .init(string: "miseenplace://ingredients/\(newIngredient.id)")
-                        text[ranges].foregroundColor = .red
-                        
+                if editMode.isEditing {
+                    Button("Save", systemImage: "checkmark") {
+                        withAnimation {
+                            editMode = .inactive
+                        }
                     }
+                    .buttonStyle(.glassProminent)
                 }
 
-                Button("Bold", systemImage: "bold") {
-                    recipe.content.transformAttributes(in: &selection) { container in
-                        let currentFont = container.font ?? .default
-                        let resolved = currentFont.resolve(in: fontResolutionContext)
-                        container.font = currentFont.bold(!resolved.isBold)
-                    }
-                }
-
-                Button("Italic", systemImage: "italic") {
-                    recipe.content.transformAttributes(in: &selection) { container in
-                        let currentFont = container.font ?? .default
-                        let resolved = currentFont.resolve(in: fontResolutionContext)
-                        container.font = currentFont.italic(!resolved.isItalic)
-                    }
-                }
+//                Button("Bold", systemImage: "bold") {
+//                    recipe.content.transformAttributes(in: &selection) { container in
+//                        let currentFont = container.font ?? .default
+//                        let resolved = currentFont.resolve(in: fontResolutionContext)
+//                        container.font = currentFont.bold(!resolved.isBold)
+//                    }
+//                }
+//
+//                Button("Italic", systemImage: "italic") {
+//                    recipe.content.transformAttributes(in: &selection) { container in
+//                        let currentFont = container.font ?? .default
+//                        let resolved = currentFont.resolve(in: fontResolutionContext)
+//                        container.font = currentFont.italic(!resolved.isItalic)
+//                    }
+//                }
                 
 //                if !selectionIsEmpty() {
 //                    Button("Ingredient", systemImage: "carrot") {
 //                        showIngredients.toggle()
 //                    }
 //                }
-                Button("Ingredient", systemImage: "carrot") {
-                    showIngredients.toggle()
+
+                
+//                Button("Ingredient", systemImage: editMode.isEditing ? "checkmark" : "pencil") {
+//                    withAnimation {
+//                        if editMode.isEditing {
+//                            editMode = .inactive
+//                        } else {
+//                            editMode = .active
+//                        }
+//                    }
+//                }
+//                .buttonStyle(.glassProminent)
+//                .tint(editMode.isEditing ? .green : .blue)
+            }
+            
+            ToolbarItem(placement: .topBarLeading) {
+                
+                Menu("Options", systemImage: "line.3.horizontal") {
+                    Button("Edit", systemImage: "pencil") {
+                        withAnimation {
+                            if editMode.isEditing {
+                                editMode = .inactive
+                            } else {
+                                editMode = .active
+                            }
+                        }
+                    }
+
+                    Button("Share", systemImage: "square.and.arrow.up") {
+                        if let json = recipe.toJson() {
+                            let url = FileManager.default.temporaryDirectory
+                                           .appendingPathComponent("Recipe.json")
+                            try? json.write(to: url, atomically: true, encoding: .utf8)
+                            shareJsonUrl = url
+                        }
+                    }
+                    Menu("Copy") {
+                        Button("Copy", action: {
+                            
+                        })
+                        Button("Copy Formatted", action: {
+                            
+                        })
+                        Button("Copy Library Path", action: {
+                            
+                        })
+                    }
                 }
                 
-                EditButton()
+            }
+            
+            ToolbarSpacer(placement: .topBarLeading)
+            
+            ToolbarItem(placement: .topBarLeading) {
+                
+                Menu("Common Variations", systemImage: "arrow.trianglehead.branch") {
+                    Section("\(recipe.title) Variations") {
+                        Button {
+                            do {
+                                let r = try Recipe.fromJsonFile(name: "recipe31")
+                                recipe.title = r.title
+                                recipe.content = r.content
+                                recipe.ingredients = r.ingredients
+                                recipe.steps = r.steps
+                            } catch {
+                                print("Error loading recipe.")
+                            }
+                        } label: {
+                            Text("Banh Mi Bread")
+                            Text("The original recipe")
+                        }
+                        
+                        Button {
+                            do {
+                                let r = try Recipe.fromJsonFile(name: "BanhMiNoAscorbicAcid")
+                                recipe.title = r.title
+                                recipe.content = r.content
+                                recipe.ingredients = r.ingredients
+                                recipe.steps = r.steps
+                            } catch {
+                                print("Error loading recipe.")
+                            }
+                        } label: {
+                            Text("Without Ascorbic Acid")
+                        }
+                        
+                        Button {
+                            // Rename action.
+                        } label: {
+                            Text("Without Lava Rocks")
+                        }
+                    }
+                    
+                }
             }
             
             
-            ToolbarItemGroup(placement: .topBarLeading) {
-//                RecipeShareLink(recipe: recipe)
-                
-                Button("Share", systemImage: "square.and.arrow.up") {
-                    if let json = recipe.toJson() {
-                        let url = FileManager.default.temporaryDirectory
-                                       .appendingPathComponent("Recipe.json")
-                        try? json.write(to: url, atomically: true, encoding: .utf8)
-                        shareJsonUrl = url
+            
+            ToolbarItemGroup(placement: .topBarTrailing) {
+
+                if editMode.isEditing {
+                    Button("Autotag", systemImage: "wand.and.sparkles.inverse") {
+                        let nameString = "Bake"
+                        let ranges = RangeSet(self.recipe.content.characters.ranges(of: Array(nameString)))
+                        let newIngredient = Ingredient(id: "new-\(nameString)", name: .init(nameString))
+                        ingredients.append(newIngredient)
+                        recipe.content.transform(updating: &self.selection) { text in
+                            //                        text[ranges].ingredient = "new-\(nameString)"
+                            //                        text[ranges].link = .init(string: "miseenplace://ingredients/\(newIngredient.id)")
+                            text[ranges].foregroundColor = .red
+                            
+                        }
+                    }
+                    
+                    Button("Ingredient", systemImage: "carrot") {
+                        showIngredients.toggle()
                     }
                 }
             }
@@ -237,6 +337,7 @@ struct RecipeView: View {
                 print("Error loading recipe.")
             }
         }
+        .toolbarVisibility(.hidden, for: .tabBar)
         .environment(\.editMode, $editMode)
     }
     

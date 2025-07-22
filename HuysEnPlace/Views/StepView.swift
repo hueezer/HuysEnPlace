@@ -13,8 +13,8 @@ struct StepView: View {
     var index: Int = 0
     @Binding var step: Step
     @State private var showEditor = false
-    @State private var showPopover: Bool = false
     @State private var viewTimer: KitchenTimer?
+    @State private var viewInfo: Bool = false
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -42,14 +42,10 @@ struct StepView: View {
                 
                 print("PATH: ", url.path())
                 handleURL(url) // Define this method to take appropriate action.
-//                showPopover = true
                 return .handled
             }
             return .systemAction
         })
-        .popover(isPresented: $showPopover) {
-            Text("POPOVER")
-        }
         .popover(item: $viewTimer, content: { timer in
             VStack(alignment: .leading, spacing: 4) {
                 Text(timer.name)
@@ -59,6 +55,24 @@ struct StepView: View {
                     .foregroundStyle(.secondary)
             }
         })
+        .contextMenu {
+            Button(action: {
+                viewInfo.toggle()
+            }, label: {
+                Label("Info", systemImage: "info.circle")
+            })
+            
+            Button(action: {
+                
+            }, label: {
+                Label("Chat", systemImage: "message")
+            })
+        }
+        .sheet(isPresented: $viewInfo) {
+            VStack {
+                Text("View Info")
+            }
+        }
     }
     
     private func handleURL(_ url: URL) {
@@ -215,6 +229,19 @@ struct StepEditor: View {
         .attributedTextFormattingDefinition(
             RecipeFormattingDefinition(ingredients: [])
         )
+//        .contextMenu {
+//            Button(action: {
+//                
+//            }, label: {
+//                Label("Info", systemImage: "info.circle")
+//            })
+//            
+//            Button(action: {
+//                
+//            }, label: {
+//                Label("Chat", systemImage: "message")
+//            })
+//        }
 //        .environment(\.openURL, OpenURLAction { url in
 //            print("openURL: \(url)")
 //            if url.scheme == "miseenplace" {

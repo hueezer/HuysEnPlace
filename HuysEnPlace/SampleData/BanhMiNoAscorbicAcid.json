@@ -1,0 +1,515 @@
+{
+    "_ingredients" : [
+        {
+            "id": "ingredient-list-1",
+            "title": "Bread",
+            "items": [
+                {
+                    "id": "0001",
+                    "amount": "450 g",
+                    "ingredientText": "Bread Flour",
+                    "note": ""
+                },
+                {
+                    "id": "0002",
+                    "amount": "260 g",
+                    "ingredientText": "Water",
+                    "note": "",
+                    "ingredient": {
+                        "id": "water",
+                        "name": "water"
+                    }
+                },
+                {
+                    "id": "0003",
+                    "amount": "50 g",
+                    "ingredientText": "Egg",
+                    "note": ""
+                },
+                {
+                    "id": "0004",
+                    "amount": "8 g",
+                    "ingredientText": "Instant Yeast",
+                    "note": ""
+                },
+                {
+                    "id": "0005",
+                    "amount": "2 g",
+                    "ingredientText": "Salt",
+                    "note": ""
+                },
+                {
+                    "id": "0006",
+                    "amount": "2 g",
+                    "ingredientText": "Sugar",
+                    "note": ""
+                },
+                {
+                    "id": "0008",
+                    "amount": "",
+                    "ingredientText": "Vegetable Oil",
+                    "note": "as needed"
+                }
+            ]
+        },
+        {
+            "id": "ingredient-list-2",
+            "title": "Bread",
+            "items": [
+                {
+                    "id": "0001",
+                    "amount": "450 g",
+                    "ingredientText": "Bread Flour",
+                    "note": ""
+                },
+                {
+                    "id": "0002",
+                    "amount": "260 g",
+                    "ingredientText": "Water",
+                    "note": ""
+                },
+                {
+                    "id": "0003",
+                    "amount": "50 g",
+                    "ingredientText": "Egg",
+                    "note": ""
+                },
+                {
+                    "id": "0004",
+                    "amount": "8 g",
+                    "ingredientText": "Instant Yeast",
+                    "note": ""
+                },
+                {
+                    "id": "0005",
+                    "amount": "2 g",
+                    "ingredientText": "Salt",
+                    "note": ""
+                },
+                {
+                    "id": "0006",
+                    "amount": "2 g",
+                    "ingredientText": "Sugar",
+                    "note": ""
+                },
+                {
+                    "id": "0008",
+                    "amount": "",
+                    "ingredientText": "Vegetable Oil",
+                    "note": "as needed"
+                }
+            ]
+        }
+    ],
+  "_ingredientsOld" : [
+    {
+      "id" : "bread-flour",
+      "name" : "Bread Flour"
+    },
+    {
+      "id" : "water",
+      "name" : "Water"
+    },
+    {
+      "id" : "dough",
+      "name" : "dough"
+    },
+    {
+      "id" : "whole-egg",
+      "name" : "Whole Egg"
+    },
+    {
+      "id" : "instant-yeast",
+      "name" : "Instant Yeast"
+    },
+    {
+      "id" : "salt",
+      "name" : "Salt"
+    },
+    {
+      "id" : "sugar",
+      "name" : "Sugar"
+    },
+    {
+      "id" : "vegetable-oil",
+      "name" : "Vegetable Oil"
+    }
+  ],
+  "_title" : "Bánh Mì Bread without Ascorbic Acid",
+  "_content" : {
+    "runs" : [
+      "Hello Makes 6 Bánh Mì (125g unbaked)\n\nIngredients:\n450g ",
+      {
+
+      },
+      "Bread Flour",
+      0,
+      " https:\/\/amzn.to\/3zfhQ9e\n260g ",
+      {
+
+      },
+      "Water",
+      1,
+      "\n1 ",
+      {
+
+      },
+      "Whole Egg",
+      2,
+      " (50g) https:\/\/amzn.to\/3LZaPkH\n8g ",
+      {
+
+      },
+      "Instant Yeast",
+      3,
+      " https:\/\/amzn.to\/3JSrUtU\n2g ",
+      {
+
+      },
+      "Salt",
+      4,
+      " https:\/\/amzn.to\/40EMIf6\n2g Sugar https:\/\/amzn.to\/3JWGsIO\n1g ",
+      {
+
+      },
+      "Ascorbic Acid",
+      5,
+      " https:\/\/amzn.to\/40q71wY\nVegetable Oil (as needed) https:\/\/amzn.to\/42LKInd\n\nEquipment:\nLava Rocks https:\/\/amzn.to\/3omHgj9\nStand Mixer https:\/\/amzn.to\/3JV5cRB\nKitchen Scale https:\/\/amzn.to\/3KdNTNe\nPrecision Scale https:\/\/amzn.to\/3FZPofq\nBaguette Pans https:\/\/amzn.to\/40rHS5a\nRolling Pin https:\/\/amzn.to\/3lMOSKM\nPlastic Dough Scraper https:\/\/amzn.to\/40DlKV4\nSpray Bottle https:\/\/amzn.to\/3lL4AX0\nLame https:\/\/amzn.to\/3nnrCDv\nRazor Blades https:\/\/amzn.to\/3zbK1pI\n \nInstructions:\nIn a mixing bowl, add egg, water, yeast, sugar, salt and ascorbic acid. Add in flour and combine.\n\nIn a stand mixer, mix on low speed for 7 minutes. Then 3 minutes on high speed. Continue mixing until gluten is fully developed. (Total mixing times will vary depending on mixer).\n\nLightly oil work surface. Remove ",
+      {
+
+      },
+      "dough",
+      6,
+      " from bowl. Slap and fold the ",
+      {
+
+      },
+      "dough",
+      6,
+      " 4-6 times and form a ball. Cover and let rest for 20 minutes.\n\nDivide the ",
+      {
+
+      },
+      "dough",
+      6,
+      " into six 120g portions. Roll into small balls. Cover and let rest for 20 minutes.\n\nShape each using the method demonstrated in the video. Place the shaped ",
+      {
+
+      },
+      "dough",
+      6,
+      " onto a lightly oiled baguette pan.\n\nProof in the oven with the light on and a pot of warm water for 60 minutes. Spray with water every 15 minutes.\n\nRemove from the oven and proof on a countertop for 30 additional minutes. Meanwhile, preheat the oven to Bake 450F (no fan, bottom only if possible) with 2 trays, one with lava rocks.\n\nOnce the ",
+      {
+
+      },
+      "dough",
+      7,
+      " has grown 2.5 to 3 times in size, and the oven has preheated bowl a pot of water.  Score the loaves with a lame or razor.  Immediately spray with water after scoring.\n\nPlace the baguette pans with the ",
+      {
+
+      },
+      "dough",
+      7,
+      " into the oven. Immediately pour boiling water onto lava rocks and secondary tray.\n\nBake for 8 minutes without opening the door.\n\nOpen the door to release any leftover steam, and bake 7-8 minutes depending on desired color.\n\nRemove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.",
+      {
+
+      }
+    ],
+    "attributeTable" : [
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/bread-flour"
+        },
+        "SwiftUI.Font" : {
+          "value" : {
+            "tag" : {
+              "default" : {
+
+              }
+            },
+            "value" : {
+
+            }
+          },
+          "tag" : {
+            "staticModifier" : {
+              "_0" : {
+                "do" : {
+                  "_0" : {
+                    "bold" : {
+
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SampleRecipeEditor.IngredientAttribute" : "bread-flour"
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/water"
+        },
+        "SwiftUI.Font" : {
+          "value" : {
+            "tag" : {
+              "default" : {
+
+              }
+            },
+            "value" : {
+
+            }
+          },
+          "tag" : {
+            "staticModifier" : {
+              "_0" : {
+                "do" : {
+                  "_0" : {
+                    "bold" : {
+
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SampleRecipeEditor.IngredientAttribute" : "water"
+      },
+      {
+        "SwiftUI.Font" : {
+          "value" : {
+            "tag" : {
+              "default" : {
+
+              }
+            },
+            "value" : {
+
+            }
+          },
+          "tag" : {
+            "staticModifier" : {
+              "_0" : {
+                "do" : {
+                  "_0" : {
+                    "bold" : {
+
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SampleRecipeEditor.IngredientAttribute" : "whole-egg"
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/instant-yeast"
+        },
+        "SwiftUI.Font" : {
+          "value" : {
+            "tag" : {
+              "default" : {
+
+              }
+            },
+            "value" : {
+
+            }
+          },
+          "tag" : {
+            "staticModifier" : {
+              "_0" : {
+                "do" : {
+                  "_0" : {
+                    "bold" : {
+
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SampleRecipeEditor.IngredientAttribute" : "instant-yeast"
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/salt"
+        }
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/ascorbic-acid"
+        },
+        "SwiftUI.Font" : {
+          "value" : {
+            "tag" : {
+              "default" : {
+
+              }
+            },
+            "value" : {
+
+            }
+          },
+          "tag" : {
+            "staticModifier" : {
+              "_0" : {
+                "do" : {
+                  "_0" : {
+                    "bold" : {
+
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SampleRecipeEditor.IngredientAttribute" : "ascorbic-acid"
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/dough"
+        },
+        "SwiftUI.Font" : {
+          "value" : {
+            "tag" : {
+              "default" : {
+
+              }
+            },
+            "value" : {
+
+            }
+          },
+          "tag" : {
+            "staticModifier" : {
+              "_0" : {
+                "do" : {
+                  "_0" : {
+                    "bold" : {
+
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SampleRecipeEditor.IngredientAttribute" : "dough"
+      },
+      {
+        "NSLink" : {
+          "relative" : "miseenplace:\/\/ingredients\/dough"
+        },
+        "SampleRecipeEditor.IngredientAttribute" : "dough"
+      }
+    ]
+  },
+  "_id" : "AE70F006-C965-46E3-8F9D-4C6B2FF96402",
+  "_steps": [
+    {
+      "id": "step-1",
+      "text": "In a mixing bowl, add egg, water, yeast, sugar, and salt. Add in flour and combine.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-2",
+      "text": "In a stand mixer, mix on low speed for 7 minutes. Then 3 minutes on high speed. Continue mixing until gluten is fully developed. (Total mixing times will vary depending on mixer).",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-3",
+      "text": "Lightly oil work surface. Remove dough from bowl. Slap and fold the dough 4-6 times and form a ball. Cover and let rest for 20 minutes.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-4",
+      "text": "Divide the dough into six 120g portions. Roll into small balls. Cover and let rest for 20 minutes.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-5",
+      "text": "Shape each using the method demonstrated in the video. Place the shaped dough onto a lightly oiled baguette pan.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-6",
+      "text": "Proof in the oven with the light on and a pot of warm water for 60 minutes. Spray with water every 15 minutes.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-7",
+      "text": "Remove from the oven and proof on a countertop for 30 additional minutes. Meanwhile, preheat the oven to Bake 450F (no fan, bottom only if possible) with 2 trays, one with lava rocks.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-8",
+      "text": "Once the dough has grown 2.5 to 3 times in size, and the oven has preheated bowl a pot of water.  Score the loaves with a lame or razor.  Immediately spray with water after scoring.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-9",
+      "text": "Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-10",
+      "text": "Bake for 8 minutes without opening the door.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+      "id": "step-11",
+      "text": "Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color.",
+      "ingredients": [],
+      "timers": []
+    },
+    {
+
+      "id" : "step-12",
+      "text" : [
+        "Remove the Bánh Mì from the oven and let cool.  Cracks should form after ",
+        {
+
+        },
+        "5-10 minutes",
+        {
+          "NSLink" : {
+            "relative" : "miseenplace:\/\/timers\/76812AE0-BA75-401B-A822-F97C3138C770"
+          }
+        },
+        ".",
+        {
+
+        }
+      ],
+      "ingredients" : [
+
+      ],
+      "timers" : [
+        {
+          "id" : "76812AE0-BA75-401B-A822-F97C3138C770",
+          "duration" : 300,
+          "name" : "Cool Bánh Mì"
+        }
+      ],
+    }
+  ]
+}
+

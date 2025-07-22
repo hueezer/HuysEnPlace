@@ -143,7 +143,7 @@ let allIngredients: [Ingredient] = [
 ]),
     Recipe(title: "Chocolate Cake", content: try! AttributedString(styledMarkdown: "Rich and moist chocolate cake.")),
     Recipe(title: "Vegan Lasagna", content: try! AttributedString(styledMarkdown: "Layers of pasta with vegan cheese.")),
-    Recipe(title: "Lemon Garlic Salmon", content: try! AttributedString(styledMarkdown: "Oven-baked salmon with lemon and garlic.")),
+    Recipe(title: "Fried Lemon Garlic Salmon", content: try! AttributedString(styledMarkdown: "Oven-baked salmon with lemon and garlic.")),
     Recipe(title: "Chicken Pho", content: try! AttributedString(styledMarkdown: "Vietnamese noodle soup with chicken.")),
     Recipe(title: "Caesar Salad", content: try! AttributedString(styledMarkdown: "Classic Caesar with homemade dressing.")),
     Recipe(title: "Shrimp Fried Rice", content: try! AttributedString(styledMarkdown: "Quick stir-fried rice with shrimp.")),
