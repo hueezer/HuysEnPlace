@@ -17,21 +17,54 @@ struct StepView: View {
     @State private var viewInfo: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("\(index + 1). ").bold().foregroundStyle(.indigo) + Text(step.text)
-            ForEach(step.timers) { timer in
-                Text(timer.name)
+        VStack(alignment: .leading, spacing: 16) {
+            Text(" \(index + 1). ").bold().foregroundStyle(.blue) + Text(step.text)
+            
+            if !step.timers.isEmpty {
+                VStack(spacing: 16) {
+                    ForEach(step.timers) { timer in
+                        if step.timers.first != timer {
+                            Divider()
+                                .frame(height: 1)
+                        }
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(timer.name)
+                                    .font(.headline)
+                                
+                                Text(formattedDuration(timer.duration))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            Button(action: {
+                                
+                            }, label: {
+                                Label("Start", systemImage: "clock")
+                                    .frame(height: 32)
+                            })
+                            .buttonBorderShape(.capsule)
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                }
+                .padding(.vertical, 16)
+                .background(.tertiary, in: RoundedRectangle(cornerRadius: 16))
             }
         }
-        .padding()
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(in: RoundedRectangle(cornerRadius: 16))
+        .glassEffect(in: RoundedRectangle(cornerRadius: 32))
         .sheet(isPresented: $showEditor, content: {
             StepEditor(step: $step)
         })
         .onTapGesture {
             if editMode?.wrappedValue == .active {
                 showEditor = true
+            } else {
+                viewInfo = true
             }
         }
         .environment(\.openURL, OpenURLAction { url in
@@ -331,7 +364,13 @@ struct StepEditor: View {
 
 
 #Preview {
-    @Previewable @State var step = Step(text: "Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray. Bake for 8 minutes without opening the door. Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color. Remove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.", ingredients: [], timers: [])
+    @Previewable @State var step = Step(
+        text: "Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray. Bake for 8 minutes without opening the door. Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color. Remove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.",
+        ingredients: [],
+        timers: [
+            .init(name: "Bake", duration: .init(floatLiteral: 900)),
+            .init(name: "Cool down", duration: .init(floatLiteral: 300))
+        ])
     StepView(step: $step)
         .environment(\.editMode, .constant(.active))
         .environment(Recipe(

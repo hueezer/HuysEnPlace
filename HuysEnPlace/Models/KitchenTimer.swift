@@ -10,7 +10,7 @@ import FoundationModels
 import Playgrounds
 
 @Generable
-struct KitchenTimer: Codable, Identifiable {
+struct KitchenTimer: Codable, Identifiable, Equatable {
     var id: String = UUID().uuidString
     @Guide(description: "A short descriptive name of the timer based on the selected text and full text provided. Maximum of 3 words.")
     var name: String
