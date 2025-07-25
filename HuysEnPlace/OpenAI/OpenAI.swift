@@ -1,41 +1,18 @@
 //
-//  Ingredient.swift
+//  OpenAI.swift
 //  HuysEnPlace
 //
-//  Created by Huy Nguyen on 7/3/25.
+//  Created by Huy Nguyen on 7/23/25.
 //
 
 import SwiftUI
 import FoundationModels
 import Playgrounds
 
-@Generable
-struct Ingredient: Identifiable, Equatable, Codable {
-    var id: String = UUID().uuidString
-    var name: String = ""
-    var description: String = ""
-}
-
-extension Ingredient {
-    static func generate(text: String) async -> Ingredient? {
-        let instructions = """
-            From the text provided, generate ingredients.
-            """
-
-
-        let session = LanguageModelSession(instructions: instructions)
-
-
-        do {
-            let response = try await session.respond(to: text, generating: Ingredient.self)
-            return response.content
-        } catch {
-            print(error)
-            return nil
-        }
-    }
-    
-    static func generateWithOpenAI(text: String) async -> Ingredient? {
+struct OpenAI {
+    static func respondOld(to: String, generating: GenerationSchema) async -> String? {
+        let userPrompt = to
+        
         // Replace this with your OpenAI API key management
         let apiKey = "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"
 
@@ -43,14 +20,14 @@ extension Ingredient {
         let systemPrompt = """
         You are a food expert who is knows everything about all ingredients in the world.
         """
-        let userPrompt = text
+        
         let model = "gpt-4o-2024-08-06"
         
 
 
         do {
             let encoder = JSONEncoder()
-            let schemaData = try encoder.encode(Ingredient.generationSchema)
+            let schemaData = try encoder.encode(generating)
             let jsonString = String(data: schemaData, encoding: .utf8)
             
             let schema = try JSONSerialization.jsonObject(with: schemaData, options: []) as? [String: Any]
@@ -108,12 +85,13 @@ extension Ingredient {
                             switch firstMessage {
                             case .output_text(let text):
                                 print("TEXT: \(text)")
-                                if let jsonString = text.text as? String, let ingredientData = jsonString.data(using: .utf8) {
-                                    let decodedIngredient = try JSONDecoder().decode(Ingredient.self, from: ingredientData)
-                                    print("Decoded ingredient: ", decodedIngredient)
-                                } else {
-                                    print("firstMessage is not a valid JSON string.")
-                                }
+                                return text.text
+//                                if let jsonString = text.text as? String, let ingredientData = jsonString.data(using: .utf8) {
+//                                    let decodedIngredient = try JSONDecoder().decode(Ingredient.self, from: ingredientData)
+//                                    print("Decoded ingredient: ", decodedIngredient)
+//                                } else {
+//                                    print("firstMessage is not a valid JSON string.")
+//                                }
                             default:
                                 print("Unsupported type: \(type(of: firstMessage))")
                             }
@@ -122,19 +100,7 @@ extension Ingredient {
                     case .function_call(let functionCall):
                         print("Function call received: \(functionCall)")
                         print("Received function call name: '\(functionCall.name)'")
-//                        if functionCall.name == "search_map" {
-//                            print("Switching to map view...")
-//        //                    currentView = .map
-//        //                    if let query = functionCall.arguments["query"] as? String {
-//        //                        searchMap(query: query)
-//        //
-//        //                    }
-//                            
-//                            
-//        //                    searchMap(functionCall)
-//                        } else {
-//                            print("NO MATCHING FUNCTION NAME")
-//                        }
+
                     default:
                         print("Unhandled output: \(output)")
                     }
@@ -154,7 +120,17 @@ extension Ingredient {
         }
     }
     
-    static func generateWithMise(text: String) async throws -> Ingredient? {
+    static func respondOld<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
+        if let output = await OpenAI.respondOld(to: prompt, generating: type.generationSchema) {
+            if let ingredientData = output.data(using: .utf8) {
+                let ingredient = try JSONDecoder().decode(type.self, from: ingredientData)
+                return ingredient
+            }
+        }
+        return nil
+    }
+    
+    static func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
         let endpoint = "https://0821679ba234.ngrok-free.app/functions/v1/ingredients"
         let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
         guard let url = URL(string: endpoint) else {
@@ -163,7 +139,7 @@ extension Ingredient {
         }
         
         let encoder = JSONEncoder()
-        guard let schemaData = try? encoder.encode(Ingredient.generationSchema) else {
+        guard let schemaData = try? encoder.encode(type.generationSchema) else {
             return nil
         }
         let jsonString = String(data: schemaData, encoding: .utf8)
@@ -173,7 +149,7 @@ extension Ingredient {
         }
 
         let body: [String: Any] = [
-            "input": text,
+            "input": prompt,
             "schema": schema
         ]
         
@@ -197,7 +173,7 @@ extension Ingredient {
                 return nil
             }
             
-            let decodedIngredient = try JSONDecoder().decode(Ingredient.self, from: data)
+            let decodedIngredient = try JSONDecoder().decode(type.self, from: data)
             print("Decoded ingredient: ", decodedIngredient)
             return decodedIngredient
         } catch {
@@ -207,16 +183,12 @@ extension Ingredient {
     }
 }
 
-
 #Playground {
-//    let encoder = JSONEncoder()
-//    let data = try encoder.encode(Ingredient.generationSchema)
-//    let jsonString = String(data: data, encoding: .utf8)
-//    
-//    let dict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-//    
-//    let response = try await Ingredient.generateWithOpenAI(text: "Carrots")
+    if let output = await OpenAI.respondOld(to: "Bell pepper", generating: Ingredient.generationSchema) {
+        if let ingredientData = output.data(using: .utf8) {
+            let ingredient = try JSONDecoder().decode(Ingredient.self, from: ingredientData)
+        }
+    }
     
-    let response = try? await Ingredient.generateWithMise(text: "Carrots")
+    let i = try await OpenAI.respond(to: "Daikon", generating: Ingredient.self, includeSchemaInPrompt: true)
 }
-

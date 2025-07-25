@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FoundationModels
 
 @Observable
 class Recipe: Identifiable, Equatable, Codable, Hashable {

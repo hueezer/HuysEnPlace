@@ -16,7 +16,7 @@ struct RecipeView: View {
     
     @State var ingredients: [Ingredient] = allIngredients
     
-    @State var ingredientInfo: RecipeIngredientInfo?
+    @State var ingredientQuantityDetails: IngredientQuantity?
     @State var editingIngredientList: IngredientList?
     
     @Environment(\.self) private var environment
@@ -66,13 +66,7 @@ struct RecipeView: View {
                         .font(.headline)
                     ForEach($recipe.ingredients) { $list in
                         IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
-                            ingredientInfo =  RecipeIngredientInfo(
-                                name: "Bread Flour",
-                                overview: AttributedString("A finely milled flour used for making bread, high in protein content for optimal gluten development."),
-                                roleTitle: "The role of bread flour in banh mi bread",
-                                roleDetails: AttributedString("Gives structure and chew to the finished loaf. Its protein forms gluten when hydrated and kneaded, trapping air bubbles for a light texture."),
-                                ingredient: Ingredient(id: "bread-flour", name: "Bread Flour")
-                            )
+                            ingredientQuantityDetails = ingredientQuantity
                         }, onTapList: { list in
                             editingIngredientList = $list.wrappedValue
                         })
@@ -162,8 +156,8 @@ struct RecipeView: View {
                 Text(nameString)
             })
         }
-        .sheet(item: $ingredientInfo) { info in
-            RecipeIngredientInfoView(info: info)
+        .sheet(item: $ingredientQuantityDetails) { ingredientQuantity in
+            RecipeIngredientInfoView(recipe: recipe, ingredientQuantity: ingredientQuantity)
                 .presentationDetents([.fraction(0.6), .large])
         }
         .sheet(item: $editingIngredientList) { list in

@@ -17,7 +17,8 @@
                     "note": "",
                     "ingredient": {
                         "id": "water",
-                        "name": "water"
+                        "name": "water",
+                        "description": ""
                     }
                 },
                 {

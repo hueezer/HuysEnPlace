@@ -73,6 +73,9 @@ struct RecipesView: View {
                 RecipeView(recipe: recipe)
                     .navigationTransition(.zoom(sourceID: "world", in: namespace))
             })
+            .task {
+                let response = await Ingredient.generateWithOpenAI(text: "Carrots")
+            }
         }
     }
 }

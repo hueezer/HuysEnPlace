@@ -6,18 +6,42 @@
 //
 
 import SwiftUI
+import FoundationModels
 
 struct RecipeIngredientInfo: Identifiable, Codable {
     var id: String = UUID().uuidString
     var name: String
-    var overview: AttributedString
+    var overview: String
     var roleTitle: String
-    var roleDetails: AttributedString
+    var roleDetails: String
     var ingredient: Ingredient
 }
 
+@Generable
+struct GeneratedRecipeIngredientInfo: Codable {
+    @Guide(description: "The name of the ingredient")
+    var name: String
+    
+    @Guide(description: "A short overview of the ingredient")
+    var overview: String
+    
+    @Guide(description: "A role title for the ingredient for current recipe")
+    var roleTitle: String
+    
+    @Guide(description: "Details on what role or function the ingredient has within the recipe")
+    var roleDetails: String
+    
+    @Guide(description: "A full description of the ingredient that goes more in depth")
+    var fullDescription: String
+}
+
 struct RecipeIngredientInfoView: View {
-    var info: RecipeIngredientInfo
+    var recipe: Recipe
+    var ingredientQuantity: IngredientQuantity
+//    var info: RecipeIngredientInfo
+    
+    @State private var infoState = RecipeIngredientInfo(name: "", overview: "", roleTitle: "", roleDetails: "", ingredient: Ingredient())
+    @State private var description: String = ""
     
     var body: some View {
         ScrollView {
@@ -35,37 +59,50 @@ struct RecipeIngredientInfoView: View {
                 .aspectRatio(1, contentMode: .fit)
             }
             VStack(alignment: .leading, spacing: 16) {
-                Text(info.name)
+                Text(infoState.name)
                     .font(.title)
                     .bold()
                 Text("Overview")
                     .font(.headline)
-                Text(info.overview)
+                Text(infoState.overview)
                     .font(.body)
-                Text(info.roleTitle)
+                Text(infoState.roleTitle)
                     .font(.headline)
-                Text(info.roleDetails)
+                Text(infoState.roleDetails)
+                    .font(.body)
+                Text("Description")
+                    .font(.headline)
+                Text(description)
                     .font(.body)
                 Divider()
                 HStack {
                     Text("Link:")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    Text(info.ingredient.name)
+                    Text(infoState.ingredient.name)
                         .font(.subheadline)
                 }
             }
             .padding()
         }
+        .task {
+            let prompt = """
+                Ingredient name: \(ingredientQuantity.ingredientText)
+                Recipe name: \(recipe.title)
+                """
+            
+            if let response = try? await OpenAI.respond(to: prompt, generating: GeneratedRecipeIngredientInfo.self) {
+                infoState.name = response.name
+                infoState.overview = response.overview
+                infoState.roleTitle = response.roleTitle
+                infoState.roleDetails = response.roleDetails
+                description = response.fullDescription
+            }
+        }
     }
 }
 
 #Preview {
-    RecipeIngredientInfoView(info: .init(
-        name: "Bread Flour",
-        overview: AttributedString("A finely milled flour used for making bread, high in protein content for optimal gluten development."),
-        roleTitle: "The role of bread flour in banh mi bread.",
-        roleDetails: AttributedString("Gives structure and chew to the finished loaf. Its protein forms gluten when hydrated and kneaded, trapping air bubbles for a light texture."),
-        ingredient: Ingredient(id: "bread-flour", name: "Bread Flour")
-    ))
+    
+    RecipeIngredientInfoView(recipe: .init(title: "Banh Mi"), ingredientQuantity: .init(ingredientText: "Bread Flour"))
 }
