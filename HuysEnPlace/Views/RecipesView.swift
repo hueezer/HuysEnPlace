@@ -66,8 +66,8 @@ struct RecipesView: View {
             .toolbar {
                 ToolbarItem {
                     Button(action: {
-                        showGenerateRecipe = true
-//                        appState.recipeItems.append(RecipeItem(prompt: "Carrot Cake"))
+//                        showGenerateRecipe = true
+                        appState.recipeItems.append(RecipeItem(prompt: "Carrot Cake"))
                     }, label: {
                         Label("Add Recipe", systemImage: "plus")
                     })
@@ -93,6 +93,7 @@ struct RecipesView: View {
 }
 
 struct RecipeItemView: View {
+    @Environment(AppState.self) var appState
     @Binding var recipeItem: RecipeItem
     @State var inProgress: Bool = false
     var body: some View {
@@ -136,7 +137,21 @@ struct RecipeItemView: View {
         .foregroundStyle(.primary)
         .task {
             if let recipe = recipeItem.recipe, let prompt = recipeItem.prompt {
-
+                inProgress = true
+                recipeItem.title = "In Progress"
+                let fullPrompt = """
+                    Modify the following recipe acording to these intructions:
+                    \(prompt)
+                    Recipe:
+                    \(recipe.toJson())
+                    """
+                print("Full Prompt: \(fullPrompt)")
+                if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
+                    recipeItem.title = generatedRecipe.title
+                    recipeItem.recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: AttributedString($0.text)) })
+                    recipeItem.imageURL = "https://picsum.photos/200"
+                    inProgress = false
+                }
             } else if let prompt = recipeItem.prompt {
                 inProgress = true
                 recipeItem.title = "In Progress"
@@ -145,6 +160,21 @@ struct RecipeItemView: View {
                     recipeItem.recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: AttributedString($0.text)) })
                     recipeItem.imageURL = "https://picsum.photos/200"
                     inProgress = false
+                }
+            }
+        }
+        .contextMenu {
+            Label("Modify Recipe", systemImage: "arrow.trianglehead.branch")
+            if let recipe = recipeItem.recipe {
+                Button {
+                    appState.recipeItems.append(RecipeItem(prompt: "Make this recipe vegan", recipe: recipe))
+                } label: {
+                    Label("Make it vegan", systemImage: "heart")
+                }
+                Button {
+                    // Open Maps and center it on this item.
+                } label: {
+                    Label("Show in Maps", systemImage: "mappin")
                 }
             }
         }

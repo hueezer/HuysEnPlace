@@ -155,7 +155,7 @@ extension Ingredient {
     }
     
     static func generateWithMise(text: String) async throws -> Ingredient? {
-        let endpoint = "https://0821679ba234.ngrok-free.app/functions/v1/ingredients"
+        let endpoint = "https://d313c8f8faa1.ngrok-free.app/functions/v1/ingredients"
         let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
         guard let url = URL(string: endpoint) else {
             print("Invalid URL")
