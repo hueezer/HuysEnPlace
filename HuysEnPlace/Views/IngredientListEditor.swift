@@ -19,7 +19,7 @@ struct IngredientListEditor: View {
             }
             ForEach($list.items) { $item in
                 HStack {
-                    TextField("Amount", text: $item.amount)
+                    TextField("Amount", text: $item.quantity)
                         .fixedSize()
                         .multilineTextAlignment(.trailing)
                     TextField("Ingredient Text", text: $item.ingredientText)
@@ -46,17 +46,17 @@ struct IngredientListEditor: View {
     }
     
     func add() {
-        list.items.append(.init(amount: "", ingredientText: ""))
+        list.items.append(.init(quantity: "", ingredientText: ""))
     }
 }
 
 #Preview {
     @Previewable @State var ingredientList: IngredientList = .init(title: "For the Bread", items: [
-        .init(amount: "400g", ingredientText: "All-purpose flour"),
-        .init(amount: "1 tsp", ingredientText: "Salt"),
-        .init(amount: "1 tsp", ingredientText: "Active dry yeast"),
-        .init(amount: "100ml", ingredientText: "Warm water"),
-        .init(amount: "100ml", ingredientText: "Vegetable oil"),
+        .init(quantity: "400g", ingredientText: "All-purpose flour"),
+        .init(quantity: "1 tsp", ingredientText: "Salt"),
+        .init(quantity: "1 tsp", ingredientText: "Active dry yeast"),
+        .init(quantity: "100ml", ingredientText: "Warm water"),
+        .init(quantity: "100ml", ingredientText: "Vegetable oil"),
     ])
     IngredientListEditor(list: $ingredientList)
 }

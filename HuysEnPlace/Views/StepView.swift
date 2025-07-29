@@ -314,9 +314,9 @@ struct StepEditor: View {
     func autotag(recipe: Recipe) {
         for list in recipe.ingredients {
             for item in list.items {
-                if let ingredient = item.ingredient {
-                    autotag(ingredient: ingredient)
-                }
+//                if let ingredient = item.ingredient {
+//                    autotag(ingredient: ingredient)
+//                }
                 
             }
         }
@@ -376,7 +376,7 @@ struct StepEditor: View {
         .environment(Recipe(
             ingredients: [
                 .init(title: "Bread", items: [
-                    .init(amount: "", ingredientText: "", ingredient: .init(id: "dough", name: "Dough"))
+                    .init(quantity: "", ingredientText: "")
                 ])
             ]
         ))

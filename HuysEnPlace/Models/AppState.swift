@@ -8,6 +8,8 @@
 import SwiftUI
 
 @Observable
+@MainActor
 class AppState {
     var path = NavigationPath()
+    var recipeItems: [RecipeItem] = sampleRecipeItems
 }

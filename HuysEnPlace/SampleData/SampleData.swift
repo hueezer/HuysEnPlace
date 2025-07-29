@@ -162,5 +162,28 @@ let allIngredients: [Ingredient] = [
     Recipe(title: "Classic Pancakes", content: try! AttributedString(styledMarkdown: "Fluffy pancakes for breakfast or brunch.")),
 ]
 
+@MainActor let sampleRecipeItems: [RecipeItem] = [
+    RecipeItem(title: "Classic Bánh Mì", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Chocolate Cake", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Vegan Lasagna", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Fried Lemon Garlic Salmon", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Chicken Pho", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Caesar Salad", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Shrimp Fried Rice", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Tomato Basil Soup", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Mushroom Risotto", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "BBQ Pulled Pork", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Spaghetti Carbonara", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Eggplant Parmesan", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Quinoa Salad", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Beef Tacos", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Pad Thai", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Shepherd’s Pie", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Avocado Toast", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "French Toast", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Chicken Curry", imageURL: "https://picsum.photos/200"),
+    RecipeItem(title: "Classic Pancakes", imageURL: "https://picsum.photos/200"),
+]
+
 // Note: All recipes use empty 'ingredients' and 'steps' for now. Expand as needed.
 

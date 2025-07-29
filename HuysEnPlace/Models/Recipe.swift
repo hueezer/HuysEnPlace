@@ -79,16 +79,17 @@ class Recipe: Identifiable, Equatable, Codable, Hashable {
 struct GeneratedRecipe: Codable {
     let title: String
     let ingredients: [IngredientList]
-    let steps: [Step]
+    let steps: [GeneratedStep]
 }
 
 @Generable
 struct IngredientQuantity: Codable, Identifiable {
     var id: String = UUID().uuidString
-    var amount: String = ""
+    @Guide(description: "Amount and quantity in grams. Example: 30 g")
+    var quantity: String = ""
     var ingredientText: String = ""
     var note: String = ""
-    var ingredient: Ingredient?
+//    var ingredient: Ingredient?
 }
 
 @Generable
@@ -96,6 +97,11 @@ struct IngredientList: Codable, Identifiable {
     var id: String = UUID().uuidString
     var title: String = ""
     var items: [IngredientQuantity] = []
+}
+
+@Generable
+struct GeneratedStep: Codable {
+    var text: String = ""
 }
 
 extension Recipe {

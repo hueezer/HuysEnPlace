@@ -39,7 +39,7 @@ struct IngredientListView: View {
             ForEach($list.items) { $item in
                 HStack(alignment: .top) {
                     
-                    Text(item.amount)
+                    Text(item.quantity)
                         .bold()
                         .fixedSize()
                         .frame(minWidth: 60, alignment: .topTrailing)
@@ -79,11 +79,11 @@ struct IngredientListView: View {
 #Preview {
     @Previewable @State var editMode: EditMode = .inactive
     @Previewable @State var ingredientList: IngredientList = .init(title: "For the Bread", items: [
-        .init(amount: "400g", ingredientText: "All-purpose flour"),
-        .init(amount: "1 tsp", ingredientText: "Salt"),
-        .init(amount: "1 tsp", ingredientText: "Active dry yeast"),
-        .init(amount: "100ml", ingredientText: "Warm water", note: "75°F"),
-        .init(amount: "100ml", ingredientText: "Vegetable oil and a very long ingredient text", note: "as needed"),
+        .init(quantity: "400g", ingredientText: "All-purpose flour"),
+        .init(quantity: "1 tsp", ingredientText: "Salt"),
+        .init(quantity: "1 tsp", ingredientText: "Active dry yeast"),
+        .init(quantity: "100ml", ingredientText: "Warm water", note: "75°F"),
+        .init(quantity: "100ml", ingredientText: "Vegetable oil and a very long ingredient text", note: "as needed"),
     ])
     NavigationStack {
         IngredientListView(list: $ingredientList)

@@ -320,17 +320,17 @@ struct RecipeView: View {
                 }
             }
         }
-        .task {
-            do {
-                let r = try Recipe.fromJsonFile(name: "recipe31")
-                recipe.title = r.title
-                recipe.content = r.content
-                recipe.ingredients = r.ingredients
-                recipe.steps = r.steps
-            } catch {
-                print("Error loading recipe.")
-            }
-        }
+//        .task {
+//            do {
+//                let r = try Recipe.fromJsonFile(name: "recipe31")
+//                recipe.title = r.title
+//                recipe.content = r.content
+//                recipe.ingredients = r.ingredients
+//                recipe.steps = r.steps
+//            } catch {
+//                print("Error loading recipe.")
+//            }
+//        }
         .toolbarVisibility(.hidden, for: .tabBar)
         .environment(\.editMode, $editMode)
     }
