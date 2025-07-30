@@ -148,7 +148,7 @@ struct RecipeItemView: View {
                 print("Full Prompt: \(fullPrompt)")
                 if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
                     recipeItem.title = generatedRecipe.title
-                    recipeItem.recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: AttributedString($0.text)) })
+                    recipeItem.recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: $0.text) })
                     recipeItem.imageURL = "https://picsum.photos/200"
                     inProgress = false
                 }
@@ -157,7 +157,7 @@ struct RecipeItemView: View {
                 recipeItem.title = "In Progress"
                 if let generatedRecipe = try? await OpenAI.respond(to: prompt, generating: GeneratedRecipe.self) {
                     recipeItem.title = generatedRecipe.title
-                    recipeItem.recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: AttributedString($0.text)) })
+                    recipeItem.recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: $0.text) })
                     recipeItem.imageURL = "https://picsum.photos/200"
                     inProgress = false
                 }

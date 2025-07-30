@@ -15,10 +15,17 @@ struct StepView: View {
     @State private var showEditor = false
     @State private var viewTimer: KitchenTimer?
     @State private var viewInfo: Bool = false
+    
+    @State private var test: String = "\\* This is my localized **bold** text, this is *italic* text, and this is ***bold, italic*** text."
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(" \(index + 1). ").bold().foregroundStyle(.blue) + Text(step.text)
+            Text(" \(index + 1). ").bold().foregroundStyle(.blue) + Text(LocalizedStringKey(stringLiteral: step.text))
+
+            if let attributed = try? AttributedString(markdown: step.text, options: .init(allowsExtendedAttributes: true, interpretedSyntax: .full)) {
+                
+                Text(attributed)
+            }
             
             if !step.timers.isEmpty {
                 VStack(spacing: 16) {
@@ -144,9 +151,9 @@ struct StepView: View {
 
 struct StepEditor: View {
     @Binding var step: Step
-    @State private var selection = AttributedTextSelection()
+    @State private var selection: TextSelection? = nil
     @FocusState private var focused: Bool
-    @State private var currentText: AttributedString?
+    @State private var currentText: String?
     
     @State private var showDebug: Bool = false
     @State private var copied = false
@@ -324,40 +331,39 @@ struct StepEditor: View {
     
     func autotag(ingredient: Ingredient) {
         
-        print("Attempting to autotag: \(ingredient.name)")
-        let nameString = ingredient.name
-        var ranges = RangeSet(step.text.characters.ranges(of: Array(nameString)))
-        
-        let lowercaseRanges = RangeSet(step.text.characters.ranges(of: Array(nameString.lowercased())))
-        
-        ranges.formUnion(lowercaseRanges)
-        
-        step.text.transform(updating: &self.selection) { text in
-            text[ranges].ingredient = ingredient.id
-            text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
-//            text[ranges].foregroundColor = .red
-        }
+//        print("Attempting to autotag: \(ingredient.name)")
+//        let nameString = ingredient.name
+//        var ranges = RangeSet(step.text.characters.ranges(of: Array(nameString)))
+//        
+//        let lowercaseRanges = RangeSet(step.text.characters.ranges(of: Array(nameString.lowercased())))
+//        
+//        ranges.formUnion(lowercaseRanges)
+//        
+//        step.text.transform(updating: &self.selection) { text in
+//            text[ranges].ingredient = ingredient.id
+//            text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
+//        }
     }
     
     func addTimer() async {
-        let selectedText = String(step.text[selection].characters)
-        print("selectedText: \(selectedText)")
-        
-        // Todo: Use a foundation model to get the name and time
-        let kitchenTimers = try await KitchenTimer.generateTimers(selectedText: selectedText, step: step)
-        print("Kitchen Timers: \(kitchenTimers)")
-        
-        
-        if let firstTimer = kitchenTimers.first {
-            let timer = KitchenTimer(name: firstTimer.name, duration: firstTimer.duration)
-            step.timers.append(timer)
-            step.text.transformAttributes(in: &selection) { container in
-    //            container.foregroundColor = .purple
-                container.timer = timer.id
-                container.link = .init(string: "miseenplace://timers/\(timer.id)")
-                
-            }
-        }
+//        let selectedText = String(step.text[selection].characters)
+//        print("selectedText: \(selectedText)")
+//        
+//        // Todo: Use a foundation model to get the name and time
+//        let kitchenTimers = try await KitchenTimer.generateTimers(selectedText: selectedText, step: step)
+//        print("Kitchen Timers: \(kitchenTimers)")
+//        
+//        
+//        if let firstTimer = kitchenTimers.first {
+//            let timer = KitchenTimer(name: firstTimer.name, duration: firstTimer.duration)
+//            step.timers.append(timer)
+//            step.text.transformAttributes(in: &selection) { container in
+//    //            container.foregroundColor = .purple
+//                container.timer = timer.id
+//                container.link = .init(string: "miseenplace://timers/\(timer.id)")
+//                
+//            }
+//        }
 
     }
 }
@@ -365,7 +371,7 @@ struct StepEditor: View {
 
 #Preview {
     @Previewable @State var step = Step(
-        text: "Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray. Bake for 8 minutes without opening the door. Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color. Remove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.",
+        text: "Place the **baguette pans** with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray. Bake for 8 minutes without opening the door. Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color. Remove the Bánh Mì from the oven and let cool.  Cracks should form after 5-10 minutes.",
         ingredients: [],
         timers: [
             .init(name: "Bake", duration: .init(floatLiteral: 900)),

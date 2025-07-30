@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Step: Codable, Identifiable {
     var id: String = UUID().uuidString
-    var text: AttributedString = ""
+    var text: String = ""
     var ingredients: [String] = []
     var timers: [KitchenTimer] = []
 }

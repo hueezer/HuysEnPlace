@@ -136,7 +136,16 @@ let allIngredients: [Ingredient] = [
     .init(id: "vegetable-oil", name: "Vegetable Oil")
 ]
 
-@MainActor let banhMiRecipe = Recipe(title: "Bánh Mì Bread", content: banhMiRecipeContent, ingredients: [])
+@MainActor let banhMiRecipe = Recipe(
+    title: "Bánh Mì Bread",
+    content: banhMiRecipeContent,
+    ingredients: [
+        
+    ],
+    steps: [
+        .init(text: "Hello, this is ***step 1***")
+    ]
+)
 
 @MainActor let sampleRecipes: [Recipe] = [
     Recipe(title: "Classic Bánh Mì", content: try! AttributedString(styledMarkdown: "A classic Vietnamese sandwich recipe."), ingredients: [
