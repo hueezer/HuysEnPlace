@@ -22,10 +22,9 @@ struct StepView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(" \(index + 1). ").bold().foregroundStyle(.blue) + Text(LocalizedStringKey(stringLiteral: step.text))
 
-            if let attributed = try? AttributedString(markdown: step.text, options: .init(allowsExtendedAttributes: true, interpretedSyntax: .full)) {
-                
-                Text(attributed)
-            }
+//            if let attributed = try? AttributedString(markdown: step.text, options: .init(allowsExtendedAttributes: true, interpretedSyntax: .full)) {
+//                Text(attributed)
+//            }
             
             if !step.timers.isEmpty {
                 VStack(spacing: 16) {

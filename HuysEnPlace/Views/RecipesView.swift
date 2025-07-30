@@ -66,8 +66,8 @@ struct RecipesView: View {
             .toolbar {
                 ToolbarItem {
                     Button(action: {
-//                        showGenerateRecipe = true
-                        appState.recipeItems.append(RecipeItem(prompt: "Carrot Cake"))
+                        showGenerateRecipe = true
+//                        appState.recipeItems.append(RecipeItem(prompt: "Carrot Cake"))
                     }, label: {
                         Label("Add Recipe", systemImage: "plus")
                     })

@@ -101,6 +101,7 @@ struct IngredientList: Codable, Identifiable {
 
 @Generable
 struct GeneratedStep: Codable {
+    @Guide(description: "Step text can be in markdown. Make times, temperatures and quantities bold. Turn ingredients into a link that go to miseenplace://ingredients/[ingredient name], for example: **450 g** of [Bread Flour](miseenplace://ingredients/bread-flour)")
     var text: String = ""
 }
 
