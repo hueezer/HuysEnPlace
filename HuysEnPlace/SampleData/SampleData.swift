@@ -143,7 +143,7 @@ let allIngredients: [Ingredient] = [
         
     ],
     steps: [
-        .init(text: "Hello, this is ***step 1***")
+        .init(text: "Hello, this is **step 1**", timers: [.init(name: "Test", duration: 300)])
     ]
 )
 

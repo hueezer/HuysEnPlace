@@ -33,10 +33,14 @@ struct RecipeLoadingView: View {
 
             } else if let prompt {
                 if let generatedRecipe = try? await OpenAI.respond(to: prompt, generating: GeneratedRecipe.self) {
-                    recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: $0.text) })
+                    recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: $0.text, timers: $0.timers) })
+                    
+                    print("GENERATED RECIPE: \(recipe?.steps)")
                 }
             } else if let inputRecipe {
                 recipe = inputRecipe
+            } else {
+                recipe = banhMiRecipe
             }
         }
     }

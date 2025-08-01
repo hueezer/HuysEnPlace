@@ -7,9 +7,23 @@
 
 import SwiftUI
 
-struct Step: Codable, Identifiable {
+struct Step: Codable, Identifiable, Equatable, Hashable {
     var id: String = UUID().uuidString
     var text: String = ""
     var ingredients: [String] = []
     var timers: [KitchenTimer] = []
+
+    static func == (lhs: Step, rhs: Step) -> Bool {
+        lhs.id == rhs.id && lhs.text == rhs.text && lhs.ingredients == rhs.ingredients && lhs.timers == rhs.timers
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(text)
+        hasher.combine(ingredients)
+        // Hash timers by their id to avoid requiring KitchenTimer to be Hashable
+        for timer in timers {
+            hasher.combine(timer.id)
+        }
+    }
 }

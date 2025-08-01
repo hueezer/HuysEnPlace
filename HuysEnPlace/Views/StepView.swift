@@ -15,8 +15,6 @@ struct StepView: View {
     @State private var showEditor = false
     @State private var viewTimer: KitchenTimer?
     @State private var viewInfo: Bool = false
-    
-    @State private var test: String = "\\* This is my localized **bold** text, this is *italic* text, and this is ***bold, italic*** text."
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -112,6 +110,14 @@ struct StepView: View {
                 Text("View Info")
             }
         }
+        .task {
+//            let openai = OpenAI(prompt: "You are an expert in culinary knowledge. Your task is to find all the the timers in the text.")
+//
+//            if let kitchenTimerArray = try? await openai.respond(to: step.text, generating: KitchenTimerArray.self) {
+//                step.timers = kitchenTimerArray.timers
+//                print("Generated Timer: \(kitchenTimerArray)")
+//            }
+        }
     }
     
     private func handleURL(_ url: URL) {
@@ -121,6 +127,7 @@ struct StepView: View {
             if host == "ingredients" {
                 print("Tapped Ingredients")
                 print("path components last: \(url.pathComponents.last)")
+                viewInfo = true
 //                if let pathId = url.pathComponents.last, let ingredient = ingredients.first(where: { $0.id == pathId }) {
 //                    ingredientInfo = ingredient
 //                } else {

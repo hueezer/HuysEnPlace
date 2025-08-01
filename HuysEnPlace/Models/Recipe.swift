@@ -33,6 +33,12 @@ class Recipe: Identifiable, Equatable, Codable, Hashable {
         self.steps = steps
     }
     
+    init(from generatedRecipe: GeneratedRecipe) {
+        self.title = generatedRecipe.title
+        self.ingredients = generatedRecipe.ingredients
+        self.steps = generatedRecipe.steps.map { Step(text: $0.text, timers: $0.timers) }
+    }
+    
     private enum CodingKeys: String, CodingKey {
         case id = "_id"
         case title = "_title"
@@ -73,6 +79,57 @@ class Recipe: Identifiable, Equatable, Codable, Hashable {
             return nil
         }
     }
+    
+    func toTextArray() -> [String] {
+        var textArray: [String] = []
+        textArray.append(title)
+        for ingredientList in ingredients {
+            textArray.append(ingredientList.title)
+            textArray.append(contentsOf: ingredientList.items.map { "\($0.quantity) \($0.ingredientText)" })
+        }
+        for step in steps {
+            textArray.append(step.text)
+        }
+        return textArray
+    }
+    
+    func toText() -> String {
+        var result = ""
+        result += title + "\n"
+        for ingredientList in ingredients {
+            result += ingredientList.title + "\n"
+            for item in ingredientList.items {
+                result += "\(item.quantity) \(item.ingredientText)\n"
+            }
+        }
+        for step in steps {
+            result += step.text + "\n"
+        }
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    func ingredientsText() -> String {
+        var result = ""
+        for ingredientList in ingredients {
+            result += ingredientList.title + "\n"
+            result += "\n"
+            for item in ingredientList.items {
+                result += "\(item.quantity) \(item.ingredientText)\n"
+            }
+            result += "\n"
+        }
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    func stepsText() -> String {
+        var result = ""
+
+        for step in steps {
+            result += step.text + "\n"
+            result += "\n"
+        }
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 @Generable
@@ -83,7 +140,7 @@ struct GeneratedRecipe: Codable {
 }
 
 @Generable
-struct IngredientQuantity: Codable, Identifiable {
+struct IngredientQuantity: Codable, Identifiable, Equatable {
     var id: String = UUID().uuidString
     @Guide(description: "Amount and quantity in grams. Example: 30 g")
     var quantity: String = ""
@@ -93,7 +150,7 @@ struct IngredientQuantity: Codable, Identifiable {
 }
 
 @Generable
-struct IngredientList: Codable, Identifiable {
+struct IngredientList: Codable, Identifiable, Equatable {
     var id: String = UUID().uuidString
     var title: String = ""
     var items: [IngredientQuantity] = []
@@ -103,6 +160,8 @@ struct IngredientList: Codable, Identifiable {
 struct GeneratedStep: Codable {
     @Guide(description: "Step text can be in markdown. Make times, temperatures and quantities bold. Turn ingredients into a link that go to miseenplace://ingredients/[ingredient name], for example: **450 g** of [Bread Flour](miseenplace://ingredients/bread-flour)")
     var text: String = ""
+    @Guide(description: "If the text contains any timers or duration information, add them here.")
+    var timers: [KitchenTimer] = []
 }
 
 extension Recipe {

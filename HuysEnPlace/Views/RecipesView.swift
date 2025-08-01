@@ -42,7 +42,7 @@ struct RecipesView: View {
                     ForEach($appState.recipeItems.reversed()) { $recipeItem in
                         NavigationLink(value: recipeItem, label: {
                             RecipeItemView(recipeItem: $recipeItem)
-                                .matchedTransitionSource(id: "world", in: namespace)
+                                .matchedTransitionSource(id: recipeItem.id, in: namespace)
                         })
                     }
                 }
@@ -58,7 +58,7 @@ struct RecipesView: View {
             .navigationDestination(for: RecipeItem.self, destination: { recipeItem in
                 if let recipe = recipeItem.recipe {
                     RecipeView(recipe: recipe)
-                        .navigationTransition(.zoom(sourceID: "world", in: namespace))
+                        .navigationTransition(.zoom(sourceID: recipeItem.id, in: namespace))
                     //                RecipeLoadingView(inputRecipe: recipe)
                     //                    .navigationTransition(.zoom(sourceID: "world", in: namespace))
                 }
@@ -75,7 +75,11 @@ struct RecipesView: View {
             }
             .sheet(isPresented: $showGenerateRecipe, content: {
                 VStack {
-                    TextField("Recipe name", text: $generatePrompt)
+                    TextField("Describe the recipe", text: $generatePrompt, axis: .vertical)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(1...10)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+//                        .glassEffect(in: RoundedRectangle(cornerRadius: 24))
                         
                     Button("Generate", systemImage: "sparkles") {
                         appState.recipeItems.append(RecipeItem(prompt: generatePrompt))
@@ -86,7 +90,7 @@ struct RecipesView: View {
                     .symbolEffect(.bounce, isActive: isGenerating)
                 }
                 .safeAreaPadding()
-                .presentationDetents([.medium])
+                .presentationDetents([.height(200)])
             })
         }
     }
@@ -138,7 +142,7 @@ struct RecipeItemView: View {
         .task {
             if let recipe = recipeItem.recipe, let prompt = recipeItem.prompt {
                 inProgress = true
-                recipeItem.title = "In Progress"
+                recipeItem.title = "Generating..."
                 let fullPrompt = """
                     Modify the following recipe acording to these intructions:
                     \(prompt)
@@ -147,18 +151,14 @@ struct RecipeItemView: View {
                     """
                 print("Full Prompt: \(fullPrompt)")
                 if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
-                    recipeItem.title = generatedRecipe.title
-                    recipeItem.recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: $0.text) })
-                    recipeItem.imageURL = "https://picsum.photos/200"
+                    recipeItem = RecipeItem(from: generatedRecipe)
                     inProgress = false
                 }
             } else if let prompt = recipeItem.prompt {
                 inProgress = true
-                recipeItem.title = "In Progress"
+                recipeItem.title = "Generating..."
                 if let generatedRecipe = try? await OpenAI.respond(to: prompt, generating: GeneratedRecipe.self) {
-                    recipeItem.title = generatedRecipe.title
-                    recipeItem.recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: $0.text) })
-                    recipeItem.imageURL = "https://picsum.photos/200"
+                    recipeItem = RecipeItem(from: generatedRecipe)
                     inProgress = false
                 }
             }

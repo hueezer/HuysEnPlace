@@ -12,10 +12,15 @@ import Playgrounds
 @Generable
 struct KitchenTimer: Codable, Identifiable, Equatable {
     var id: String = UUID().uuidString
-    @Guide(description: "A short descriptive name of the timer based on the selected text and full text provided. Maximum of 3 words.")
+    @Guide(description: "A short descriptive name of the timer. Maximum of 3 words.")
     var name: String
     @Guide(description: "The duration in seconds.")
     var duration: TimeInterval
+}
+
+@Generable
+struct KitchenTimerArray: Codable {
+    let timers: [KitchenTimer]
 }
 
 extension KitchenTimer {

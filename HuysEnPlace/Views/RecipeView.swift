@@ -22,6 +22,9 @@ struct RecipeView: View {
     @Environment(\.self) private var environment
     
     @State private var shareJsonUrl: URL?
+    @State private var showChat: Bool = false
+    @State private var chatMessage: String = ""
+    @State private var updatedRecipe: Recipe?
     
     @Namespace private var namespace
 
@@ -62,8 +65,25 @@ struct RecipeView: View {
                     Text(recipe.title)
                         .font(.title)
                         .bold()
+                        .multilineTextAlignment(.center)
+                    
                     Text("Ingredients")
                         .font(.headline)
+
+                    if editMode == .active {
+                        HStack {
+                            Button(action: {
+                                recipe.ingredients.append(IngredientList(title: "", items: []))
+                                if let lastIngredientList = recipe.ingredients.last {
+                                    editingIngredientList = lastIngredientList
+                                }
+                            }) {
+                                Label("Ingredients", systemImage: "plus")
+                            }
+                            .buttonStyle(.glassProminent)
+                        }
+                    }
+                    
                     ForEach($recipe.ingredients) { $list in
                         IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
                             ingredientQuantityDetails = ingredientQuantity
@@ -73,22 +93,10 @@ struct RecipeView: View {
                         .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
                         .environment(\.editMode, $editMode)
                     }
-                    
-                    if editMode == .active {
-                        Button(action: {
-                            recipe.ingredients.append(IngredientList(title: "", items: []))
-                            if let lastIngredientList = recipe.ingredients.last {
-                                editingIngredientList = lastIngredientList
-                            }
-                        }) {
-                            Label("Add Ingredient List", systemImage: "plus")
-                        }
-                        .buttonStyle(.glassProminent)
-                    }
-                    
+
                     Text("Steps")
                         .font(.headline)
-                        .padding(.leading, 16)
+                    
                     ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
                         StepView(index: index, step: $recipe.steps[index])
                             .environment(recipe)
@@ -96,12 +104,45 @@ struct RecipeView: View {
                     }
                     
                     if editMode == .active {
-                        Button(action: {
-                            recipe.steps.append(.init())
-                        }) {
-                            Label("Add Step", systemImage: "plus")
+                        HStack {
+                            Button(action: {
+                                recipe.steps.append(.init())
+                            }) {
+                                Label("Add Step", systemImage: "plus")
+                            }
+                            .buttonStyle(.glassProminent)
                         }
-                        .buttonStyle(.glassProminent)
+                    }
+                    
+                    DiffView(
+                        old: """
+                        Levain
+                        25 g Bread Flour
+                        """,
+                        new: """
+                        Levain
+                        30 g Bread Flour
+                        """,
+                        alignment: .leading)
+                    
+                    if let updatedRecipe = updatedRecipe {
+                        Button(action: {
+                            recipe.title = updatedRecipe.title
+                            recipe.ingredients = updatedRecipe.ingredients
+                            recipe.steps = updatedRecipe.steps
+                            self.updatedRecipe = nil
+                        }, label: {
+                            Label("Accept Changes", systemImage: "checkmark")
+                        })
+                        Text("Title")
+                            .font(.headline)
+                        DiffView(old: recipe.title, new: updatedRecipe.title)
+                        Text("Ingredients")
+                            .font(.headline)
+                        DiffView(old: recipe.ingredientsText(), new: updatedRecipe.ingredientsText(), alignment: .leading)
+                        Text("Steps")
+                            .font(.headline)
+                        DiffView(old: recipe.stepsText(), new: updatedRecipe.stepsText(), alignment: .leading)
                     }
                 }
             }
@@ -166,6 +207,41 @@ struct RecipeView: View {
                 IngredientListEditor(list: $recipe.ingredients[listIndex])
             }
         }
+        .sheet(isPresented: $showChat, content: {
+            VStack {
+                TextField("Update the recipe", text: $chatMessage, axis: .vertical)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1...10)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+//                        .glassEffect(in: RoundedRectangle(cornerRadius: 24))
+                Text(recipe.toText())
+
+                if let updatedRecipe = updatedRecipe {
+                    DiffView(old: recipe.toText(), new: updatedRecipe.toText())
+                }
+                    
+                Button("Update", systemImage: "sparkles") {
+                    Task {
+                        let fullPrompt = """
+                        Modify the following recipe acording to these intructions:
+                        \(chatMessage)
+                        Recipe:
+                        \(recipe.toJson())
+                        """
+                        print("Full Prompt: \(fullPrompt)")
+                        if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
+                            updatedRecipe = Recipe(from: generatedRecipe)
+                            //                        inProgress = false
+                        }
+                        chatMessage = ""
+//                        showChat = false
+                    }
+                }
+                .buttonStyle(.glassProminent)
+            }
+            .safeAreaPadding()
+            .presentationDetents([.height(200)])
+        })
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
 
@@ -295,9 +371,7 @@ struct RecipeView: View {
                     
                 }
             }
-            
-            
-            
+
             ToolbarItemGroup(placement: .topBarTrailing) {
 
                 if editMode.isEditing {
@@ -318,6 +392,15 @@ struct RecipeView: View {
                         showIngredients.toggle()
                     }
                 }
+            }
+            
+            ToolbarItem(placement: .bottomBar) {
+                Button(action: {
+                    showChat.toggle()
+                }, label: {
+                    Label("Chat", systemImage: "message")
+                })
+                .buttonStyle(.glassProminent)
             }
         }
 //        .task {
