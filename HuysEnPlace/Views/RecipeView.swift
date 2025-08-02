@@ -114,17 +114,6 @@ struct RecipeView: View {
                         }
                     }
                     
-                    DiffView(
-                        old: """
-                        Levain
-                        25 g Bread Flour
-                        """,
-                        new: """
-                        Levain
-                        30 g Bread Flour
-                        """,
-                        alignment: .leading)
-                    
                     if let updatedRecipe = updatedRecipe {
                         Button(action: {
                             recipe.title = updatedRecipe.title

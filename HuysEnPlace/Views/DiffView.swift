@@ -54,47 +54,6 @@ func fragments(original: [Substring], revised: [Substring],
     return result
 }
 
-//func keepMarkdownPhrasesTogether(in text: String,
-//                                 delim: Character = "_") -> String {
-//
-//    // Patterns for the most common inline markdown forms.
-//    // Capture group 1 = the actual visible text we want to mutate.
-//    let patterns = [
-//        #"\*\*([^\n*]+?)\*\*"#,        // **bold** (no newlines)
-//        #"\*([^\n*]+?)\*"#,             // *italic* (no newlines)
-//        #"_([^\n_]+?)_"#,                // _italic_ (no newlines)
-//        #"\_\_([^\n_]+?)\_\_"#,        // __bold__ (no newlines)
-//        #"`([^`]+?)`"#,              // `code`
-//        #"\~\~([^~]+?)\~\~"#,        // ~~strike~~
-//        #"$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$[^)]+$end:math:text$"#   // [link text](url)
-//    ]
-//
-//    var result = text
-//
-//    for pattern in patterns {
-//        let regex = try! NSRegularExpression(pattern: pattern)
-//
-//        // Walk matches **backwards** so edits don’t disturb later ranges.
-//        let matches = regex.matches(in: result,
-//                                    range: NSRange(result.startIndex..., in: result))
-//                        .reversed()
-//
-//        for match in matches {
-//            // Range of the captured visible text.
-//            let contentRange = match.range(at: 1)
-//            guard let swiftRange = Range(contentRange, in: result) else { continue }
-//
-//            let content = result[swiftRange]
-//            let replaced = content.replacingOccurrences(of: " ",
-//                                                        with: String(delim))
-//
-//            result.replaceSubrange(swiftRange, with: replaced)
-//        }
-//    }
-//
-//    return result
-//}
-
 func keepMarkdownPhrasesTogether(
     in text: String,
     delim: Character = "_"
@@ -238,16 +197,19 @@ struct DiffView: View {
 
         while oIndex < original.count || rIndex < revised.count {
             if let removed = removals[oIndex] {
-                let suffix = removed == "\n" ? "" : " "
-                result.append(.init(text: String(removed.replacing("_", with: " ")) + suffix, kind: .deletion))
+                let prefix = result.last?.kind == .deletion ? " " : ""
+                let fragment = Fragment(text: prefix + String(removed.replacing("_", with: " ")), kind: .deletion)
+                result.append(fragment)
                 oIndex += 1                                // skip only the old side
             } else if let inserted = insertions[rIndex] {
                 let suffix = inserted == "\n" ? "" : " "
-                result.append(.init(text: String(inserted.replacing("_", with: " ")) + suffix, kind: .insertion))
+                let fragment = Fragment(text: String(inserted.replacing("_", with: " ")) + suffix, kind: .insertion)
+                result.append(fragment)
                 rIndex += 1                                // skip only the new side
             } else {
                 let suffix = revised[rIndex] == "\n" ? "" : " "
-                result.append(.init(text: String(revised[rIndex].replacing("_", with: " ")) + suffix, kind: .equal))
+                let fragment = Fragment(text: String(revised[rIndex].replacing("_", with: " ")) + suffix, kind: .equal)
+                result.append(fragment)
                 oIndex += 1;  rIndex += 1                  // advance both
             }
         }
@@ -256,11 +218,15 @@ struct DiffView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            pieces.reduce(Text("") ) { t, piece in
-                t +
+            let _ = print("PIECES: \(pieces)")
+            pieces.enumerated().reduce(Text("")) { t, pair in
+                let (index, piece) = pair
+                return t +
                 Text(LocalizedStringKey(piece.text))
                     .foregroundColor(color(for: piece.kind))
-                    .strikethrough(piece.kind == .deletion)
+                    .strikethrough(piece.kind == .deletion) +
+                Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
+                // Now you can use `index` as needed
             }
         }
         .frame(maxWidth: .infinity, alignment: alignment)
