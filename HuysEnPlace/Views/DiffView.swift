@@ -105,14 +105,15 @@ func keepMarkdownPhrasesTogether(
     //  ▸ *italic*      ▸ _italic_
     //  ▸ `code`        ▸ ~~strike~~
     //  ▸ [link text](url)
+    // Longest tokens first: [link](url), **bold**, __bold__, *italic*, _italic_, `code`, ~~strike~~
     let pattern = #"""
-    (\*\*[^*]+?\*\*|__[^_]+?__|
-     (?<!\*)\*[^*\n]+?\*(?!\*)|
-     (?<!_)_[^_\n]+?_(?!_)|
-     `[^`]+?`|~~[^~]+?~~|
-     $begin:math:display$[^$end:math:display$]+?]$begin:math:text$[^)]+$end:math:text$)
+    (\[[^\]\n]+?\]\([^)]+\)|        # [visible text](url)
+     \*\*[^*]+?\*\*| __[^_]+?__|   # **bold**  or  __bold__
+     (?<!\*)\*[^*\n]+?\*(?!\*)|    # *italic* (but not **bold**)
+     (?<!_)_[^_\n]+?_(?!_)|        # _italic_ (but not __bold__)
+     `[^`]+?`   |                  # `code`
+     ~~[^~]+?~~)                   # ~~strike~~
     """#
-
     let regex = try! NSRegularExpression(pattern: pattern,
                                          options: [.allowCommentsAndWhitespace])
 
@@ -297,6 +298,7 @@ struct DiffView: View {
             **Levain**
             30 g **Bread Flour** and **Regular Flour**
             Sugar
+            [Active Sourdough Starter](miseenplace://ingredients/active-sourdough-starter)
             """,
             alignment: .leading)
     }
