@@ -263,10 +263,11 @@ struct DiffView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: alignment)
-        .font(.system(.body, design: .monospaced))
+        .font(.system(.subheadline, design: .monospaced))
         .padding()
         .background(Color(.secondarySystemBackground))
-        
+        .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private func color(for kind: Kind) -> Color {
