@@ -238,6 +238,15 @@ struct RecipeView: View {
                 }
                 
                 if let updatedRecipe = updatedRecipe {
+                    Button("Cancel", systemImage: "xmark") {
+                        withAnimation {
+                            showUpdatedRecipe = false
+                            self.updatedRecipe = nil
+                        }
+                    }
+                    .buttonStyle(.glassProminent)
+                    .tint(.red)
+                    
                     Button("Apply", systemImage: "checkmark") {
                         withAnimation {
 
