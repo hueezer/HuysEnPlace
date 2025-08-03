@@ -217,24 +217,33 @@ struct DiffView: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            let _ = print("PIECES: \(pieces)")
-            pieces.enumerated().reduce(Text("")) { t, pair in
-                let (index, piece) = pair
-                return t +
-                Text(LocalizedStringKey(piece.text))
-                    .foregroundColor(color(for: piece.kind))
-                    .strikethrough(piece.kind == .deletion) +
-                Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
-                // Now you can use `index` as needed
-            }
+        pieces.enumerated().reduce(Text("")) { t, pair in
+            let (index, piece) = pair
+            return t +
+            Text(LocalizedStringKey(piece.text))
+                .foregroundColor(color(for: piece.kind))
+                .strikethrough(piece.kind == .deletion) +
+            Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
+            // Now you can use `index` as needed
         }
-        .frame(maxWidth: .infinity, alignment: alignment)
-        .font(.system(.subheadline, design: .monospaced))
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+//        HStack(spacing: 0) {
+//            let _ = print("PIECES: \(pieces)")
+//            pieces.enumerated().reduce(Text("")) { t, pair in
+//                let (index, piece) = pair
+//                return t +
+//                Text(LocalizedStringKey(piece.text))
+//                    .foregroundColor(color(for: piece.kind))
+//                    .strikethrough(piece.kind == .deletion) +
+//                Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
+//                // Now you can use `index` as needed
+//            }
+//        }
+//        .frame(maxWidth: .infinity, alignment: alignment)
+//        .font(.system(.subheadline, design: .monospaced))
+//        .padding()
+//        .background(Color(.secondarySystemBackground))
+//        .clipped()
+//        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private func color(for kind: Kind) -> Color {

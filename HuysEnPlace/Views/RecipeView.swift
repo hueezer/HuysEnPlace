@@ -24,7 +24,10 @@ struct RecipeView: View {
     @State private var shareJsonUrl: URL?
     @State private var showChat: Bool = false
     @State private var chatMessage: String = ""
+    
+    @State private var showUpdatedRecipe: Bool = false
     @State private var updatedRecipe: Recipe?
+    @State private var updateRecipeIsGenerating: Bool = false
     
     @Namespace private var namespace
 
@@ -60,80 +63,65 @@ struct RecipeView: View {
             
 
             ScrollView {
-
-                VStack(alignment: .center, spacing: 16) {
-                    Text(recipe.title)
-                        .font(.title)
-                        .bold()
-                        .multilineTextAlignment(.center)
-                    
-                    Text("Ingredients")
-                        .font(.headline)
-
-                    if editMode == .active {
-                        HStack {
-                            Button(action: {
-                                recipe.ingredients.append(IngredientList(title: "", items: []))
-                                if let lastIngredientList = recipe.ingredients.last {
-                                    editingIngredientList = lastIngredientList
-                                }
-                            }) {
-                                Label("Ingredients", systemImage: "plus")
-                            }
-                            .buttonStyle(.glassProminent)
-                        }
-                    }
-                    
-                    ForEach($recipe.ingredients) { $list in
-                        IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
-                            ingredientQuantityDetails = ingredientQuantity
-                        }, onTapList: { list in
-                            editingIngredientList = $list.wrappedValue
-                        })
-                        .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
-                        .environment(\.editMode, $editMode)
-                    }
-
-                    Text("Steps")
-                        .font(.headline)
-                    
-                    ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
-                        StepView(index: index, step: $recipe.steps[index])
-                            .environment(recipe)
-                        .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
-                    }
-                    
-                    if editMode == .active {
-                        HStack {
-                            Button(action: {
-                                recipe.steps.append(.init())
-                            }) {
-                                Label("Add Step", systemImage: "plus")
-                            }
-                            .buttonStyle(.glassProminent)
-                        }
-                    }
-                    
-                    if let updatedRecipe = updatedRecipe {
-                        Button(action: {
-                            recipe.title = updatedRecipe.title
-                            recipe.ingredients = updatedRecipe.ingredients
-                            recipe.steps = updatedRecipe.steps
-                            self.updatedRecipe = nil
-                        }, label: {
-                            Label("Accept Changes", systemImage: "checkmark")
-                        })
-                        Text("Title")
-                            .font(.headline)
-                        DiffView(old: recipe.title, new: updatedRecipe.title)
+                if !showUpdatedRecipe {
+                    VStack(alignment: .center, spacing: 16) {
+                        Text(recipe.title)
+                            .font(.title)
+                            .bold()
+                            .multilineTextAlignment(.center)
+                        
                         Text("Ingredients")
                             .font(.headline)
-                        DiffView(old: recipe.ingredientsText(), new: updatedRecipe.ingredientsText(), alignment: .leading)
+                        
+                        if editMode == .active {
+                            HStack {
+                                Button(action: {
+                                    recipe.ingredients.append(IngredientList(title: "", items: []))
+                                    if let lastIngredientList = recipe.ingredients.last {
+                                        editingIngredientList = lastIngredientList
+                                    }
+                                }) {
+                                    Label("Ingredients", systemImage: "plus")
+                                }
+                                .buttonStyle(.glassProminent)
+                            }
+                        }
+                        
+                        ForEach($recipe.ingredients) { $list in
+                            IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
+                                ingredientQuantityDetails = ingredientQuantity
+                            }, onTapList: { list in
+                                editingIngredientList = $list.wrappedValue
+                            })
+                            .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
+                            .environment(\.editMode, $editMode)
+                        }
+                        
                         Text("Steps")
                             .font(.headline)
-                        DiffView(old: recipe.stepsText(), new: updatedRecipe.stepsText(), alignment: .leading)
+                        
+                        ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
+                            StepView(index: index, step: $recipe.steps[index])
+                                .environment(recipe)
+                                .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
+                        }
+                        
+                        if editMode == .active {
+                            HStack {
+                                Button(action: {
+                                    recipe.steps.append(.init())
+                                }) {
+                                    Label("Add Step", systemImage: "plus")
+                                }
+                                .buttonStyle(.glassProminent)
+                            }
+                        }
                     }
+                } else {
+                    RecipeDiffView(recipe: recipe, updatedRecipe: $updatedRecipe)
                 }
+                
+                
             }
             .contentMargins(.horizontal, 12.0, for: .scrollContent)
         }
@@ -202,15 +190,12 @@ struct RecipeView: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(1...10)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                        .glassEffect(in: RoundedRectangle(cornerRadius: 24))
-                Text(recipe.toText())
-
-                if let updatedRecipe = updatedRecipe {
-                    DiffView(old: recipe.toText(), new: updatedRecipe.toText())
-                }
-                    
-                Button("Update", systemImage: "sparkles") {
+                    .disabled(updateRecipeIsGenerating)
+                
+                Button(action: {
                     Task {
+                        showUpdatedRecipe = true
+                        updateRecipeIsGenerating = true
                         let fullPrompt = """
                         Modify the following recipe acording to these intructions:
                         \(chatMessage)
@@ -219,14 +204,22 @@ struct RecipeView: View {
                         """
                         print("Full Prompt: \(fullPrompt)")
                         if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
-                            updatedRecipe = Recipe(from: generatedRecipe)
-                            //                        inProgress = false
+                            withAnimation {
+                                updatedRecipe = Recipe(from: generatedRecipe)
+                            }
                         }
                         chatMessage = ""
-//                        showChat = false
+                        
+                        updateRecipeIsGenerating = false
+                        showChat = false
                     }
-                }
+                }, label: {
+                    Label(updateRecipeIsGenerating ? "Thinking..." : "Update", systemImage: "sparkles")
+                    
+                })
                 .buttonStyle(.glassProminent)
+                .symbolEffect(.rotate, isActive: updateRecipeIsGenerating)
+                
             }
             .safeAreaPadding()
             .presentationDetents([.height(200)])
@@ -239,6 +232,20 @@ struct RecipeView: View {
                     Button("Save", systemImage: "checkmark") {
                         withAnimation {
                             editMode = .inactive
+                        }
+                    }
+                    .buttonStyle(.glassProminent)
+                }
+                
+                if let updatedRecipe = updatedRecipe {
+                    Button("Apply", systemImage: "checkmark") {
+                        withAnimation {
+
+                            showUpdatedRecipe = false
+                            recipe.title = updatedRecipe.title
+                            recipe.ingredients = updatedRecipe.ingredients
+                            recipe.steps = updatedRecipe.steps
+                            self.updatedRecipe = nil
                         }
                     }
                     .buttonStyle(.glassProminent)
