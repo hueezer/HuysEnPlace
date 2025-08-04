@@ -133,6 +133,12 @@ class Recipe: Identifiable, Equatable, Codable, Hashable {
 }
 
 @Generable
+struct GeneratedRecipeMessage: Codable {
+    let message: String
+    let recipe: GeneratedRecipe
+}
+
+@Generable
 struct GeneratedRecipe: Codable {
     let title: String
     let ingredients: [IngredientList]

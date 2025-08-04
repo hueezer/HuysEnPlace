@@ -26,6 +26,7 @@ struct RecipeView: View {
     @State private var chatMessage: String = ""
     
     @State private var showUpdatedRecipe: Bool = false
+    @State private var updatedRecipeMessage: String?
     @State private var updatedRecipe: Recipe?
     @State private var updateRecipeIsGenerating: Bool = false
     
@@ -106,154 +107,171 @@ struct RecipeView: View {
             
 
             ScrollView {
-                Spacer()
-                    .frame(height: showModifyChat ? 200 : 0)
-                if !showUpdatedRecipe {
-                    VStack(alignment: .center, spacing: 16) {
-                        Text(recipe.title)
-                            .font(.title)
-                            .bold()
-                            .multilineTextAlignment(.center)
-                        
-                        Text("Ingredients")
-                            .font(.headline)
-                        
-                        if editMode == .active {
-                            HStack {
-                                Button(action: {
-                                    recipe.ingredients.append(IngredientList(title: "", items: []))
-                                    if let lastIngredientList = recipe.ingredients.last {
-                                        editingIngredientList = lastIngredientList
+                LazyVStack(pinnedViews: .sectionHeaders) {
+                    Section {
+                        if !showUpdatedRecipe {
+                            VStack(alignment: .center, spacing: 16) {
+                                Text(recipe.title)
+                                    .font(.title)
+                                    .bold()
+                                    .multilineTextAlignment(.center)
+                                
+                                Text("Ingredients")
+                                    .font(.headline)
+                                
+                                if editMode == .active {
+                                    HStack {
+                                        Button(action: {
+                                            recipe.ingredients.append(IngredientList(title: "", items: []))
+                                            if let lastIngredientList = recipe.ingredients.last {
+                                                editingIngredientList = lastIngredientList
+                                            }
+                                        }) {
+                                            Label("Ingredients", systemImage: "plus")
+                                        }
+                                        .buttonStyle(.glassProminent)
                                     }
-                                }) {
-                                    Label("Ingredients", systemImage: "plus")
                                 }
-                                .buttonStyle(.glassProminent)
-                            }
-                        }
-                        
-                        ForEach($recipe.ingredients) { $list in
-                            IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
-                                ingredientQuantityDetails = ingredientQuantity
-                            }, onTapList: { list in
-                                editingIngredientList = $list.wrappedValue
-                            })
-                            .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
-                            .environment(\.editMode, $editMode)
-                        }
-                        
-                        Text("Steps")
-                            .font(.headline)
-                        
-                        ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
-                            StepView(index: index, step: $recipe.steps[index])
-                                .environment(recipe)
-                                .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
-                        }
-                        
-                        if editMode == .active {
-                            HStack {
-                                Button(action: {
-                                    recipe.steps.append(.init())
-                                }) {
-                                    Label("Add Step", systemImage: "plus")
+                                
+                                ForEach($recipe.ingredients) { $list in
+                                    IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
+                                        ingredientQuantityDetails = ingredientQuantity
+                                    }, onTapList: { list in
+                                        editingIngredientList = $list.wrappedValue
+                                    })
+                                    .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
+                                    .environment(\.editMode, $editMode)
                                 }
-                                .buttonStyle(.glassProminent)
+                                
+                                Text("Steps")
+                                    .font(.headline)
+                                
+                                ForEach(recipe.steps.enumerated(), id: \.offset) { index, step in
+                                    StepView(index: index, step: $recipe.steps[index])
+                                        .environment(recipe)
+                                        .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
+                                }
+                                
+                                if editMode == .active {
+                                    HStack {
+                                        Button(action: {
+                                            recipe.steps.append(.init())
+                                        }) {
+                                            Label("Add Step", systemImage: "plus")
+                                        }
+                                        .buttonStyle(.glassProminent)
+                                    }
+                                }
                             }
+                        } else {
+                            RecipeDiffView(recipe: recipe, updatedRecipe: $updatedRecipe)
+                        }
+                    } header: {
+                        if showModifyChat {
+                            VStack {
+                                if let message = updatedRecipeMessage {
+                                    Text(message)
+                                        .multilineTextAlignment(.center)
+                                        .lineLimit(nil)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+        //                                .glassEffect(.regular.tint(.blue).interactive(), in: RoundedRectangle(cornerRadius: 16))
+                                        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
+                                        
+                                }
+                                
+                                if let updatedRecipe = updatedRecipe {
+
+                                    
+                                    HStack {
+                                        Button(action: {
+                                            withAnimation {
+                                                showUpdatedRecipe = false
+                                                showModifyChat = false
+                                                self.updatedRecipe = nil
+                                                
+                                            }
+                                        }, label: {
+                                            Label("Cancel", systemImage: "xmark")
+                                        })
+                                        .buttonStyle(.glass)
+                                        .tint(.red)
+                                        
+                                        
+                                        Button(action: {
+                                            withAnimation {
+                                                showUpdatedRecipe = false
+                                                showModifyChat = false
+                                                recipe.title = updatedRecipe.title
+                                                recipe.ingredients = updatedRecipe.ingredients
+                                                recipe.steps = updatedRecipe.steps
+                                                self.updatedRecipe = nil
+                                                
+                                            }
+                                        }, label: {
+                                            Label("Apply", systemImage: "checkmark")
+                                        })
+                                        .buttonStyle(.glassProminent)
+                                        .tint(.blue)
+                                    }
+                                } else {
+                                    TextField("How would you change this recipe?", text: $chatMessage, axis: .vertical)
+                                        .multilineTextAlignment(.center)
+                                        .lineLimit(1...10)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                        .disabled(updateRecipeIsGenerating)
+                                    
+                                    Button(action: {
+                                        Task {
+                                            showUpdatedRecipe = true
+                                            updateRecipeIsGenerating = true
+                                            let fullPrompt = """
+                                            Modify the following recipe acording to these intructions:
+                                            \(chatMessage)
+                                            Recipe:
+                                            \(recipe.toJson())
+                                            """
+                                            print("Full Prompt: \(fullPrompt)")
+                                            if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipeMessage.self) {
+                                                withAnimation {
+                                                    updatedRecipeMessage = generatedRecipe.message
+                                                    updatedRecipe = Recipe(from: generatedRecipe.recipe)
+                                                }
+                                            }
+                                            chatMessage = ""
+                                            
+                                            updateRecipeIsGenerating = false
+            //                                showModifyChat = false
+                                        }
+                                    }, label: {
+                                        Label(updateRecipeIsGenerating ? "Thinking..." : "Modify", systemImage: "sparkles")
+                                        
+                                    })
+                                    .buttonStyle(.glassProminent)
+                                    .symbolEffect(.rotate, isActive: updateRecipeIsGenerating)
+                                }
+                            
+                                
+                            }
+                            .padding()
+                            .frame(minHeight: 160)
+                            .glassEffect(in: RoundedRectangle(cornerRadius: 32))
+                            .padding(10)
                         }
                     }
-                } else {
-                    RecipeDiffView(recipe: recipe, updatedRecipe: $updatedRecipe)
                 }
-                
                 
             }
             .contentMargins(.horizontal, 12.0, for: .scrollContent)
-            .overlay(alignment: .top) {
-                if showModifyChat {
-                    VStack {
-                        TextField("How would you change this recipe?", text: $chatMessage, axis: .vertical)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(1...10)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .disabled(updateRecipeIsGenerating)
-                        
-                        if let updatedRecipe = updatedRecipe {
-                            HStack {
-                                Button(action: {
-                                    withAnimation {
-                                        showUpdatedRecipe = false
-                                        showModifyChat = false
-                                        self.updatedRecipe = nil
-                                        
-                                    }
-                                }, label: {
-                                    Label("Cancel", systemImage: "xmark")
-                                })
-                                .buttonStyle(.glass)
-                                .tint(.red)
-                                
-                                
-                                Button(action: {
-                                    withAnimation {
-                                        showUpdatedRecipe = false
-                                        showModifyChat = false
-                                        recipe.title = updatedRecipe.title
-                                        recipe.ingredients = updatedRecipe.ingredients
-                                        recipe.steps = updatedRecipe.steps
-                                        self.updatedRecipe = nil
-                                        
-                                    }
-                                }, label: {
-                                    Label("Apply", systemImage: "checkmark")
-                                })
-                                .buttonStyle(.glassProminent)
-                                .tint(.blue)
-                            }
-                        } else {
-                            Button(action: {
-                                Task {
-                                    showUpdatedRecipe = true
-                                    updateRecipeIsGenerating = true
-                                    let fullPrompt = """
-                                    Modify the following recipe acording to these intructions:
-                                    \(chatMessage)
-                                    Recipe:
-                                    \(recipe.toJson())
-                                    """
-                                    print("Full Prompt: \(fullPrompt)")
-                                    if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
-                                        withAnimation {
-                                            updatedRecipe = Recipe(from: generatedRecipe)
-                                        }
-                                    }
-                                    chatMessage = ""
-                                    
-                                    updateRecipeIsGenerating = false
-    //                                showModifyChat = false
-                                }
-                            }, label: {
-                                Label(updateRecipeIsGenerating ? "Thinking..." : "Modify", systemImage: "sparkles")
-                                
-                            })
-                            .buttonStyle(.glassProminent)
-                            .symbolEffect(.rotate, isActive: updateRecipeIsGenerating)
-                        }
-                    
-                        
-                    }
-                    .padding()
-                    .frame(height: 160)
-                    .glassEffect(in: RoundedRectangle(cornerRadius: 16))
-                    .padding(10)
-                }
-            }
+
         }
         .attributedTextFormattingDefinition(
             RecipeFormattingDefinition(ingredients: Set(ingredients.map(\.id)))
         )
         .onAppear {
             recipe.content = banhMiRecipeContent
+            updatedRecipeMessage = "Here is t he banh mi formula adapted for the recipe and this is a really long message"
         }
         .sheet(isPresented: $showIngredients) {
             let name = self.recipe.content[selection]
