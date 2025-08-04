@@ -22,14 +22,16 @@ struct RecipeView: View {
     @Environment(\.self) private var environment
     
     @State private var shareJsonUrl: URL?
-    @State private var showModifyChat: Bool = false
-    @State private var chatMessage: String = ""
     
-//    @State private var showRecipeDiff: Bool = false
-//    @State private var updatedRecipeMessage: String?
+    
+    @State private var showModifyChat: Bool = false
+    @State private var modifyRecipeMessage: String = ""
+    
     @State private var modifiedRecipe: Recipe?
     @State private var modifyRecipeResponse: GeneratedRecipeResponse?
     @State private var updateRecipeIsGenerating: Bool = false
+    
+    @State private var showChat: Bool = false
     
     @Namespace private var namespace
 
@@ -173,7 +175,7 @@ struct RecipeView: View {
                                         .tint(.blue)
                                     }
                                 } else {
-                                    TextField("How would you change this recipe?", text: $chatMessage, axis: .vertical)
+                                    TextField("How would you change this recipe?", text: $modifyRecipeMessage, axis: .vertical)
                                         .multilineTextAlignment(.center)
                                         .lineLimit(1...10)
                                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -185,7 +187,7 @@ struct RecipeView: View {
                                             updateRecipeIsGenerating = true
                                             let fullPrompt = """
                                             Modify the following recipe acording to these intructions:
-                                            \(chatMessage)
+                                            \(modifyRecipeMessage)
                                             Recipe:
                                             \(recipe.toJson())
                                             """
@@ -196,7 +198,7 @@ struct RecipeView: View {
                                                     modifyRecipeResponse = response
                                                 }
                                             }
-                                            chatMessage = ""
+                                            modifyRecipeMessage = ""
                                             
                                             updateRecipeIsGenerating = false
             //                                showModifyChat = false
@@ -228,6 +230,9 @@ struct RecipeView: View {
         )
         .onAppear {
             recipe.content = banhMiRecipeContent
+        }
+        .sheet(isPresented: $showChat) {
+            
         }
         .sheet(isPresented: $showIngredients) {
             let name = self.recipe.content[selection]
@@ -291,6 +296,8 @@ struct RecipeView: View {
                         showModifyChat.toggle()
                     }
                 }
+                .tint(.blue)
+                .buttonStyle(.glassProminent)
 
                 
                 if editMode.isEditing {
@@ -443,7 +450,7 @@ struct RecipeView: View {
             
             ToolbarItem(placement: .bottomBar) {
                 Button(action: {
-                    showModifyChat.toggle()
+                    showChat.toggle()
                 }, label: {
                     Label("Chat", systemImage: "message")
                 })
