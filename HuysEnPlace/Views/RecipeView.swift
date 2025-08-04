@@ -25,9 +25,10 @@ struct RecipeView: View {
     @State private var showModifyChat: Bool = false
     @State private var chatMessage: String = ""
     
-    @State private var showUpdatedRecipe: Bool = false
-    @State private var updatedRecipeMessage: String?
-    @State private var updatedRecipe: Recipe?
+//    @State private var showRecipeDiff: Bool = false
+//    @State private var updatedRecipeMessage: String?
+    @State private var modifiedRecipe: Recipe?
+    @State private var modifyRecipeResponse: GeneratedRecipeResponse?
     @State private var updateRecipeIsGenerating: Bool = false
     
     @Namespace private var namespace
@@ -40,49 +41,6 @@ struct RecipeView: View {
                     ShareLink("Share URL", item: url)
                 }
             }
-            
-//            if showModifyChat {
-//                VStack {
-//                    TextField("How would you change this recipe?", text: $chatMessage, axis: .vertical)
-//                        .multilineTextAlignment(.center)
-//                        .lineLimit(1...10)
-//                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                        .disabled(updateRecipeIsGenerating)
-//                    
-//                    Button(action: {
-//                        Task {
-//                            showUpdatedRecipe = true
-//                            updateRecipeIsGenerating = true
-//                            let fullPrompt = """
-//                            Modify the following recipe acording to these intructions:
-//                            \(chatMessage)
-//                            Recipe:
-//                            \(recipe.toJson())
-//                            """
-//                            print("Full Prompt: \(fullPrompt)")
-//                            if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
-//                                withAnimation {
-//                                    updatedRecipe = Recipe(from: generatedRecipe)
-//                                }
-//                            }
-//                            chatMessage = ""
-//                            
-//                            updateRecipeIsGenerating = false
-//                            showModifyChat = false
-//                        }
-//                    }, label: {
-//                        Label(updateRecipeIsGenerating ? "Thinking..." : "Modify", systemImage: "sparkles")
-//                        
-//                    })
-//                    .buttonStyle(.glassProminent)
-//                    .symbolEffect(.rotate, isActive: updateRecipeIsGenerating)
-//                    
-//                }
-//                .padding()
-//                .frame(height: 160)
-//                .shadow(radius: 5)
-//                .glassEffect(in: RoundedRectangle(cornerRadius: 16))
-//            }
             
 //            let runs = Array(recipe.content.runs)
 //
@@ -109,7 +67,7 @@ struct RecipeView: View {
             ScrollView {
                 LazyVStack(pinnedViews: .sectionHeaders) {
                     Section {
-                        if !showUpdatedRecipe {
+                        if modifiedRecipe == nil {
                             VStack(alignment: .center, spacing: 16) {
                                 Text(recipe.title)
                                     .font(.title)
@@ -164,15 +122,15 @@ struct RecipeView: View {
                                 }
                             }
                         } else {
-                            RecipeDiffView(recipe: recipe, updatedRecipe: $updatedRecipe)
+                            RecipeDiffView(recipe: recipe, updatedRecipe: $modifiedRecipe)
                         }
                     } header: {
                         if showModifyChat {
                             VStack {
                                 
-                                if let updatedRecipe = updatedRecipe {
-                                    if let message = updatedRecipeMessage {
-                                        Text(message)
+                                if let modifiedRecipe = modifiedRecipe {
+                                    if let response = modifyRecipeResponse {
+                                        Text(response.message)
                                             .multilineTextAlignment(.center)
                                             .lineLimit(nil)
                                             .fixedSize(horizontal: false, vertical: true)
@@ -186,9 +144,9 @@ struct RecipeView: View {
                                     HStack {
                                         Button(action: {
                                             withAnimation {
-                                                showUpdatedRecipe = false
+//                                                showRecipeDiff = false
                                                 showModifyChat = false
-                                                self.updatedRecipe = nil
+                                                self.modifiedRecipe = nil
                                                 
                                             }
                                         }, label: {
@@ -200,12 +158,12 @@ struct RecipeView: View {
                                         
                                         Button(action: {
                                             withAnimation {
-                                                showUpdatedRecipe = false
+//                                                showRecipeDiff = false
                                                 showModifyChat = false
-                                                recipe.title = updatedRecipe.title
-                                                recipe.ingredients = updatedRecipe.ingredients
-                                                recipe.steps = updatedRecipe.steps
-                                                self.updatedRecipe = nil
+                                                recipe.title = modifiedRecipe.title
+                                                recipe.ingredients = modifiedRecipe.ingredients
+                                                recipe.steps = modifiedRecipe.steps
+                                                self.modifiedRecipe = nil
                                                 
                                             }
                                         }, label: {
@@ -223,7 +181,7 @@ struct RecipeView: View {
                                     
                                     Button(action: {
                                         Task {
-                                            showUpdatedRecipe = true
+//                                            showRecipeDiff = true
                                             updateRecipeIsGenerating = true
                                             let fullPrompt = """
                                             Modify the following recipe acording to these intructions:
@@ -232,10 +190,10 @@ struct RecipeView: View {
                                             \(recipe.toJson())
                                             """
                                             print("Full Prompt: \(fullPrompt)")
-                                            if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipeMessage.self) {
+                                            if let response = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self) {
                                                 withAnimation {
-                                                    updatedRecipeMessage = generatedRecipe.message
-                                                    updatedRecipe = Recipe(from: generatedRecipe.recipe)
+                                                    modifiedRecipe = Recipe(from: response.recipe)
+                                                    modifyRecipeResponse = response
                                                 }
                                             }
                                             chatMessage = ""
@@ -325,46 +283,6 @@ struct RecipeView: View {
                 IngredientListEditor(list: $recipe.ingredients[listIndex])
             }
         }
-//        .sheet(isPresented: $showModifyChat, content: {
-//            VStack {
-//                TextField("How would you change this recipe?", text: $chatMessage, axis: .vertical)
-//                    .multilineTextAlignment(.center)
-//                    .lineLimit(1...10)
-//                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                    .disabled(updateRecipeIsGenerating)
-//                
-//                Button(action: {
-//                    Task {
-//                        showUpdatedRecipe = true
-//                        updateRecipeIsGenerating = true
-//                        let fullPrompt = """
-//                        Modify the following recipe acording to these intructions:
-//                        \(chatMessage)
-//                        Recipe:
-//                        \(recipe.toJson())
-//                        """
-//                        print("Full Prompt: \(fullPrompt)")
-//                        if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
-//                            withAnimation {
-//                                updatedRecipe = Recipe(from: generatedRecipe)
-//                            }
-//                        }
-//                        chatMessage = ""
-//                        
-//                        updateRecipeIsGenerating = false
-//                        showModifyChat = false
-//                    }
-//                }, label: {
-//                    Label(updateRecipeIsGenerating ? "Thinking..." : "Modify", systemImage: "sparkles")
-//                    
-//                })
-//                .buttonStyle(.glassProminent)
-//                .symbolEffect(.rotate, isActive: updateRecipeIsGenerating)
-//                
-//            }
-//            .safeAreaPadding()
-//            .presentationDetents([.height(200)])
-//        })
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 

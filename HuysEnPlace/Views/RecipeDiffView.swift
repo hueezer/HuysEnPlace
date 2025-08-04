@@ -153,6 +153,9 @@ struct RecipeKey: View {
                 .foregroundStyle(.red)
             
             Text("Unchanged")
+            
+            Text("Links")
+                .foregroundStyle(.blue)
         }
         .font(.system(.subheadline, design: .monospaced))
         .padding()
@@ -164,7 +167,9 @@ struct RecipeKey: View {
 }
 
 #Preview {
-    RecipeDiffView(recipe: banhMiRecipe, updatedRecipe: .constant(nil))
-        .safeAreaPadding()
-        .padding(.top, 50)
+    ScrollView {
+        RecipeDiffView(recipe: banhMiRecipe, updatedRecipe: .constant(nil))
+            .safeAreaPadding()
+            .padding(.top, 50)
+    }
 }
