@@ -169,20 +169,19 @@ struct RecipeView: View {
                     } header: {
                         if showModifyChat {
                             VStack {
-                                if let message = updatedRecipeMessage {
-                                    Text(message)
-                                        .multilineTextAlignment(.center)
-                                        .lineLimit(nil)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-        //                                .glassEffect(.regular.tint(.blue).interactive(), in: RoundedRectangle(cornerRadius: 16))
-                                        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
-                                        
-                                }
                                 
                                 if let updatedRecipe = updatedRecipe {
-
+                                    if let message = updatedRecipeMessage {
+                                        Text(message)
+                                            .multilineTextAlignment(.center)
+                                            .lineLimit(nil)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+            //                                .glassEffect(.regular.tint(.blue).interactive(), in: RoundedRectangle(cornerRadius: 16))
+                                            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
+                                            
+                                    }
                                     
                                     HStack {
                                         Button(action: {
@@ -271,7 +270,6 @@ struct RecipeView: View {
         )
         .onAppear {
             recipe.content = banhMiRecipeContent
-            updatedRecipeMessage = "Here is t he banh mi formula adapted for the recipe and this is a really long message"
         }
         .sheet(isPresented: $showIngredients) {
             let name = self.recipe.content[selection]
