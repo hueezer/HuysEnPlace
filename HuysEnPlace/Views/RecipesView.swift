@@ -92,6 +92,20 @@ struct RecipesView: View {
                 .safeAreaPadding()
                 .presentationDetents([.height(200)])
             })
+            .task {
+                let session = OpenAISession(
+                    tools: [
+                        .breadDatabase(BreadDatabaseTool())
+                    ],
+                    instructions: "Help the person with getting weather information"
+                )
+                
+                print("SESSION: ", session)
+                
+                let response = try? await session.respond(to: "Hello", generating: GeneratedRecipeResponse.self)
+                
+                print("Response: ", response)
+            }
         }
     }
 }
