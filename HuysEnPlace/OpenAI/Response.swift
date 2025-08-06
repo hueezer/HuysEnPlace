@@ -35,6 +35,7 @@ enum ResponseStatus: String, Codable {
 }
 
 enum ResponseItem: Codable, Identifiable {
+    case reasoning(ResponseReasoning)
     case input_message(ResponseInputMessageItem)
     case output_message(ResponseOutputMessage)
     case function_call(ResponseFunctionToolCall)
@@ -43,6 +44,8 @@ enum ResponseItem: Codable, Identifiable {
     
     var id: String {
         switch self {
+        case .reasoning(let reasoning):
+            return reasoning.id
         case .input_message(let inputMessage):
             return inputMessage.id
         case .output_message(let outputMessage):
@@ -62,6 +65,7 @@ enum ResponseItem: Codable, Identifiable {
     }
     
     enum ResponseItemType: String, Codable {
+        case reasoning
         case message
         case function_call
         case function_call_output
@@ -77,6 +81,9 @@ enum ResponseItem: Codable, Identifiable {
         let role = try container.decodeIfPresent(Role.self, forKey: .role)
         
         switch type {
+        case .reasoning:
+            let value = try singleValueContainer.decode(ResponseReasoning.self)
+            self = .reasoning(value)
         case .message:
             if role == .assistant {
                 let value = try singleValueContainer.decode(ResponseOutputMessage.self)
@@ -101,6 +108,9 @@ enum ResponseItem: Codable, Identifiable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
         switch self {
+        case .reasoning(let value):
+            try container.encode(ResponseItemType.reasoning, forKey: .type)
+            try value.encode(to: encoder)
         case .input_message(let value):
             try container.encode(ResponseItemType.message, forKey: .type)
             try container.encode(value.role, forKey: .role)
@@ -123,6 +133,8 @@ enum ResponseItem: Codable, Identifiable {
     
     func asDictionary() -> [String: Any] {
         switch self {
+        case .reasoning(let reasoning):
+            return ["type": reasoning.type, "summary": reasoning.summary]
         case .input_message(let inputMessage):
             let contentArray: [[String: Any]] = inputMessage.content.map { item in
                 switch item {
@@ -315,6 +327,17 @@ struct ResponseOutputMessage: Identifiable, Codable {
     let role: RoleType
     let status: ResponseStatus
     let type: MessageType
+}
+
+struct ResponseReasoning: Identifiable, Codable {
+
+    enum MessageType: String, Codable {
+        case reasoning
+    }
+
+    let id: String
+    let type: MessageType
+    let summary: [String]
 }
 
 enum ResponseOutputContent: Codable {

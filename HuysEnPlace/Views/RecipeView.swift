@@ -185,19 +185,59 @@ struct RecipeView: View {
                                         Task {
 //                                            showRecipeDiff = true
                                             updateRecipeIsGenerating = true
+//                                            let fullPrompt = """
+//                                            Modify the following recipe acording to these intructions:
+//                                            \(modifyRecipeMessage)
+//                                            Recipe:
+//                                            \(recipe.toJson())
+//                                            """
+//                                            print("Full Prompt: \(fullPrompt)")
+//                                            if let response = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self) {
+//                                                withAnimation {
+//                                                    modifiedRecipe = Recipe(from: response.recipe)
+//                                                    modifyRecipeResponse = response
+//                                                }
+//                                            }
+                                            
                                             let fullPrompt = """
                                             Modify the following recipe acording to these intructions:
                                             \(modifyRecipeMessage)
                                             Recipe:
                                             \(recipe.toJson())
                                             """
-                                            print("Full Prompt: \(fullPrompt)")
-                                            if let response = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self) {
-                                                withAnimation {
-                                                    modifiedRecipe = Recipe(from: response.recipe)
-                                                    modifyRecipeResponse = response
+                                            
+                                            var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
+                                                Task { @MainActor in
+                                                    print("ON CALL RECIPE: \(generatedRecipe.title)")
+//                                                    let recipe = Recipe(from: generatedRecipe)
+//                                                    appState.recipeItems.append(RecipeItem(title: "A NEW RECIPE: \(generatedRecipe.title)"))
+                                                    
+                                                    withAnimation {
+                                                        modifiedRecipe = Recipe(from: generatedRecipe)
+                                                        modifyRecipeResponse = .init(message: "I modified the recipe", recipe: generatedRecipe)
+                                                    }
                                                 }
-                                            }
+                                            })
+
+                                            let session = OpenAISession(
+                                                tools: [
+                                                    .modifyRecipe(modifyRecipeTool)
+                                                ],
+                                                instructions: """
+                                                    # Identity
+
+                                                    You contain all culinary knowledge in the world.
+                                                    When generating recipes, the unit should always be in metric.
+                                                """
+                                            )
+                                            
+                            //                let response = try? await session.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self)
+                                            let response = try? await session.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self)
+                                            
+                                            print("Response: ", response)
+                                            
+                                            
+                                            
                                             modifyRecipeMessage = ""
                                             
                                             updateRecipeIsGenerating = false
