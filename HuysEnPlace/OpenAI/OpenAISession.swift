@@ -10,12 +10,14 @@ import FoundationModels
 import Playgrounds
 
 struct OpenAISession {
+    let endpoint = "https://d313c8f8faa1.ngrok-free.app/functions/v1/response"
+    let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
+    
     var tools: [AnyEncodableTool] = []
     var instructions: String
     
     func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
-        let endpoint = "https://d313c8f8faa1.ngrok-free.app/functions/v1/response"
-        let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
+
         guard let url = URL(string: endpoint) else {
             print("Invalid URL")
             return nil
@@ -59,26 +61,29 @@ struct OpenAISession {
         request.httpBody = httpBody
 
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-//            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-//                print("Request failed with status code: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
-//                print("Response: \(response)")
-//                print("Data: \(String(data: data, encoding: .utf8) ?? "N/A")")
-//                return nil
-//            }
-//            
-//            print("DATA (raw): \(data)")
-//            print("DATA (utf8): \(String(data: data, encoding: .utf8) ?? "<non-utf8 data>")")
-//            
-//            let decodedResponse = try JSONDecoder().decode(Response.self, from: data)
-//            print("Decoded response: ", decodedResponse)
-            
+//            let (data, response) = try await URLSession.shared.data(for: request)            
             let openaiResponse = try await makeRequest(request: request)
+            
+            print("openAIResponse: \(openaiResponse)")
             
             for output in openaiResponse.output {
                 switch output {
                 case .output_message(let message):
                     print("Message received: \(message)")
+                    for c in message.content {
+                        switch c {
+                        case .output_text(let output):
+                            if let contentString = output.text as? String, let messageData = contentString.data(using: .utf8) {
+                                let decodedMessage = try JSONDecoder().decode(type.self, from: messageData)
+                                print("Decoded Message: ", decodedMessage)
+                                return decodedMessage
+                            } else {
+                                print("Error: message.content is not a String or Data.")
+                            }
+                        default:
+                            return nil
+                        }
+                    }
                 case .function_call(let functionCall):
                     print("Function call received: \(functionCall)")
                     print("Received function call name: '\(functionCall.name)'")
@@ -86,32 +91,40 @@ struct OpenAISession {
                     if let tool = tools.first(where: { $0.name == functionCall.name }) {
                         print("FOUND TOOL: \(tool)")
                         print("args: \(functionCall.arguments)")
-                        try await tool.call(arguments: functionCall.arguments)
+                        let toolResponse = try await tool.call(arguments: functionCall.arguments)
+                        
+                        let toolResponseString: String
+                        if let encodableResponse = toolResponse as? Encodable,
+                           let data = try? JSONEncoder().encode(AnyEncodable(erasing: encodableResponse)),
+                           let jsonString = String(data: data, encoding: .utf8) {
+                            toolResponseString = jsonString
+                        } else {
+                            toolResponseString = String(describing: toolResponse)
+                        }
+                        let toolCallOutput: ResponseFunctionToolCallOutput = .init(call_id: functionCall.call_id, output: toolResponseString)
+                        print("toolCallOutput: \(toolCallOutput)")
+                        
+                        let response = try await makeResponse(
+                            input: [
+//                                .function_call(functionCall),
+                                .function_call_output(toolCallOutput)
+                            ],
+                            schema: schema,
+                            previousResponseId: openaiResponse.id
+                        )
+                        print("TOOL CALL OUTPUT RESPONSE: \(response)")
+                        
+//                        if let contentString = response.text as? String, let messageData = contentString.data(using: .utf8) {
+//                            let decodedMessage = try JSONDecoder().decode(type.self, from: messageData)
+//                            print("Decoded Message: ", decodedMessage)
+//                            return decodedMessage
+//                        } else {
+//                            print("Error: message.content is not a String or Data.")
+//                        }
                     } else {
                         print("TOOL NOT FOUND")
                     }
-                    
-//                    if let tool = tools.first(where: { tool in
-//                        switch tool {
-//                        case .breadDatabase(let breadTool):
-//                            return breadTool.name == functionCall.name
-//                        case .modifyRecipe(let modifyTool):
-//                            return modifyTool.name == functionCall.name
-//                        }
-//                    }) {
-//                        print("FOUND TOOL: \(tool)")
-//                    } else {
-//                        print("TOOL NOT FOUND")
-//                    }
-                    
-                    
-//                    if functionCall.name == "modifyRecipe" {
-//                        if case let .modifyRecipe(modifyRecipeTool) = tool {
-//                            // Now you have the modifyRecipeTool instance
-//                        }
-//                    } else {
-//                        print("NO MATCHING FUNCTION NAME")
-//                    }
+
                 default:
                     print("Unhandled output: \(output)")
                 }
@@ -157,6 +170,82 @@ struct OpenAISession {
             }
             throw error
         }
+    }
+    
+    func makeResponse(input: [ResponseItem], schema: [String: Any], previousResponseId: String? = nil) async throws -> Response {
+        print("Make Response With previousResponseId: \(previousResponseId)")
+        guard let url = URL(string: endpoint) else {
+            throw URLError(.badURL)
+        }
+        
+        // Create and configure the request.
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        let inputArray: [[String: Any]] = input.map { message in
+            message.asDictionary()
+        }
+        
+        print("Input array: \(inputArray)")
+        
+        var requestBody: [String: Any] = [
+            "input": inputArray,
+            "schema": schema
+        ]
+        
+        if let previousResponseId = previousResponseId {
+            requestBody["previousResponseId"] = previousResponseId
+        }
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
+        
+        // Perform the network request.
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        print(response)
+        print("END OF RESPONSE -----------------------")
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            print("Request failed with status code: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
+            print("Response: \(response)")
+            print("Data: \(String(data: data, encoding: .utf8) ?? "N/A")")
+            throw URLError(.badServerResponse)
+        }
+        
+        // Decode the JSON response.
+        do {
+            let decodedResponse = try JSONDecoder().decode(Response.self, from: data)
+            print(decodedResponse)
+            return decodedResponse
+        } catch {
+            print("Decoding error: \(error)")
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("Raw JSON response: \(jsonString)")
+            }
+            throw error
+        }
+    }
+    
+    func handleResponse(_ response: Response) {
+        for output in response.output {
+            switch output {
+            case .reasoning(let responseReasoning):
+                print("Handling reasoning: \(responseReasoning)")
+            case .output_message(let responseOutputMessage):
+                print("Handling output_message: \(responseOutputMessage)")
+            case .function_call(let responseFunctionToolCall):
+                print("Handling function_call: \(responseFunctionToolCall)")
+            case .web_search_call(let responseWebSearchCall):
+                print("Unhandled web_search_call: \(responseWebSearchCall)")
+            default:
+                print("Unhandled output: \(output)")
+            }
+        }
+    }
+    
+    func handleOutputMessage(_ outputMessage: ResponseOutputMessage) {
+        
     }
 }
 
@@ -273,7 +362,7 @@ struct ModifyRecipeTool: Tool, Encodable {
             Modify the following recipe acording to these intructions:
             \(arguments.prompt)
             Recipe:
-            \(arguments.recipe)
+            \(Recipe(from: arguments.recipe).toJson())
             """
         print("Full Prompt: \(fullPrompt)")
 
@@ -301,6 +390,17 @@ struct ModifyRecipeTool: Tool, Encodable {
         try container.encode(type, forKey: .type)
         
         try container.encode(Arguments.generationSchema, forKey: .parameters)
+    }
+}
+
+struct AnyEncodable: Encodable {
+    let _encode: (Encoder) throws -> Void
+
+    init<T: Encodable>(erasing encodable: T) {
+        _encode = encodable.encode
+    }
+    func encode(to encoder: Encoder) throws {
+        try _encode(encoder)
     }
 }
 

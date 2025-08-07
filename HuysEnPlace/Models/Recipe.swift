@@ -72,7 +72,7 @@ class Recipe: Identifiable, Equatable, Codable, Hashable {
         do {
             let data = try encoder.encode(self)
             let jsonString = String(data: data, encoding: .utf8)
-            print("jsonString: ", jsonString)
+//            print("jsonString: ", jsonString)
             return jsonString
         } catch {
             print("Failed to encode Recipe to JSON: \(error)")

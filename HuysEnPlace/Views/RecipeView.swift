@@ -34,6 +34,8 @@ struct RecipeView: View {
     @State private var showChat: Bool = false
     
     @Namespace private var namespace
+    
+    @State private var previousResponseid: String? = nil
 
     var body: some View {
         @Bindable var recipe = recipe
@@ -199,12 +201,14 @@ struct RecipeView: View {
 //                                                }
 //                                            }
                                             
-                                            let fullPrompt = """
-                                            Modify the following recipe acording to these intructions:
-                                            \(modifyRecipeMessage)
-                                            Recipe:
-                                            \(recipe.toJson())
-                                            """
+//                                            let fullPrompt = """
+//                                            Modify the following recipe acording to these intructions:
+//                                            \(modifyRecipeMessage)
+//                                            Recipe:
+//                                            \(recipe.toJson())
+//                                            """
+                                            
+                                            let fullPrompt = modifyRecipeMessage
                                             
                                             var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
                                                 Task { @MainActor in
@@ -228,13 +232,17 @@ struct RecipeView: View {
 
                                                     You contain all culinary knowledge in the world.
                                                     When generating recipes, the unit should always be in metric.
+                                                
+                                                    # Current Recipe
+                                                    The user is currently viewing this recipe:
+                                                    \(recipe.toJson())
                                                 """
                                             )
                                             
                             //                let response = try? await session.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self)
-                                            let response = try? await session.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self)
+                                            let message = try? await session.respond(to: fullPrompt, generating: Message.self)
                                             
-                                            print("Response: ", response)
+                                            print("HERE IS message: ", message)
                                             
                                             
                                             

@@ -53,7 +53,8 @@ enum ResponseItem: Codable, Identifiable {
         case .function_call(let functionCall):
             return functionCall.id
         case .function_call_output(let functionCallOutput):
-            return functionCallOutput.id ?? UUID().uuidString
+//            return functionCallOutput.id ?? UUID().uuidString
+            return UUID().uuidString
         case .web_search_call(let webSeachCall):
             return webSeachCall.id
         }
@@ -188,7 +189,7 @@ enum ResponseItem: Codable, Identifiable {
         case .function_call_output(let value):
             return [
                 "type": "function_call_output",
-                "id": value.id ?? "",
+//                "id": value.id ?? "",
                 "call_id": value.call_id,
                 "output": value.output,
                 "status": value.status?.rawValue as Any
@@ -457,28 +458,28 @@ struct ResponseFunctionToolCall: Identifiable, Codable {
     }
 }
 
-struct ResponseFunctionToolCallOutput: Identifiable, Codable {
+struct ResponseFunctionToolCallOutput: Codable {
     enum MessageType: String, Codable {
         case function_call_output
     }
     
     let type: MessageType
-    let id: String?
+//    let id: String?
     let call_id: String
     let output: String
     let status: ResponseStatus?
     
     enum CodingKeys: String, CodingKey {
         case type
-        case id
+//        case id
         case call_id
         case output
         case status
     }
     
-    init(id: String? = nil, call_id: String, output: String, status: ResponseStatus? = nil) {
+    init(call_id: String, output: String, status: ResponseStatus? = nil) {
         self.type = .function_call_output
-        self.id = id
+//        self.id = id
         self.call_id = call_id
         self.output = output
         self.status = status

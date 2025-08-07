@@ -167,8 +167,8 @@ struct DiffView: View {
         let original = splitter(keepMarkdownPhrasesTogether(in: old))
         let revised = splitter(keepMarkdownPhrasesTogether(in: new))
         
-        print("original: \(original)")
-        print("revised: \(revised)")
+//        print("original: \(original)")
+//        print("revised: \(revised)")
         
         let diff = revised.difference(from: original)
         // Quick lookup tables
@@ -188,8 +188,8 @@ struct DiffView: View {
             }
         })
         
-        print("REMOVALS: \(removals)")
-        print("INSERTIONS: \(insertions)")
+//        print("REMOVALS: \(removals)")
+//        print("INSERTIONS: \(insertions)")
 
         
         var result: [Fragment] = []
