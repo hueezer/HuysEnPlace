@@ -16,7 +16,7 @@ struct OpenAISession {
     var tools: [AnyEncodableTool] = []
     var instructions: String
     
-    func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
+    func respondOld<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
 
         guard let url = URL(string: endpoint) else {
             print("Invalid URL")
@@ -227,25 +227,184 @@ struct OpenAISession {
         }
     }
     
-    func handleResponse(_ response: Response) {
+
+}
+
+extension OpenAISession {
+    func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
+        
+        guard let url = URL(string: endpoint) else {
+            print("Invalid URL")
+            return nil
+        }
+        
+        let encoder = JSONEncoder()
+        guard let schemaData = try? encoder.encode(type.generationSchema) else {
+            return nil
+        }
+        let jsonString = String(data: schemaData, encoding: .utf8)
+        
+        guard let schema = try? JSONSerialization.jsonObject(with: schemaData, options: []) as? [String: Any] else {
+            return nil
+        }
+        
+        guard let encodedTools = try? encoder.encode(tools) else {
+            print("Failed to encode tools")
+            return nil
+        }
+        
+        print("encodedTools: \(encodedTools)")
+        
+        let toolsJSON = try JSONSerialization.jsonObject(with: encodedTools) as? [[String: Any]]
+
+        let body: [String: Any] = [
+            "instructions": instructions,
+            "input": prompt,
+            "schema": schema,
+            "tools": toolsJSON
+        ]
+        
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else {
+            print("Failed to encode request body.")
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = httpBody
+        
+        let openaiResponse = try await makeRequest(request: request)
+        return try await handleResponse(openaiResponse, generating: type)
+    }
+    
+    func handleResponse<Content>(_ response: Response, generating type: Content.Type = Content.self) async throws -> Content? where Content: Generable & Decodable {
+        print("handleResponse: \(response)")
         for output in response.output {
             switch output {
             case .reasoning(let responseReasoning):
                 print("Handling reasoning: \(responseReasoning)")
-            case .output_message(let responseOutputMessage):
-                print("Handling output_message: \(responseOutputMessage)")
-            case .function_call(let responseFunctionToolCall):
-                print("Handling function_call: \(responseFunctionToolCall)")
+            case .output_message(let message):
+                print("Handling output_message: \(message)")
+                let items = try await handleOutputMessage(message, generating: type)
+                return items
+            case .function_call(let functionCall):
+                print("Handling function_call: \(functionCall)")
+                let items = try await handleFunctionCall(functionCall, generating: type, previousResponseId: response.id)
+                return items
             case .web_search_call(let responseWebSearchCall):
                 print("Unhandled web_search_call: \(responseWebSearchCall)")
             default:
                 print("Unhandled output: \(output)")
             }
         }
+        return nil
     }
     
-    func handleOutputMessage(_ outputMessage: ResponseOutputMessage) {
+    func handleOutputMessage<Content>(_ message: ResponseOutputMessage, generating type: Content.Type = Content.self) async throws -> Content? where Content: Generable & Decodable {
+        for content in message.content {
+            switch content {
+            case .output_text(let responseOutputText):
+                if let data = responseOutputText.text.data(using: .utf8) {
+                    let decoded = try? JSONDecoder().decode(type.self, from: data)
+                    return decoded
+                }
+            case .output_refusal(let responseOutputRefusal):
+                print("Unhandle output_refusal: \(responseOutputRefusal)")
+            }
+        }
+        return nil
+    }
+    
+    func handleFunctionCall<Content>(_ functionCall: ResponseFunctionToolCall, generating type: Content.Type = Content.self, previousResponseId: String? = nil) async throws -> Content? where Content: Generable & Decodable {
+        if let tool = tools.first(where: { $0.name == functionCall.name }) {
+            let toolResponse = try await tool.call(arguments: functionCall.arguments)
+            
+            let toolResponseString: String
+            if let encodableResponse = toolResponse as? Encodable,
+               let data = try? JSONEncoder().encode(AnyEncodable(erasing: encodableResponse)),
+               let jsonString = String(data: data, encoding: .utf8) {
+                toolResponseString = jsonString
+            } else {
+                toolResponseString = String(describing: toolResponse)
+            }
+            let toolCallOutput: ResponseFunctionToolCallOutput = .init(call_id: functionCall.call_id, output: toolResponseString)
+            
+            let input: [ResponseItem] = [
+                .function_call_output(toolCallOutput)
+            ]
+            
+            if let response = try await getResponse(input: input, generating: type, previousResponseId: previousResponseId) {
+                return try await handleResponse(response, generating: type)
+            }
+        }
+        return nil
+    }
+    
+    func getResponse<Content>(input: [ResponseItem], generating type: Content.Type = Content.self, previousResponseId: String? = nil) async throws -> Response? where Content: Generable & Decodable {
+        print("Make Response With previousResponseId: \(previousResponseId)")
+        guard let url = URL(string: endpoint) else {
+            throw URLError(.badURL)
+        }
         
+        let encoder = JSONEncoder()
+        guard let schemaData = try? encoder.encode(type.generationSchema) else {
+            return nil
+        }
+        let jsonString = String(data: schemaData, encoding: .utf8)
+        
+        guard let schema = try? JSONSerialization.jsonObject(with: schemaData, options: []) as? [String: Any] else {
+            return nil
+        }
+        
+        // Create and configure the request.
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        let inputArray: [[String: Any]] = input.map { message in
+            message.asDictionary()
+        }
+        
+        print("Input array: \(inputArray)")
+        
+        var requestBody: [String: Any] = [
+            "input": inputArray,
+            "schema": schema
+        ]
+        
+        if let previousResponseId = previousResponseId {
+            requestBody["previousResponseId"] = previousResponseId
+        }
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
+        
+        // Perform the network request.
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        print(response)
+        print("END OF RESPONSE -----------------------")
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            print("Request failed with status code: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
+            print("Response: \(response)")
+            print("Data: \(String(data: data, encoding: .utf8) ?? "N/A")")
+            throw URLError(.badServerResponse)
+        }
+        
+        // Decode the JSON response.
+        do {
+            let decodedResponse = try JSONDecoder().decode(Response.self, from: data)
+            print(decodedResponse)
+            return decodedResponse
+        } catch {
+            print("Decoding error: \(error)")
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("Raw JSON response: \(jsonString)")
+            }
+            throw error
+        }
     }
 }
 
