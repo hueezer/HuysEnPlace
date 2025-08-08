@@ -22,7 +22,7 @@ struct ChatContainer: View {
         ChatView(messages: $messages, prompt: $prompt) { message in
             Task {
                 print("Sending: \(message)")
-                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
+                if let response = try await OpenAISession(instructions: sharedInstructions).respondTest(to: message.text, generating: GeneratedMessage.self) {
                     let message = Message(text: response.text, role: .assistant)
                     messages.append(message)
                 }

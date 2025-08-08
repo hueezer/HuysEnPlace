@@ -9,6 +9,14 @@ import SwiftUI
 import FoundationModels
 import Playgrounds
 
+let sharedInstructions = """
+    # Identity
+    You are a culinary assistant with expert culinary knowledge.
+
+    # Response Formatting
+    - Use metric units (grams, liters, centimeters, etc.) for all measurements.
+    """
+
 class OpenAISession {
     let endpoint = "https://d313c8f8faa1.ngrok-free.app/functions/v1/response"
     let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
@@ -309,30 +317,30 @@ struct ModifyRecipeTool: Tool, Encodable {
 //            return generatedRecipeResponse
 //        }
         
-        let session = OpenAISession(instructions: """
-            # Identity
-            You are a culinary assistant with expert culinary knowledge. Your task is to modify recipes according to user requests.
-
-            # Recipe Context
-            You will always be given the current recipe in JSON format. Only change the recipe as instructed by the user; do not invent or add unrelated modifications.
-
-            # Response Formatting
-            - Output a new recipe that follows the user's instructions.
-            - Use metric units (grams, liters, centimeters, etc.) for all measurements.
-            - Preserve the original style and structure unless the user asks for a specific change.
-            - If the modification request is unclear, ask for clarification.
-
-            # Safety & Realism
-            - Only make modifications that are safe and realistic for home cooks.
-            - If a requested change would render the recipe unsafe or unworkable, politely explain why and propose a safe alternative.
-
-            # Example
-            If asked to 'make this recipe vegan', replace animal-based ingredients with plant-based alternatives and adjust instructions accordingly.
-
-            # Current Recipe
-            The following input will include the current recipe in JSON format.
-            """)
-        if let response = try? await session.respondTest(to: fullPrompt, generating: GeneratedRecipe.self) {
+//        let session = OpenAISession(instructions: """
+//            # Identity
+//            You are a culinary assistant with expert culinary knowledge. Your task is to modify recipes according to user requests.
+//
+//            # Recipe Context
+//            You will always be given the current recipe in JSON format. Only change the recipe as instructed by the user; do not invent or add unrelated modifications.
+//
+//            # Response Formatting
+//            - Output a new recipe that follows the user's instructions.
+//            - Use metric units (grams, liters, centimeters, etc.) for all measurements.
+//            - Preserve the original style and structure unless the user asks for a specific change.
+//            - If the modification request is unclear, ask for clarification.
+//
+//            # Safety & Realism
+//            - Only make modifications that are safe and realistic for home cooks.
+//            - If a requested change would render the recipe unsafe or unworkable, politely explain why and propose a safe alternative.
+//
+//            # Example
+//            If asked to 'make this recipe vegan', replace animal-based ingredients with plant-based alternatives and adjust instructions accordingly.
+//
+//            # Current Recipe
+//            The following input will include the current recipe in JSON format.
+//            """)
+        if let response = try? await OpenAISession(instructions: sharedInstructions).respondTest(to: fullPrompt, generating: GeneratedRecipe.self) {
             onCall(response)
             return response
         }
