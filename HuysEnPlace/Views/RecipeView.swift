@@ -240,7 +240,7 @@ struct RecipeView: View {
                                             )
                                             
                             //                let response = try? await session.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self)
-                                            let message = try? await session.respond(to: fullPrompt, generating: Message.self)
+                                            let message = try? await session.respondTest(to: fullPrompt, generating: GeneratedMessage.self)
                                             
                                             print("HERE IS message: ", message)
                                             

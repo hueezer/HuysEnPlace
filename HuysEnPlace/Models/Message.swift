@@ -9,7 +9,12 @@ import SwiftUI
 import FoundationModels
 
 @Generable
-struct Message: Identifiable, Codable {
-    var id: String { UUID().uuidString }
+struct GeneratedMessage: Codable {
     var text: String
+}
+
+struct Message: Identifiable, Codable {
+    let id: String = UUID().uuidString
+    let text: String
+    let role: Role
 }

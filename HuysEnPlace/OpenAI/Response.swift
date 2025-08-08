@@ -13,6 +13,7 @@ struct Response: Identifiable, Codable {
     var status: Status
     var output: [ResponseItem]
     var previous_response_id: String?
+    var output_text: String?
     
     enum Status: String, Codable {
         case completed

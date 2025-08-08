@@ -231,6 +231,25 @@ struct OpenAISession {
 }
 
 extension OpenAISession {
+    func respondTest<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
+        
+        let inputMessage: ResponseInputMessageItem = .init(id: "", content: [
+            .input_text(.init(text: prompt))
+        ], role: .user, type: .message)
+        
+        let input: [ResponseItem] = [
+            .input_message(inputMessage)
+        ]
+        
+        if let openaiResponse = try await getResponse(input: input, generating: type.self, previousResponseId: nil) {
+            print("openAIResponse: \(openaiResponse)")
+            let structuredResponse = try await handleResponse(openaiResponse, generating: type)
+            return structuredResponse
+        }
+        
+        return nil
+    }
+    
     func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
         
         guard let url = URL(string: endpoint) else {
@@ -370,9 +389,20 @@ extension OpenAISession {
         
         print("Input array: \(inputArray)")
         
+        guard let encodedTools = try? encoder.encode(tools) else {
+            print("Failed to encode tools")
+            return nil
+        }
+        
+        print("encodedTools: \(encodedTools)")
+        
+        let toolsJSON = try JSONSerialization.jsonObject(with: encodedTools) as? [[String: Any]]
+        
         var requestBody: [String: Any] = [
+            "instructions": instructions,
             "input": inputArray,
-            "schema": schema
+            "schema": schema,
+            "tools": toolsJSON
         ]
         
         if let previousResponseId = previousResponseId {
@@ -563,40 +593,45 @@ struct AnyEncodable: Encodable {
     }
 }
 
+//#Playground {
+//
+//    let encoded = try encodeTools([
+//        .breadDatabase(BreadDatabaseTool()),
+//    ])
+//    let jsonString = String(data: encoded, encoding: .utf8)
+//    
+//    let modifyRecipeMessage = "sourdough"
+//    
+//    let fullPrompt = """
+//    Modify the following recipe acording to these intructions:
+//    \(modifyRecipeMessage)
+//    Recipe:
+//    \(banhMiRecipe.toJson())
+//    """
+//    
+////    let fullPrompt = "Make me a sourdough recipe"
+//    
+//    let session = OpenAISession(
+//        // Use the enum case to wrap your tool for type erasure
+//        tools: [
+////            .breadDatabase(BreadDatabaseTool())
+//            .modifyRecipe(ModifyRecipeTool())
+//        ],
+//        instructions: """
+//                # Identity
+//
+//                You contain all culinary knowledge in the world.
+//                When generating recipes, the unit should always be in metric.
+//            """
+//    )
+//    
+//    let response = try await session.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self)
+//    
+//    
+//}
+
 #Playground {
-
-    let encoded = try encodeTools([
-        .breadDatabase(BreadDatabaseTool()),
-    ])
-    let jsonString = String(data: encoded, encoding: .utf8)
-    
-    let modifyRecipeMessage = "sourdough"
-    
-    let fullPrompt = """
-    Modify the following recipe acording to these intructions:
-    \(modifyRecipeMessage)
-    Recipe:
-    \(banhMiRecipe.toJson())
-    """
-    
-//    let fullPrompt = "Make me a sourdough recipe"
-    
-    let session = OpenAISession(
-        // Use the enum case to wrap your tool for type erasure
-        tools: [
-//            .breadDatabase(BreadDatabaseTool())
-            .modifyRecipe(ModifyRecipeTool())
-        ],
-        instructions: """
-                # Identity
-
-                You contain all culinary knowledge in the world.
-                When generating recipes, the unit should always be in metric.
-            """
-    )
-    
-    let response = try await session.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self)
-    
-    
+    let session = OpenAISession(instructions: "You are a kitchen assistant")
+//    let response = try await session.respond(to: "What is ascorbic acid?", generating: Message.self)
+    let response = try await session.respondTest(to: "What is ascorbic acid?", generating: GeneratedMessage.self)
 }
-
