@@ -10,19 +10,20 @@ import SwiftUI
 struct ChatContainer: View {
     @State private var messages: [Message] = []
     @State private var prompt: String = ""
-    
-    private let session = OpenAISession(instructions: """
-        # Identity
+    @State private var session = OpenAISession(instructions: """
+                    # Identity
 
-        You contain all culinary knowledge in the world.
-        When generating recipes, the unit should always be in metric.
-        """)
+                    You contain all culinary knowledge in the world.
+                    When generating recipes, the unit should always be in metric.
+                    """)
     
     var body: some View {
+        @Bindable var session = session
         ChatView(messages: $messages, prompt: $prompt) { message in
             Task {
                 print("Sending: \(message)")
-                if let response = try await OpenAISession(instructions: sharedInstructions).respondTest(to: message.text, generating: GeneratedMessage.self) {
+
+                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
                     let message = Message(text: response.text, role: .assistant)
                     messages.append(message)
                 }

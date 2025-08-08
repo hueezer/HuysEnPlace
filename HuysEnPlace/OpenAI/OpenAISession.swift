@@ -17,7 +17,8 @@ let sharedInstructions = """
     - Use metric units (grams, liters, centimeters, etc.) for all measurements.
     """
 
-class OpenAISession {
+@Observable
+class OpenAISession: @unchecked Sendable {
     let endpoint = "https://d313c8f8faa1.ngrok-free.app/functions/v1/response"
     let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
     
@@ -33,7 +34,7 @@ class OpenAISession {
 }
 
 extension OpenAISession {
-    nonisolated(nonsending) func respondTest<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
+    func respondTest<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
         
         let inputMessage: ResponseInputMessageItem = .init(id: "", content: [
             .input_text(.init(text: prompt))
@@ -201,7 +202,7 @@ func encodeTools(_ tools: [AnyEncodableTool]) throws -> Data {
 
 protocol EncodableTool: Tool, Encodable {}
 
-enum AnyEncodableTool: Encodable {
+enum AnyEncodableTool: Sendable, Encodable {
     case breadDatabase(BreadDatabaseTool)
     case modifyRecipe(ModifyRecipeTool)
     // add other tool cases here
@@ -246,13 +247,13 @@ enum AnyEncodableTool: Encodable {
 }
 
 
-struct BreadDatabaseTool: Tool, Encodable {
+struct BreadDatabaseTool: Tool, Encodable, Sendable {
     let name = "searchBreadDatabase"
     let description = "Searches a local database for bread recipes."
     let type = "function"
     
     @Generable
-    struct Arguments {
+    struct Arguments: Sendable {
         @Guide(description: "The type of bread to search for")
         var searchTerm: String
         @Guide(description: "The number of recipes to get", .range(1...6))
@@ -287,14 +288,14 @@ struct BreadDatabaseTool: Tool, Encodable {
     }
 }
 
-struct ModifyRecipeTool: Tool, Encodable {
+struct ModifyRecipeTool: Tool, Encodable, Sendable {
     let name = "modifyRecipe"
     let description = "Modifies a recipe based on input from the user."
     let type = "function"
     var onCall: @Sendable (GeneratedRecipe) -> Void = { _ in }
     
     @Generable
-    struct Arguments: Decodable {
+    struct Arguments: Decodable, Sendable {
         @Guide(description: "How the recipe should be modified.")
         var prompt: String
         var recipe: GeneratedRecipe
@@ -310,36 +311,6 @@ struct ModifyRecipeTool: Tool, Encodable {
             """
         print("Full Prompt: \(fullPrompt)")
 
-//        if let generatedRecipeResponse = try await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
-//            
-//            print("GeneratedRecipeResponse: \(generatedRecipeResponse)")
-//            onCall(generatedRecipeResponse)
-//            return generatedRecipeResponse
-//        }
-        
-//        let session = OpenAISession(instructions: """
-//            # Identity
-//            You are a culinary assistant with expert culinary knowledge. Your task is to modify recipes according to user requests.
-//
-//            # Recipe Context
-//            You will always be given the current recipe in JSON format. Only change the recipe as instructed by the user; do not invent or add unrelated modifications.
-//
-//            # Response Formatting
-//            - Output a new recipe that follows the user's instructions.
-//            - Use metric units (grams, liters, centimeters, etc.) for all measurements.
-//            - Preserve the original style and structure unless the user asks for a specific change.
-//            - If the modification request is unclear, ask for clarification.
-//
-//            # Safety & Realism
-//            - Only make modifications that are safe and realistic for home cooks.
-//            - If a requested change would render the recipe unsafe or unworkable, politely explain why and propose a safe alternative.
-//
-//            # Example
-//            If asked to 'make this recipe vegan', replace animal-based ingredients with plant-based alternatives and adjust instructions accordingly.
-//
-//            # Current Recipe
-//            The following input will include the current recipe in JSON format.
-//            """)
         if let response = try? await OpenAISession(instructions: sharedInstructions).respondTest(to: fullPrompt, generating: GeneratedRecipe.self) {
             onCall(response)
             return response
