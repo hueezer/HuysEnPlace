@@ -177,7 +177,7 @@ struct RecipeItemView: View {
         .task {
             if let recipe = recipeItem.recipe, let prompt = recipeItem.prompt {
                 inProgress = true
-                recipeItem.title = "Generating..."
+                recipeItem.title = "Generating... 1"
                 let fullPrompt = """
                     Modify the following recipe acording to these intructions:
                     \(prompt)
@@ -185,15 +185,72 @@ struct RecipeItemView: View {
                     \(recipe.toJson())
                     """
                 print("Full Prompt: \(fullPrompt)")
-                if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
-                    recipeItem = RecipeItem(from: generatedRecipe)
+//                if let generatedRecipe = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipe.self) {
+//                    recipeItem = RecipeItem(from: generatedRecipe)
+//                    inProgress = false
+//                }
+                
+                let session = OpenAISession(instructions: """
+                    # Identity
+                    You are a culinary assistant with expert culinary knowledge. Your task is to modify recipes according to user requests.
+
+                    # Recipe Context
+                    You will always be given the current recipe in JSON format. Only change the recipe as instructed by the user; do not invent or add unrelated modifications.
+
+                    # Response Formatting
+                    - Output a new recipe that follows the user's instructions.
+                    - Use metric units (grams, liters, centimeters, etc.) for all measurements.
+                    - Preserve the original style and structure unless the user asks for a specific change.
+                    - If the modification request is unclear, ask for clarification.
+
+                    # Safety & Realism
+                    - Only make modifications that are safe and realistic for home cooks.
+                    - If a requested change would render the recipe unsafe or unworkable, politely explain why and propose a safe alternative.
+
+                    # Example
+                    If asked to 'make this recipe vegan', replace animal-based ingredients with plant-based alternatives and adjust instructions accordingly.
+
+                    # Current Recipe
+                    The following input will include the current recipe in JSON format.
+                    """)
+                if let response = try? await session.respondTest(to: fullPrompt, generating: GeneratedRecipe.self) {
+                    recipeItem = RecipeItem(from: response)
                     inProgress = false
                 }
             } else if let prompt = recipeItem.prompt {
                 inProgress = true
-                recipeItem.title = "Generating..."
-                if let generatedRecipe = try? await OpenAI.respond(to: prompt, generating: GeneratedRecipe.self) {
-                    recipeItem = RecipeItem(from: generatedRecipe)
+                recipeItem.title = "Generating... 2"
+                
+                let session = OpenAISession(instructions: """
+                    # Identity
+                    You are a culinary assistant with expert culinary knowledge. Your task is to modify recipes according to user requests.
+
+                    # Recipe Context
+                    You will always be given the current recipe in JSON format. Only change the recipe as instructed by the user; do not invent or add unrelated modifications.
+
+                    # Response Formatting
+                    - Output a new recipe that follows the user's instructions.
+                    - Use metric units (grams, liters, centimeters, etc.) for all measurements.
+                    - Preserve the original style and structure unless the user asks for a specific change.
+                    - If the modification request is unclear, ask for clarification.
+
+                    # Safety & Realism
+                    - Only make modifications that are safe and realistic for home cooks.
+                    - If a requested change would render the recipe unsafe or unworkable, politely explain why and propose a safe alternative.
+
+                    # Example
+                    If asked to 'make this recipe vegan', replace animal-based ingredients with plant-based alternatives and adjust instructions accordingly.
+
+                    # Current Recipe
+                    The following input will include the current recipe in JSON format.
+                    """)
+                
+                let fullPrompt = """
+                    Generate the following recipe acording to these intructions:
+                    \(prompt)
+                    """
+                if let response = try? await session.respondTest(to: fullPrompt, generating: GeneratedRecipe.self) {
+                    recipeItem = RecipeItem(from: response)
                     inProgress = false
                 }
             }

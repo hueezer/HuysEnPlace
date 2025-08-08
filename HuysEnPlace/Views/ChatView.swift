@@ -10,17 +10,39 @@ import SwiftUI
 struct ChatContainer: View {
     @State private var messages: [Message] = []
     @State private var prompt: String = ""
+    
+    private let session = OpenAISession(instructions: """
+        # Identity
+
+        You contain all culinary knowledge in the world.
+        When generating recipes, the unit should always be in metric.
+        """)
+    
     var body: some View {
-        ChatView(messages: $messages, prompt: $prompt)
-            .safeAreaPadding()
+        ChatView(messages: $messages, prompt: $prompt) { message in
+            Task {
+                print("Sending: \(message)")
+                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
+                    let message = Message(text: response.text, role: .assistant)
+                    messages.append(message)
+                }
+            }
+        }
+        .safeAreaPadding()
     }
 }
 
 struct ChatView: View {
-    @Binding var messages: [Message]
-    @State private var scrolledID: Message.ID?
-    @Binding var prompt: String
+    
     @Namespace private var namespace
+    
+    @Binding var messages: [Message]
+    @Binding var prompt: String
+    
+    @State private var scrolledID: Message.ID?
+    
+    var onSubmit: (Message) -> Void = { _ in }
+    
     var body: some View {
         ScrollViewReader { value in
             GlassEffectContainer(spacing: 20) {
@@ -45,11 +67,11 @@ struct ChatView: View {
                             //                        .frame(minHeight: messages.last?.id == message.id ? 400 : 0, alignment: .top)
                             
                         }
-                        VStack {
-                            
-                        }
-                        .frame(height: 800)
-                        .id("BOTTOM")
+//                        VStack {
+//                            
+//                        }
+//                        .frame(height: 800)
+//                        .id("BOTTOM")
                     }
                     .scrollTargetLayout()
                 }
@@ -70,12 +92,7 @@ struct ChatView: View {
                     .padding()
                     .submitLabel(.send)
                     .onSubmit {
-                        withAnimation {
-                            value.scrollTo("BOTTOM", anchor: .top)
-                            let message = Message(text: prompt, role: .user)
-                            messages.append(message)
-                            prompt = ""
-                        }
+                        submitMessage()
                     }
                 HStack(spacing: 0) {
                     Spacer()
@@ -101,18 +118,20 @@ struct ChatView: View {
                         .clipShape(Circle())
                         .glassEffect(.regular.tint(.blue).interactive())
                         .onTapGesture {
-                            withAnimation {
-                                value.scrollTo("BOTTOM", anchor: .top)
-                                let message = Message(text: prompt, role: .user)
-                                messages.append(message)
-                                prompt = ""
-                            }
+                            submitMessage()
                         }
                 }
             }
             .padding(8)
             .glassEffect(in: RoundedRectangle(cornerRadius: 32))
         }
+    }
+    
+    func submitMessage() {
+        let message = Message(text: prompt, role: .user)
+        messages.append(message)
+        prompt = ""
+        onSubmit(message)
     }
 }
 
