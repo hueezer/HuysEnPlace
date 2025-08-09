@@ -17,6 +17,8 @@ struct ChatContainer: View {
                     When generating recipes, the unit should always be in metric.
                     """)
     
+    @State private var outputText: String = ""
+    
     var body: some View {
         @Bindable var session = session
         ChatView(messages: $messages, prompt: $prompt) { message in

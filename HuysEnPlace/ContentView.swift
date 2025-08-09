@@ -26,7 +26,7 @@ struct ContentView: View {
 
 
             Tab("Podcasts", systemImage: "carrot") {
-                ChatContainer()
+                StreamTestView()
                     .environment(app)
             }
             .badge("!")

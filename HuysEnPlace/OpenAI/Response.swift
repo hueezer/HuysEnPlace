@@ -516,3 +516,82 @@ struct ResponseWebSearchCall: Identifiable, Codable {
         try container.encode(status, forKey: .status)
     }
 }
+
+
+// Streaming
+enum ResponseStreamEvent: Codable {
+    case responseCreatedEvent(ResponseCreatedEvent)
+    case responseCompletedEvent(ResponseCompletedEvent)
+    case responseOutputTextDeltaEvent(ResponseOutputTextDeltaEvent)
+    
+    enum CodingKeys: String, CodingKey {
+        case type
+    }
+    
+    enum ResponseStreamEventType: String, Codable {
+        case responseCreated = "response.created"
+        case responseCompleted = "response.completed"
+        case responseOutputTextDelta = "response.output_text.delta"
+    }
+    
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(ResponseStreamEventType.self, forKey: .type)
+        switch type {
+        case .responseCreated:
+            let event = try ResponseCreatedEvent(from: decoder)
+            self = .responseCreatedEvent(event)
+        case .responseCompleted:
+            let event = try ResponseCompletedEvent(from: decoder)
+            self = .responseCompletedEvent(event)
+        case .responseOutputTextDelta:
+            let event = try ResponseOutputTextDeltaEvent(from: decoder)
+            self = .responseOutputTextDeltaEvent(event)
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        switch self {
+        case .responseCreatedEvent(let event):
+            try event.encode(to: encoder)
+        case .responseCompletedEvent(let event):
+            try event.encode(to: encoder)
+        case .responseOutputTextDeltaEvent(let event):
+            try event.encode(to: encoder)
+        }
+    }
+}
+
+struct ResponseCreatedEvent: Codable {
+    
+    enum EventType: String, Codable {
+        case responseCreated = "response.created"
+    }
+    
+    let type: EventType
+    let sequence_number: Int
+    let response: Response
+}
+
+struct ResponseCompletedEvent: Codable {
+    
+    enum EventType: String, Codable {
+        case responseCreated = "response.completed"
+    }
+    
+    let type: EventType
+    let sequence_number: Int
+    let response: Response
+}
+
+struct ResponseOutputTextDeltaEvent: Codable {
+    enum EventType: String, Codable {
+        case responseOutputTextDelta = "response.output_text.delta"
+    }
+    let type: EventType
+    let sequence_number: Int
+    let item_id: String
+    let output_index: Int
+    let content_index: Int
+    let delta: String
+}
