@@ -12,6 +12,7 @@ import Playgrounds
 extension OpenAISession {
 
     func stream(input: [ResponseItem], previousResponseId: String? = nil) async throws -> AsyncThrowingStream<ResponseStreamEvent, Error> {
+        
         var request = try baseStreamRequest()
 
         let encoder = JSONEncoder()
@@ -28,9 +29,17 @@ extension OpenAISession {
             "tools": toolsDict,
             "stream": "true"
         ]
+        
         if let previousResponseId = previousResponseId {
             requestBody["previousResponseId"] = previousResponseId
+        } else {
+            if self.previousResponseId != nil {
+                requestBody["previousResponseId"] = self.previousResponseId
+            }
         }
+        
+        print("stream previousResponseId from req body: \(requestBody["previousResponseId"])")
+
 
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
         
@@ -55,7 +64,15 @@ extension OpenAISession {
 //                            continuation.yield(data)
                             do {
                                 let responseStreamEvent = try JSONDecoder().decode(ResponseStreamEvent.self, from: data)
-                                print("responseStreamEvent: \(responseStreamEvent)")
+                                switch responseStreamEvent {
+                                    
+                                case .responseCreatedEvent(let event):
+                                    print("SETTING stream previousResponseId to: \(event.response.id)")
+                                    self.previousResponseId = event.response.id
+                                default:
+                                    print("responseStreamEvent: \(responseStreamEvent)")
+                                }
+                                
                                 continuation.yield(responseStreamEvent)
 //                                switch decodedResponse {
 //
@@ -81,6 +98,7 @@ extension OpenAISession {
     }
     
     func stream<Content>(input: [ResponseItem], generating type: Content.Type = Content.self, previousResponseId: String? = nil) async throws -> AsyncThrowingStream<ResponseStreamEvent, Error> where Content: Generable & Decodable {
+        print("stream previousResponseId: \(previousResponseId)")
         var request = try baseStreamRequest()
         
         // Schema
@@ -127,7 +145,15 @@ extension OpenAISession {
 //                            continuation.yield(data)
                             do {
                                 let responseStreamEvent = try JSONDecoder().decode(ResponseStreamEvent.self, from: data)
-                                print("responseStreamEvent: \(responseStreamEvent)")
+                                switch responseStreamEvent {
+                                    
+                                case .responseCreatedEvent(let event):
+                                    print("SETTING stream previousResponseId to: \(event.response.id)")
+                                    self.previousResponseId = event.response.id
+                                default:
+                                    print("responseStreamEvent: \(responseStreamEvent)")
+                                }
+                                
                                 continuation.yield(responseStreamEvent)
 //                                switch decodedResponse {
 //                                    
@@ -193,13 +219,14 @@ extension OpenAISession {
     func stream(
         input: String,
         previousResponseId: String? = nil,
+        onCreated: (@MainActor (String) -> Void)? = nil,
         onDelta: (@MainActor (String) -> Void)? = nil,
         onCompleted: (@MainActor (String) -> Void)? = nil,
     ) async throws -> AsyncThrowingStream<ResponseStreamEvent, Error> {
         let userMessage = ResponseInputMessageItem(
             id: UUID().uuidString,
             content: [
-                .input_text(ResponseInputText(text: "Can you tell me about bread flour? Just the first 200 words is great."))
+                .input_text(ResponseInputText(text: input))
             ],
             role: .user,
             status: .in_progress,
@@ -209,7 +236,8 @@ extension OpenAISession {
             .input_message(userMessage)
         ]
         
-        let streamEvents = try await stream(input: inputItems)
+        let streamEvents = try await stream(input: inputItems, previousResponseId: previousResponseId)
+        
 
         for try await streamEvent in streamEvents {
             switch streamEvent {
@@ -217,7 +245,7 @@ extension OpenAISession {
             case .responseCreatedEvent(let event):
                 print("responseCreated: \(event.response)")
                 if let text = event.response.output_text {
-//                    outputText = text
+                    await onCreated?(text)
                 }
             case .responseCompletedEvent(let event):
                 print("responseCreated: \(event.response.output)")
@@ -228,9 +256,7 @@ extension OpenAISession {
                         for content in message.content {
                             switch content {
                             case .output_text(let outputTextItem):
-//                                outputText = outputTextItem.text
                                 await onCompleted?(outputTextItem.text)
-                                print("TODO")
                             default:
                                 print("Default")
                             }

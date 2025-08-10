@@ -15,6 +15,6 @@ struct GeneratedMessage: Codable {
 
 struct Message: Identifiable, Codable {
     let id: String = UUID().uuidString
-    let text: String
+    var text: String
     let role: Role
 }

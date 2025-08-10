@@ -17,17 +17,41 @@ struct ChatContainer: View {
                     When generating recipes, the unit should always be in metric.
                     """)
     
-    @State private var outputText: String = ""
+    @State private var incomingMessage: Message?
     
     var body: some View {
         @Bindable var session = session
-        ChatView(messages: $messages, prompt: $prompt) { message in
+        ChatView(messages: $messages, prompt: $prompt, incomingMessage: $incomingMessage) { message in
             Task {
-                print("Sending: \(message)")
 
-                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
-                    let message = Message(text: response.text, role: .assistant)
-                    messages.append(message)
+//                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
+//                    let message = Message(text: response.text, role: .assistant)
+//                    messages.append(message)
+//                }
+                
+                do {
+                    let _ = try await session.stream(input: message.text) { text in
+                        incomingMessage = Message(text: "Incoming...", role: .assistant)
+                    } onDelta: { delta in
+                        if let current = incomingMessage {
+                            var updated = current
+                            updated.text += delta
+                            incomingMessage = updated
+                        } else {
+                            print("NO DELTA")
+                            incomingMessage = Message(text: delta, role: .assistant)
+                        }
+                    } onCompleted: { text in
+                        if let current = incomingMessage {
+                            var updated = current
+                            updated.text = text
+                            messages.append(updated)
+                            incomingMessage = nil
+                        }
+                    }
+    //                let streamEvents = try await session.stream(input: input)
+                } catch {
+                    print("Streaming failed:", error)
                 }
             }
         }
@@ -41,6 +65,7 @@ struct ChatView: View {
     
     @Binding var messages: [Message]
     @Binding var prompt: String
+    @Binding var incomingMessage: Message?
     
     @State private var scrolledID: Message.ID?
     
@@ -64,17 +89,32 @@ struct ChatView: View {
                                 if message.role == .assistant {
                                     Spacer(minLength: 0)
                                 }
+                                
+                                if message.role == .assistant && message.text.isEmpty {
+                                    ProgressView()
+                                }
                             }
                             .frame(maxWidth: .infinity)
                             .id(message.id)
-                            //                        .frame(minHeight: messages.last?.id == message.id ? 400 : 0, alignment: .top)
                             
                         }
-//                        VStack {
-//                            
-//                        }
-//                        .frame(height: 800)
-//                        .id("BOTTOM")
+                        if let message = incomingMessage {
+                            HStack(spacing: 0) {
+                                if message.role == .user {
+                                    Spacer(minLength: 50)
+                                }
+                                Text("\(message.text)")
+                                    .padding()
+                                    .glassEffect(message.role == .user ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
+                                    .glassEffectID(message.id, in: namespace)
+                                    .foregroundStyle(message.role == .user ? .white : .primary)
+                                if message.role == .assistant {
+                                    Spacer(minLength: 0)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .id(message.id)
+                        }
                     }
                     .scrollTargetLayout()
                 }
@@ -146,9 +186,11 @@ struct ChatView: View {
         Message(text: "Try sourdough or focaccia!", role: .assistant)
     ]
     @Previewable @State var prompt = ""
+    @Previewable @State var incomingMessage: Message? = Message(text: "Incoming...", role: .assistant)
     VStack {
-        ChatView(messages: $messages, prompt: $prompt)
-            .safeAreaPadding()
+//        ChatView(messages: $messages, prompt: $prompt, incomingMessage: $incomingMessage)
+//            .safeAreaPadding()
+        ChatContainer()
         HStack {
 //            Button("Scroll To Top") {
 //                if let lastID = messages.last?.id {
@@ -171,6 +213,11 @@ struct ChatView: View {
                     messages.append(Message(text: "Testing this message output. This can be a little bit longer. It's actually usually quite a bit longer.", role: .assistant))
                 }
             })
+            
+            Button("TEST INCOMING") {
+                incomingMessage = Message(text: "Testing incoming message...", role: .assistant)
+            }
         }
     }
 }
+

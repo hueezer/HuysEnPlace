@@ -23,6 +23,12 @@ struct ContentView: View {
                 RecipesView()
                     .environment(app)
             }
+            
+            Tab("Chat", systemImage: "bubble.left.and.bubble.right") {
+                ChatContainer()
+                    .environment(app)
+            }
+            .badge("!")
 
 
             Tab("Podcasts", systemImage: "carrot") {
