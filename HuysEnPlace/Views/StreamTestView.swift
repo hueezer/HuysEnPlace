@@ -62,7 +62,7 @@ struct StreamTestView: View {
             ]
             
             do {
-                let streamEvents = try await session.readStreamingResponse(input: input)
+                let streamEvents = try await session.stream(input: input)
                 status = "Started..."
                 for try await streamEvent in streamEvents {
                     switch streamEvent {
