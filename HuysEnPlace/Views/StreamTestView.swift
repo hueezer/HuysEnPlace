@@ -48,55 +48,60 @@ struct StreamTestView: View {
             }
         }
         .task {
-            let userMessage = ResponseInputMessageItem(
-                id: UUID().uuidString,
-                content: [
-                    .input_text(ResponseInputText(text: "Can you tell me about bread flour? Just the first 200 words is great."))
-                ],
-                role: .user,
-                status: .in_progress,
-                type: .message
-            )
-            let input: [ResponseItem] = [
-                .input_message(userMessage)
-            ]
+//            let userMessage = ResponseInputMessageItem(
+//                id: UUID().uuidString,
+//                content: [
+//                    .input_text(ResponseInputText(text: "Can you tell me about bread flour? Just the first 200 words is great."))
+//                ],
+//                role: .user,
+//                status: .in_progress,
+//                type: .message
+//            )
+//            let input: [ResponseItem] = [
+//                .input_message(userMessage)
+//            ]
             
             do {
-                let streamEvents = try await session.stream(input: input)
-                status = "Started..."
-                for try await streamEvent in streamEvents {
-                    switch streamEvent {
-                        
-                    case .responseCreatedEvent(let event):
-                        print("responseCreated: \(event.response)")
-                        if let text = event.response.output_text {
-                            outputText = text
-                        }
-                    case .responseCompletedEvent(let event):
-                        print("responseCreated: \(event.response.output)")
-                        for item in event.response.output {
-                            switch item {
-                            case .output_message(let message):
-                                print("output_message: \(message)")
-                                for content in message.content {
-                                    switch content {
-                                    case .output_text(let outputTextItem):
-                                        outputText = outputTextItem.text
-                                    default:
-                                        print("Default")
-                                    }
-                                }
-                            default:
-                                print("Default")
-                            }
-                        }
-                    case .responseOutputTextDeltaEvent(let event):
-                        print("responseOutputTextDeltaEvent: \(event)")
-                        outputText += event.delta
-                        
-                    }
-                    
+                let streamEvents = try await session.stream(input: "Can you tell me about bread flour? Just the first 200 words is great.") { delta in
+                    outputText += delta
+                } onCompleted: { text in
+                    outputText  = text
                 }
+//                let streamEvents = try await session.stream(input: input)
+                status = "Started..."
+//                for try await streamEvent in streamEvents {
+//                    switch streamEvent {
+//                        
+//                    case .responseCreatedEvent(let event):
+//                        print("responseCreated: \(event.response)")
+//                        if let text = event.response.output_text {
+//                            outputText = text
+//                        }
+//                    case .responseCompletedEvent(let event):
+//                        print("responseCreated: \(event.response.output)")
+//                        for item in event.response.output {
+//                            switch item {
+//                            case .output_message(let message):
+//                                print("output_message: \(message)")
+//                                for content in message.content {
+//                                    switch content {
+//                                    case .output_text(let outputTextItem):
+//                                        outputText = outputTextItem.text
+//                                    default:
+//                                        print("Default")
+//                                    }
+//                                }
+//                            default:
+//                                print("Default")
+//                            }
+//                        }
+//                    case .responseOutputTextDeltaEvent(let event):
+//                        print("responseOutputTextDeltaEvent: \(event)")
+//                        outputText += event.delta
+//                        
+//                    }
+//                    
+//                }
             } catch {
                 print("Streaming failed:", error)
             }

@@ -187,6 +187,69 @@ extension OpenAISession {
         }
         return schema
     }
+    
+    // Some convenience methods
+    
+    func stream(
+        input: String,
+        previousResponseId: String? = nil,
+        onDelta: (@MainActor (String) -> Void)? = nil,
+        onCompleted: (@MainActor (String) -> Void)? = nil,
+    ) async throws -> AsyncThrowingStream<ResponseStreamEvent, Error> {
+        let userMessage = ResponseInputMessageItem(
+            id: UUID().uuidString,
+            content: [
+                .input_text(ResponseInputText(text: "Can you tell me about bread flour? Just the first 200 words is great."))
+            ],
+            role: .user,
+            status: .in_progress,
+            type: .message
+        )
+        let inputItems: [ResponseItem] = [
+            .input_message(userMessage)
+        ]
+        
+        let streamEvents = try await stream(input: inputItems)
+
+        for try await streamEvent in streamEvents {
+            switch streamEvent {
+                
+            case .responseCreatedEvent(let event):
+                print("responseCreated: \(event.response)")
+                if let text = event.response.output_text {
+//                    outputText = text
+                }
+            case .responseCompletedEvent(let event):
+                print("responseCreated: \(event.response.output)")
+                for item in event.response.output {
+                    switch item {
+                    case .output_message(let message):
+                        print("output_message: \(message)")
+                        for content in message.content {
+                            switch content {
+                            case .output_text(let outputTextItem):
+//                                outputText = outputTextItem.text
+                                await onCompleted?(outputTextItem.text)
+                                print("TODO")
+                            default:
+                                print("Default")
+                            }
+                        }
+                    default:
+                        print("Default")
+                    }
+                }
+            case .responseOutputTextDeltaEvent(let event):
+                print("responseOutputTextDeltaEvent: \(event)")
+                await onDelta?(event.delta)
+//                outputText += event.delta
+                
+            }
+            
+        }
+        
+        return streamEvents
+    }
 }
 
 #Playground {
