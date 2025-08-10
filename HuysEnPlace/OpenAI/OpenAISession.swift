@@ -139,6 +139,8 @@ extension OpenAISession {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         
+        request.timeoutInterval = 300
+        
         let inputArray: [[String: Any]] = input.map { message in
             message.asDictionary()
         }
