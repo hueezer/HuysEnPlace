@@ -226,24 +226,6 @@ struct DiffView: View {
             Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
             // Now you can use `index` as needed
         }
-//        HStack(spacing: 0) {
-//            let _ = print("PIECES: \(pieces)")
-//            pieces.enumerated().reduce(Text("")) { t, pair in
-//                let (index, piece) = pair
-//                return t +
-//                Text(LocalizedStringKey(piece.text))
-//                    .foregroundColor(color(for: piece.kind))
-//                    .strikethrough(piece.kind == .deletion) +
-//                Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
-//                // Now you can use `index` as needed
-//            }
-//        }
-//        .frame(maxWidth: .infinity, alignment: alignment)
-//        .font(.system(.subheadline, design: .monospaced))
-//        .padding()
-//        .background(Color(.secondarySystemBackground))
-//        .clipped()
-//        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private func color(for kind: Kind) -> Color {
@@ -276,6 +258,20 @@ struct DiffView: View {
             [Active Sourdough Starter](miseenplace://ingredients/active-sourdough-starter)
             """,
             alignment: .leading)
+        DiffView(old: "", new: """
+            Prepare the levain: In a small jar, mix **50 g** of [Bread Flour](miseenplace://ingredients/bread-flour), **50 g** of [Water](miseenplace://ingredients/water) and **10 g** of mature [Sourdough Starter](miseenplace://ingredients/sourdough-starter) (100% hydration). Cover loosely and ferment at **26 °C** for **8–12 h** until doubled, domed and bubbly.
+            Mix the final dough: In the bowl of a stand mixer, combine **210 g** of [Water](miseenplace://ingredients/water), **50 g** of beaten [Whole Egg](miseenplace://ingredients/egg), all the ripe levain (about **110 g**), **2 g** of [Sugar](miseenplace://ingredients/sugar), **2 g** of [Salt](miseenplace://ingredients/salt) and **1 g** of [Ascorbic Acid](miseenplace://ingredients/ascorbic-acid) (optional). Add **400 g** of [Bread Flour](miseenplace://ingredients/bread-flour) and mix with a dough hook on low for **5 min**, then medium-high for **3 min** until smooth with a thin windowpane.
+            Lightly oil the work surface with [Vegetable Oil](miseenplace://ingredients/vegetable-oil). Transfer the dough, give **4–6** gentle slap-and-folds, shape into a ball, cover and rest **30 min** (fermentolyse).
+            Bulk-ferment for **4–5 h** at **26 °C**, giving the dough two to three letter-folds every **60 min**. Aim for a **70–80%** rise and a light, airy feel.
+            Optional flavor build: After the first **60–90 min** of bulk, you may cover and refrigerate the dough for **8–12 h** at **4 °C**. Next day, let it warm at room temp until puffy before proceeding.
+            Divide into six **120 g** pieces. Pre-shape into loose balls, cover and bench-rest **20 min**.
+            Shape each piece into a tight torpedo (see baguette-shaping references). Place seam-side-down on a lightly oiled baguette pan.
+            Final proof at **26 °C** (oven with light on and a pan of warm water) for **3–3½ h**, misting the loaves lightly with water every **15 min**. They should expand **2.5–3×** and feel very light.
+            Preheat the oven to **230 °C** (Bake, bottom heat or no fan) with two trays, one filled with lava rocks for steam.
+            Bring a kettle of water to a boil. When loaves are ready, score with a lame, mist the surfaces, slide pans into the oven and carefully pour the boiling water over the lava rocks.
+            Bake **10 min** without opening the door, then vent the steam and bake a further **7–9 min** until deep golden and very light in weight.
+            Remove the Bánh Mì and cool on a rack. Cracks should begin to sing and appear after **5–10 min**; serve warm for the classic crisp-thin crust.
+            """)
     }
     .frame(maxWidth: .infinity)
 }

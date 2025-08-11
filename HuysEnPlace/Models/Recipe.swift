@@ -36,7 +36,13 @@ class Recipe: Identifiable, Equatable, Codable, Hashable {
     init(from generatedRecipe: GeneratedRecipe) {
         self.title = generatedRecipe.title
         self.ingredients = generatedRecipe.ingredients
-        self.steps = generatedRecipe.steps.map { Step(text: $0.text, timers: $0.timers) }
+        self.steps = generatedRecipe.steps.map {
+//            Step(text: $0.text, timers: $0.timers)
+            
+            let toAdd = String($0.text.prefix(120))
+            print("STEP STEP: \(toAdd)")
+            return Step(text: toAdd)
+        }
     }
     
     private enum CodingKeys: String, CodingKey {

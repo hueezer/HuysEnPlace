@@ -262,8 +262,10 @@ extension OpenAISession {
                                 print("Default")
                             }
                         }
-                    case .function_call(let toolCall)
-                        
+                    case .function_call(let functionCall):
+                        print("Handling function_call: \(functionCall)")
+                        let functionCallResponse = try await handleFunctionCall(functionCall, previousResponseId: event.response.id)
+                        print("functionCallResponse: \(functionCallResponse)")
                     default:
                         print("Default")
                     }
