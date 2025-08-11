@@ -257,10 +257,13 @@ extension OpenAISession {
                             switch content {
                             case .output_text(let outputTextItem):
                                 await onCompleted?(outputTextItem.text)
+                            
                             default:
                                 print("Default")
                             }
                         }
+                    case .function_call(let toolCall)
+                        
                     default:
                         print("Default")
                     }

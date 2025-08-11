@@ -33,8 +33,12 @@ class OpenAISession: @unchecked Sendable {
 
 }
 
+
+
+
+// Methods for generating a specific type
 extension OpenAISession {
-    func respondTest<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
+    func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
         
         let inputMessage: ResponseInputMessageItem = .init(id: "", content: [
             .input_text(.init(text: prompt))
@@ -313,7 +317,7 @@ struct ModifyRecipeTool: Tool, Encodable, Sendable {
             """
         print("Full Prompt: \(fullPrompt)")
 
-        if let response = try? await OpenAISession(instructions: sharedInstructions).respondTest(to: fullPrompt, generating: GeneratedRecipe.self) {
+        if let response = try? await OpenAISession(instructions: sharedInstructions).respond(to: fullPrompt, generating: GeneratedRecipe.self) {
             onCall(response)
             return response
         }
@@ -389,6 +393,6 @@ struct AnyEncodable: Encodable {
 #Playground {
     let session = OpenAISession(instructions: "You are a kitchen assistant")
 //    let response = try await session.respond(to: "What is ascorbic acid?", generating: Message.self)
-    let response = try await session.respondTest(to: "What is ascorbic acid?", generating: GeneratedMessage.self)
+    let response = try await session.respond(to: "What is ascorbic acid?", generating: GeneratedMessage.self)
 }
 

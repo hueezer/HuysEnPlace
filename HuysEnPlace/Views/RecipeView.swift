@@ -187,26 +187,6 @@ struct RecipeView: View {
                                         Task {
 //                                            showRecipeDiff = true
                                             updateRecipeIsGenerating = true
-//                                            let fullPrompt = """
-//                                            Modify the following recipe acording to these intructions:
-//                                            \(modifyRecipeMessage)
-//                                            Recipe:
-//                                            \(recipe.toJson())
-//                                            """
-//                                            print("Full Prompt: \(fullPrompt)")
-//                                            if let response = try? await OpenAI.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self) {
-//                                                withAnimation {
-//                                                    modifiedRecipe = Recipe(from: response.recipe)
-//                                                    modifyRecipeResponse = response
-//                                                }
-//                                            }
-                                            
-//                                            let fullPrompt = """
-//                                            Modify the following recipe acording to these intructions:
-//                                            \(modifyRecipeMessage)
-//                                            Recipe:
-//                                            \(recipe.toJson())
-//                                            """
                                             
                                             let fullPrompt = modifyRecipeMessage
                                             
@@ -239,10 +219,31 @@ struct RecipeView: View {
                                                 """
                                             )
                                             
-                            //                let response = try? await session.respond(to: fullPrompt, generating: GeneratedRecipeResponse.self)
-                                            let message = try? await session.respondTest(to: fullPrompt, generating: GeneratedMessage.self)
+//                                            let message = try? await session.respondTest(to: fullPrompt, generating: GeneratedMessage.self)
+//                                            
+//                                            print("HERE IS message: ", message)
                                             
-                                            print("HERE IS message: ", message)
+                                            let _ = try await session.stream(input: fullPrompt) { text in
+//                                                incomingMessage = Message(text: "Incoming...", role: .assistant)
+                                            } onDelta: { delta in
+                                                print("onDelta: \(delta)")
+//                                                if let current = incomingMessage {
+//                                                    var updated = current
+//                                                    updated.text += delta
+//                                                    incomingMessage = updated
+//                                                } else {
+//                                                    print("NO DELTA")
+//                                                    incomingMessage = Message(text: delta, role: .assistant)
+//                                                }
+                                            } onCompleted: { text in
+                                                print("onComplete: \(text)")
+//                                                if let current = incomingMessage {
+//                                                    var updated = current
+//                                                    updated.text = text
+//                                                    messages.append(updated)
+//                                                    incomingMessage = nil
+//                                                }
+                                            }
                                             
                                             
                                             

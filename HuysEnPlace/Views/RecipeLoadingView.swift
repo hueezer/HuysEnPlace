@@ -38,7 +38,7 @@ struct RecipeLoadingView: View {
 //                    print("GENERATED RECIPE: \(recipe?.steps)")
 //                }
 
-                if let generatedRecipe = try? await OpenAISession(instructions: sharedInstructions).respondTest(to: prompt, generating: GeneratedRecipe.self) {
+                if let generatedRecipe = try? await OpenAISession(instructions: sharedInstructions).respond(to: prompt, generating: GeneratedRecipe.self) {
                     recipe = Recipe(title: generatedRecipe.title, ingredients: generatedRecipe.ingredients, steps: generatedRecipe.steps.map { Step(text: $0.text, timers: $0.timers) })
                 }
             } else if let inputRecipe {

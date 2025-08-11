@@ -190,7 +190,7 @@ struct RecipeItemView: View {
 //                    inProgress = false
 //                }
                 
-                if let response = try? await OpenAISession(instructions: sharedInstructions).respondTest(to: fullPrompt, generating: GeneratedRecipe.self) {
+                if let response = try? await OpenAISession(instructions: sharedInstructions).respond(to: fullPrompt, generating: GeneratedRecipe.self) {
                     recipeItem = RecipeItem(from: response)
                     inProgress = false
                 }
@@ -202,7 +202,7 @@ struct RecipeItemView: View {
                     Generate the following recipe acording to these intructions:
                     \(prompt)
                     """
-                if let response = try? await OpenAISession(instructions: sharedInstructions)                                                                                          .respondTest(to: fullPrompt, generating: GeneratedRecipe.self) {
+                if let response = try? await OpenAISession(instructions: sharedInstructions)                                                                                          .respond(to: fullPrompt, generating: GeneratedRecipe.self) {
                     recipeItem = RecipeItem(from: response)
                     inProgress = false
                 }
