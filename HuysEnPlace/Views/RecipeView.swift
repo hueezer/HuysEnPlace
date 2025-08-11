@@ -370,8 +370,8 @@ struct RecipeView: View {
                         Step(text: "Final proof at **26 °C** (oven with light on and a pan of warm water) for **3–3½ h**, misting the loaves lightly with water every **15 min**. They should expand **2.5–3×** and feel very light."),
                         Step(text: "Preheat the oven to **230 °C** (Bake, bottom heat or no fan) with two trays, one filled with lava rocks for steam."),
                         Step(text: "Bring a kettle of water to a boil. When loaves are ready, score with a lame, mist the surfaces, slide pans into the oven and carefully pour the boiling water over the lava rocks."),
-                        Step(text: "Bake **10 min** without opening the door, then vent the steam and bake a further **7–9 min** until deep golden and very light in weight."),
-                        Step(text: "Remove the Bánh Mì and cool on a rack. Cracks should begin to sing and appear after **5–10 min**; serve warm for the classic crisp-thin crust.")
+//                        Step(text: "Bake **10 min** without opening the door, then vent the steam and bake a further **7–9 min** until deep golden and very light in weight."),
+//                        Step(text: "Remove the Bánh Mì and cool on a rack. Cracks should begin to sing and appear after **5–10 min**; serve warm for the classic crisp-thin crust.")
                     ])
 //                    modifiedRecipe = testRecipe
                     modifiedRecipe = Recipe()

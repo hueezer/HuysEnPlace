@@ -217,6 +217,7 @@ struct DiffView: View {
     }
 
     var body: some View {
+        Text(makeAttributedString())
         pieces.enumerated().reduce(Text("")) { t, pair in
             let (index, piece) = pair
             return t +
@@ -226,6 +227,29 @@ struct DiffView: View {
             Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
             // Now you can use `index` as needed
         }
+    }
+    
+//    var body: some View {
+//        Text(makeAttributedString())
+//    }
+//
+    private func makeAttributedString() -> AttributedString {
+        var out = AttributedString()
+        for (i, piece) in pieces.enumerated() {
+            var chunk = AttributedString(piece.text)     // verbatim by default
+            chunk.foregroundColor = color(for: piece.kind)
+            if piece.kind == .deletion { chunk.strikethroughStyle = .single }
+            out += chunk
+
+            if piece.kind == .deletion,
+               i + 1 < pieces.count,
+               pieces[i + 1].kind != .deletion {
+                out += AttributedString(" ")
+            }
+        }
+        
+        print("OUT: \(out)")
+        return out
     }
 
     private func color(for kind: Kind) -> Color {
