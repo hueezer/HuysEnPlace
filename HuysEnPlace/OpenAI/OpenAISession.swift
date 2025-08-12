@@ -72,7 +72,8 @@ extension OpenAISession {
                 print("---------------------------------------")
                 print("Returning items: \(items)")
                 print("---------------------------------------")
-                return items
+//                return items
+                return response
             case .function_call(let functionCall):
                 print("Handling function_call: \(functionCall)")
                 let items = try await handleFunctionCall(functionCall, previousResponseId: response.id)
@@ -123,8 +124,8 @@ extension OpenAISession {
                 print("--------------------------------------------------------------------------------")
                 print("handleFunctionCallResponse: \(response)")
                 print("--------------------------------------------------------------------------------")
-//                return try await handleResponse(response)
-                return response
+                return try await handleResponse(response)
+//                return response
             }
         }
         return nil

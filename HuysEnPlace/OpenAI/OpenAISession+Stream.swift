@@ -51,14 +51,11 @@ extension OpenAISession {
             Task {
                 do {
                     for try await line in bytes.lines {
-                        print("LINE")
                         print("LINE: \(line)")
                         print("--------------------END OF LINE--------------------")
                         let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
                         guard !trimmed.isEmpty else { continue }
                         if let data = trimmed.data(using: .utf8) {
-                            print("DATA trimmed")
-//                            continuation.yield(data)
                             do {
                                 let responseStreamEvent = try JSONDecoder().decode(ResponseStreamEvent.self, from: data)
                                 switch responseStreamEvent {
@@ -230,6 +227,8 @@ extension OpenAISession {
                 
             case .responseCreatedEvent(let event):
                 print("responseCreated: \(event.response)")
+                print("SETTING stream previousResponseId to: \(event.response.id)")
+                self.previousResponseId = event.response.id
                 if let text = event.response.output_text {
                     await onCreated?(text)
                 }
@@ -263,6 +262,8 @@ extension OpenAISession {
                 await onDelta?(event.delta)
 //                outputText += event.delta
                 
+            case .responseFunctionCallArgumentsDoneEvent(let event):
+                print("responseFunctionCallArgumentsDoneEvent: \(event)")
             }
             
         }

@@ -523,6 +523,7 @@ enum ResponseStreamEvent: Codable {
     case responseCreatedEvent(ResponseCreatedEvent)
     case responseCompletedEvent(ResponseCompletedEvent)
     case responseOutputTextDeltaEvent(ResponseOutputTextDeltaEvent)
+    case responseFunctionCallArgumentsDoneEvent(ResponseFunctionCallArgumentsDoneEvent)
     
     enum CodingKeys: String, CodingKey {
         case type
@@ -532,6 +533,7 @@ enum ResponseStreamEvent: Codable {
         case responseCreated = "response.created"
         case responseCompleted = "response.completed"
         case responseOutputTextDelta = "response.output_text.delta"
+        case responseFunctionCallArgumentsDone = "response.function_call_arguments.done"
     }
     
     init(from decoder: any Decoder) throws {
@@ -547,6 +549,9 @@ enum ResponseStreamEvent: Codable {
         case .responseOutputTextDelta:
             let event = try ResponseOutputTextDeltaEvent(from: decoder)
             self = .responseOutputTextDeltaEvent(event)
+        case .responseFunctionCallArgumentsDone:
+            let event = try ResponseFunctionCallArgumentsDoneEvent(from: decoder)
+            self = .responseFunctionCallArgumentsDoneEvent(event)
         }
     }
     
@@ -558,6 +563,21 @@ enum ResponseStreamEvent: Codable {
             try event.encode(to: encoder)
         case .responseOutputTextDeltaEvent(let event):
             try event.encode(to: encoder)
+        case .responseFunctionCallArgumentsDoneEvent(let event):
+            try event.encode(to: encoder)
+        }
+    }
+    
+    func id() -> String? {
+        switch self {
+        case .responseCreatedEvent(let event):
+            return event.response.id
+        case .responseCompletedEvent(let event):
+            return event.response.id
+        case .responseOutputTextDeltaEvent(let event):
+            return nil
+        case .responseFunctionCallArgumentsDoneEvent(let event):
+            return nil
         }
     }
 }
@@ -594,4 +614,15 @@ struct ResponseOutputTextDeltaEvent: Codable {
     let output_index: Int
     let content_index: Int
     let delta: String
+}
+
+struct ResponseFunctionCallArgumentsDoneEvent: Codable {
+    enum EventType: String, Codable {
+        case responseFunctionCallArgumentsDone = "response.function_call.arguments_done"
+    }
+    let type: EventType
+    let sequence_number: Int
+    let item_id: String
+    let output_index: Int
+    let arguments: String
 }

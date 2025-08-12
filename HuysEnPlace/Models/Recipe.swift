@@ -152,6 +152,7 @@ struct IngredientQuantity: Codable, Identifiable, Equatable {
     var id: String = UUID().uuidString
     @Guide(description: "Amount and quantity in grams. Example: 30 g. This should not be in markdown.")
     var quantity: String = ""
+    @Guide(description: "Ingredient name. This should not be in markdown.")
     var ingredientText: String = ""
     var note: String = ""
 //    var ingredient: Ingredient?

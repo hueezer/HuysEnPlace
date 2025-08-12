@@ -181,6 +181,8 @@ struct RecipeIngredientInfoView: View {
                         print("responseOutputTextDeltaEvent: \(event)")
                         infoState.overview += event.delta
                         
+                    case .responseFunctionCallArgumentsDoneEvent(let event):
+                        print("responseFunctionCallArgumentsDoneEvent: \(event)")
                     }
                     
                 }
