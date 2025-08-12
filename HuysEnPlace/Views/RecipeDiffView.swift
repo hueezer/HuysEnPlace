@@ -168,7 +168,7 @@ struct RecipeKey: View {
 
 #Preview {
     ScrollView {
-        RecipeDiffView(recipe: banhMiRecipe, updatedRecipe: .constant(nil))
+        RecipeDiffView(recipe: banhMiRecipe, updatedRecipe: .constant(banhMiRecipeDiff))
             .safeAreaPadding()
             .padding(.top, 50)
     }

@@ -218,15 +218,15 @@ struct DiffView: View {
 
     var body: some View {
         Text(makeAttributedString())
-        pieces.enumerated().reduce(Text("")) { t, pair in
-            let (index, piece) = pair
-            return t +
-            Text(LocalizedStringKey(piece.text))
-                .foregroundColor(color(for: piece.kind))
-                .strikethrough(piece.kind == .deletion) +
-            Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
-            // Now you can use `index` as needed
-        }
+//        pieces.enumerated().reduce(Text("")) { t, pair in
+//            let (index, piece) = pair
+//            return t +
+//            Text(LocalizedStringKey(piece.text))
+//                .foregroundColor(color(for: piece.kind))
+//                .strikethrough(piece.kind == .deletion) +
+//            Text(piece.kind == .deletion && index + 1 < pieces.count && pieces[index + 1].kind != .deletion ? " " : "")
+//            // Now you can use `index` as needed
+//        }
     }
     
 //    var body: some View {
@@ -236,11 +236,12 @@ struct DiffView: View {
     private func makeAttributedString() -> AttributedString {
         var out = AttributedString()
         for (i, piece) in pieces.enumerated() {
-            var chunk = AttributedString(piece.text)     // verbatim by default
-            chunk.foregroundColor = color(for: piece.kind)
-            if piece.kind == .deletion { chunk.strikethroughStyle = .single }
-            out += chunk
-
+//            var chunk = AttributedString(piece.text)     // verbatim by default
+            if var chunk = try? AttributedString(markdown: piece.text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+                chunk.foregroundColor = color(for: piece.kind)
+                if piece.kind == .deletion { chunk.strikethroughStyle = .single }
+                out += chunk
+            }
             if piece.kind == .deletion,
                i + 1 < pieces.count,
                pieces[i + 1].kind != .deletion {

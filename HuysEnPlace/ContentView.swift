@@ -37,6 +37,18 @@ struct ContentView: View {
             }
             .badge("!")
             
+            Tab("Recipe Diff", systemImage: "carrot") {
+                ScrollView {
+                    RecipeDiffView(recipe: banhMiRecipe, updatedRecipe: .constant(banhMiRecipeDiff))
+                        .safeAreaPadding()
+                        .padding(.top, 50)
+                }
+                .environment(app)
+            }
+            .badge("!")
+            
+
+            
             Tab(role: .search) {
                 Text("Search")
             }

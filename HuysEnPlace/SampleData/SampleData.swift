@@ -140,10 +140,62 @@ let allIngredients: [Ingredient] = [
     title: "Bánh Mì Bread",
     content: banhMiRecipeContent,
     ingredients: [
-        
+        .init(title: "For the Dough", items: [
+            .init(id: "0001", quantity: "450 g", ingredientText: "Bread Flour", note: ""),
+            .init(id: "0002", quantity: "260 g", ingredientText: "Water", note: ""),
+            .init(id: "0003", quantity: "50 g", ingredientText: "Egg", note: ""),
+            .init(id: "0004", quantity: "8 g", ingredientText: "Instant Yeast", note: ""),
+            .init(id: "0005", quantity: "2 g", ingredientText: "Salt", note: ""),
+            .init(id: "0006", quantity: "2 g", ingredientText: "Sugar", note: ""),
+            .init(id: "0007", quantity: "1 g", ingredientText: "Ascorbic Acid", note: "(Vitamin C)"),
+            .init(id: "0008", quantity: "", ingredientText: "Vegetable Oil", note: "as needed")
+        ])
     ],
     steps: [
-        .init(text: "Hello, this is **step 1**", timers: [.init(name: "Test", duration: 300)])
+//        .init(id: "step-1", text: "Combine egg, water, yeast, sugar, salt, and ascorbic acid in a mixing bowl. Add the flour and mix together."),
+//        .init(id: "step-2", text: "Using a stand mixer, knead on low speed for 7 minutes, then on high speed for 3 minutes. Continue until the gluten is well developed. (Mixing times may vary by mixer.)", timers: [.init(name: "Low speed mix", duration: 420), .init(name: "High speed mix", duration: 180)]),
+//        .init(id: "step-3", text: "Lightly oil your work surface. Remove the dough from the bowl, slap and fold it 4–6 times, shape into a ball, cover, and let it rest.", timers: [.init(name: "Bench rest", duration: 1200)]),
+        .init(id: "step-4", text: "Divide the dough into six 120g portions. Roll into small balls. Cover and let rest.", timers: [.init(name: "Portion rest", duration: 1200)]),
+        .init(id: "step-5", text: "Shape each using the method demonstrated in the video. Place the shaped dough onto a lightly oiled baguette pan."),
+        .init(id: "step-6", text: "Proof in the oven with the light on and a pot of warm water for 60 minutes. Spray with water every 15 minutes.", timers: [.init(name: "Oven proof", duration: 3600)]),
+        .init(id: "step-7", text: "Remove from the oven and proof on a countertop for 30 additional minutes. Meanwhile, preheat the oven to Bake 450F (no fan, bottom only if possible) with 2 trays, one with lava rocks.", timers: [.init(name: "Countertop proof", duration: 1800)]),
+        .init(id: "step-8", text: "Once the dough has grown 2.5 to 3 times in size, and the oven has preheated, boil a pot of water. Score the loaves with a lame or razor. Immediately spray with water after scoring."),
+        .init(id: "step-9", text: "Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray."),
+        .init(id: "step-10", text: "Bake for 8 minutes without opening the door.", timers: [.init(name: "Initial bake", duration: 480)]),
+        .init(id: "step-11", text: "Open the door to release any leftover steam, and bake 7-8 minutes depending on desired color.", timers: [.init(name: "Final bake", duration: 480)]),
+        .init(id: "step-12", text: "Remove the Bánh Mì from the oven and let cool. Cracks should form after 5-10 minutes.")
+    ]
+)
+
+@MainActor let banhMiRecipeDiff = Recipe(
+    title: "Bánh Mì Bread (higher hydration)",
+    content: banhMiRecipeContent,
+    ingredients: [
+        .init(title: "For the Dough", items: [
+            .init(id: "0001", quantity: "450 g", ingredientText: "Bread Flour", note: ""),
+            .init(id: "0002", quantity: "280 g", ingredientText: "Water", note: ""),
+            .init(id: "0003", quantity: "50 g", ingredientText: "Egg", note: ""),
+            .init(id: "0004", quantity: "8 g", ingredientText: "Instant Yeast", note: ""),
+            .init(id: "0005", quantity: "4 g", ingredientText: "Salt", note: ""),
+            .init(id: "0006", quantity: "2 g", ingredientText: "Sugar", note: ""),
+            .init(id: "0007", quantity: "1 g", ingredientText: "Ascorbic Acid", note: "(Vitamin C)"),
+            .init(id: "0008", quantity: "", ingredientText: "Vegetable Oil", note: "as needed")
+        ])
+    ],
+    steps: [
+//        .init(id: "step-1", text: "In a mixing bowl, add egg, water, yeast, sugar, salt and ascorbic acid. Add in flour and combine."),
+//        .init(id: "step-2", text: "Using a stand mixer, knead on low speed for 7 minutes, then on high speed for 3 minutes. Continue until the gluten is well developed. (Mixing times may vary by mixer.)", timers: [.init(name: "Low speed mix", duration: 420), .init(name: "High speed mix", duration: 180)]),
+//        .init(id: "step-3", text: "Lightly oil your work surface. Remove the dough from the bowl, slap and fold it 4–6 times, shape into a ball, cover, and let it rest.", timers: [.init(name: "Bench rest", duration: 1200)]),
+        .init(id: "step-4", text: "Divide the dough into six 120g portions. Roll into small balls. Cover and let rest.", timers: [.init(name: "Portion rest", duration: 1200)]),
+        .init(id: "step-5", text: "Shape each using the method demonstrated in the video. Place the shaped dough onto a lightly oiled baguette pan."),
+        .init(id: "step-6", text: "Proof in the oven with the light on and a pot of warm water for 60 minutes. Spray with water every 15 minutes.", timers: [.init(name: "Oven proof", duration: 3600)]),
+        .init(id: "step-7", text: "Remove from the oven and proof on a countertop for 30 additional minutes. Meanwhile, preheat the oven to Bake 450F (no fan, bottom only if possible) with 2 trays, one with lava rocks.", timers: [.init(name: "Countertop proof", duration: 1800)]),
+        .init(id: "step-8", text: "Once the dough has grown 2.5 to 3 times in size, and the oven has preheated, boil a pot of water. Score the loaves with a lame or razor. Immediately spray with water after scoring."),
+        .init(id: "step-9", text: "Place the baguette pans with the dough into the oven. Immediately pour boiling water onto lava rocks and secondary tray."),
+        .init(id: "step-10", text: "Bake for 8 minutes without opening the door.", timers: [.init(name: "Initial bake", duration: 480)]),
+        .init(id: "step-11", text: "Open the door to release any leftover steam, and bake 8-9 minutes depending on desired color.", timers: [.init(name: "Final bake", duration: 480)]),
+//        .init(id: "step-12", text: "Remove the Bánh Mì from the oven and let cool. Cracks should form after 5-10 minutes."),
+        .init(id: "step-13", text: "This is something different")
     ]
 )
 

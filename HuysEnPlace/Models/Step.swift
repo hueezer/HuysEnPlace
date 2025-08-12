@@ -14,7 +14,7 @@ struct Step: Codable, Identifiable, Equatable, Hashable {
     var timers: [KitchenTimer] = []
 
     static func == (lhs: Step, rhs: Step) -> Bool {
-        lhs.id == rhs.id && lhs.text == rhs.text && lhs.ingredients == rhs.ingredients && lhs.timers == rhs.timers
+        lhs.text == rhs.text
     }
 
     func hash(into hasher: inout Hasher) {

@@ -50,8 +50,6 @@ struct RecipesView: View {
             }
             .navigationTitle("Recipes")
             .navigationDestination(for: Recipe.self, destination: { recipe in
-//                RecipeView(recipe: recipe)
-//                    .navigationTransition(.zoom(sourceID: "world", in: namespace))
                 RecipeLoadingView(inputRecipe: recipe)
                     .navigationTransition(.zoom(sourceID: "world", in: namespace))
             })
@@ -59,8 +57,6 @@ struct RecipesView: View {
                 if let recipe = recipeItem.recipe {
                     RecipeView(recipe: recipe)
                         .navigationTransition(.zoom(sourceID: recipeItem.id, in: namespace))
-                    //                RecipeLoadingView(inputRecipe: recipe)
-                    //                    .navigationTransition(.zoom(sourceID: "world", in: namespace))
                 }
             })
             .toolbar {
