@@ -36,6 +36,13 @@ struct RecipeView: View {
     @Namespace private var namespace
     
     @State private var previousResponseid: String? = nil
+    
+    // Chat
+    @State private var messages: [Message] = []
+    @State private var prompt: String = ""
+
+    
+    @State private var incomingMessage: Message?
 
     var body: some View {
         @Bindable var recipe = recipe
@@ -276,7 +283,63 @@ struct RecipeView: View {
             recipe.content = banhMiRecipeContent
         }
         .sheet(isPresented: $showChat) {
+            var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
+                Task { @MainActor in
+                    print("ON CALL RECIPE: \(generatedRecipe.title)")
+                    print("generatedRecipe: \(generatedRecipe)")
+                    withAnimation {
+                        modifiedRecipe = Recipe(from: generatedRecipe)
+                    }
+                }
+            })
             
+            var session = OpenAISession(
+                tools: [
+                    .modifyRecipe(modifyRecipeTool)
+                ],
+                instructions: """
+                    # Help the user with any questions related to this recipe. Be very concise.
+                    \(recipe.toText())
+                    """
+            )
+            ChatView(messages: $messages, prompt: $prompt, incomingMessage: $incomingMessage) { message in
+                Task {
+
+    //                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
+    //                    let message = Message(text: response.text, role: .assistant)
+    //                    messages.append(message)
+    //                }
+                    
+                    do {
+                        let _ = try await session.stream(input: message.text) { text in
+                            incomingMessage = Message(text: "Incoming...", role: .assistant)
+                        } onDelta: { delta in
+                            if let current = incomingMessage {
+                                var updated = current
+                                updated.text += delta
+                                incomingMessage = updated
+                            } else {
+                                print("NO DELTA")
+                                incomingMessage = Message(text: delta, role: .assistant)
+                            }
+                        } onCompleted: { text in
+                            print("onComplete text: \(text)")
+                            if let current = incomingMessage {
+                                var updated = current
+                                updated.text = text
+                                messages.append(updated)
+                                incomingMessage = nil
+                            } else {
+                                messages.append(Message(text: text, role: .assistant))
+                            }
+                        }
+        //                let streamEvents = try await session.stream(input: input)
+                    } catch {
+                        print("Streaming failed:", error)
+                    }
+                }
+            }
+            .safeAreaPadding()
         }
         .sheet(isPresented: $showIngredients) {
             let name = self.recipe.content[selection]
@@ -345,7 +408,6 @@ struct RecipeView: View {
                 Button("Test") {
                     modifiedRecipe = banhMiRecipeDiff
                 }
-
                 
                 if editMode.isEditing {
                     Button("Save", systemImage: "checkmark") {

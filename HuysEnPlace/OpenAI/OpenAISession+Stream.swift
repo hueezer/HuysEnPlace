@@ -251,7 +251,9 @@ extension OpenAISession {
                     case .function_call(let functionCall):
                         print("Handling function_call: \(functionCall)")
                         let functionCallResponse = try await handleFunctionCall(functionCall, previousResponseId: event.response.id)
-                        print("functionCallResponse: \(functionCallResponse)")
+                        print("functionCallResponse HERE: \(functionCallResponse)")
+                        await onCompleted?(functionCallResponse?.output_text ?? "NO FUNCTION CALL OUTPUT")
+                        
                     default:
                         print("Default")
                     }

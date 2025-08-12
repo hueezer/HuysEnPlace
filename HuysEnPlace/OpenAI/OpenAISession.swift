@@ -57,14 +57,21 @@ extension OpenAISession {
     }
     
     func handleResponse(_ response: Response) async throws -> Response? {
+        print("---------------------------------------")
         print("handleResponse: \(response)")
+        print("---------------------------------------")
         for output in response.output {
             switch output {
             case .reasoning(let responseReasoning):
                 print("Handling reasoning: \(responseReasoning)")
             case .output_message(let message):
+                print("---------------------------------------")
                 print("Handling output_message: \(message)")
+                print("---------------------------------------")
                 let items = try await handleOutputMessage(message)
+                print("---------------------------------------")
+                print("Returning items: \(items)")
+                print("---------------------------------------")
                 return items
             case .function_call(let functionCall):
                 print("Handling function_call: \(functionCall)")
@@ -113,7 +120,11 @@ extension OpenAISession {
             ]
             
             if let response = try await getResponse(input: input, previousResponseId: previousResponseId) {
-                return try await handleResponse(response)
+                print("--------------------------------------------------------------------------------")
+                print("handleFunctionCallResponse: \(response)")
+                print("--------------------------------------------------------------------------------")
+//                return try await handleResponse(response)
+                return response
             }
         }
         return nil
@@ -163,9 +174,7 @@ extension OpenAISession {
         
         // Perform the network request.
         let (data, response) = try await URLSession.shared.data(for: request)
-        
-        print(response)
-        print("END OF RESPONSE -----------------------")
+
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
             print("Request failed with status code: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
             print("Response: \(response)")
@@ -176,7 +185,7 @@ extension OpenAISession {
         // Decode the JSON response.
         do {
             let decodedResponse = try JSONDecoder().decode(Response.self, from: data)
-            print(decodedResponse)
+            print("decodedResponse: \(decodedResponse)")
             return decodedResponse
         } catch {
             print("Decoding error: \(error)")
