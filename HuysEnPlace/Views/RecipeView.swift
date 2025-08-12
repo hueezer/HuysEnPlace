@@ -46,27 +46,9 @@ struct RecipeView: View {
                 }
             }
             
-//            let runs = Array(recipe.content.runs)
-//
-//            runs.reduce(Text("")) { partialResult, run in
-//                let range = run.range
-//                let substring = recipe.content[range]
-//
-//                let textView = Text(AttributedString(substring))
-//
-//                if run.attributes.ingredient != nil {
-//                    return partialResult + textView + Text(" ") +  Text("New")
-//                        .bold()
-//                        .foregroundStyle(.red)
-//                }
-//                return partialResult + textView
-//            }
-//            
 //            TextEditor(text: $recipe.content, selection: $selection)
 //                .contentMargins(.horizontal, 12.0, for: .scrollContent)
 //                .textEditorStyle(.plain)
-            
-            
 
             ScrollView {
                 LazyVStack(pinnedViews: .sectionHeaders) {
@@ -108,23 +90,11 @@ struct RecipeView: View {
                                 Text("Steps")
                                     .font(.headline)
                                 
-//                                ForEach(Array(recipe.steps.enumerated()), id: \.offset) { index, step in
-//                                    StepView(index: index, step: $recipe.steps[index])
-//                                        .environment(recipe)
-//                                        .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
-//                                }
-                                
                                 ForEach(Array(zip(recipe.steps.indices, $recipe.steps)), id: \.1.id) { index, $step in
                                     StepView(index: index, step: $step)
                                         .environment(recipe)
                                         .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
                                 }
-                                
-//                                ForEach($recipe.steps) { $step in
-//                                    StepView(index: 1, step: $step)
-//                                        .environment(recipe)
-//                                        .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
-//                                }
                                 
                                 if editMode == .active {
                                     HStack {
@@ -169,7 +139,6 @@ struct RecipeView: View {
                                             .fixedSize(horizontal: false, vertical: true)
                                             .frame(maxWidth: .infinity)
                                             .padding()
-            //                                .glassEffect(.regular.tint(.blue).interactive(), in: RoundedRectangle(cornerRadius: 16))
                                             .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
                                             
                                     }
@@ -227,7 +196,6 @@ struct RecipeView: View {
                                                     print("generatedRecipe: \(generatedRecipe)")
                                                     withAnimation {
                                                         modifiedRecipe = Recipe(from: generatedRecipe)
-//                                                        modifyRecipeResponse = .init(message: "I modified the recipe", recipe: generatedRecipe)
                                                     }
                                                 }
                                             })
@@ -273,9 +241,7 @@ struct RecipeView: View {
 //                                                    incomingMessage = nil
 //                                                }
                                             }
-                                            
-                                            
-                                            
+
                                             modifyRecipeMessage = ""
                                             
                                             updateRecipeIsGenerating = false
@@ -362,7 +328,6 @@ struct RecipeView: View {
         }
         .sheet(item: $editingIngredientList) { list in
             if let listIndex = recipe.ingredients.firstIndex(where: { $0.id == list.id }) {
-                
                 IngredientListEditor(list: $recipe.ingredients[listIndex])
             }
         }
@@ -390,41 +355,6 @@ struct RecipeView: View {
                     }
                     .buttonStyle(.glassProminent)
                 }
-
-//                Button("Bold", systemImage: "bold") {
-//                    recipe.content.transformAttributes(in: &selection) { container in
-//                        let currentFont = container.font ?? .default
-//                        let resolved = currentFont.resolve(in: fontResolutionContext)
-//                        container.font = currentFont.bold(!resolved.isBold)
-//                    }
-//                }
-//
-//                Button("Italic", systemImage: "italic") {
-//                    recipe.content.transformAttributes(in: &selection) { container in
-//                        let currentFont = container.font ?? .default
-//                        let resolved = currentFont.resolve(in: fontResolutionContext)
-//                        container.font = currentFont.italic(!resolved.isItalic)
-//                    }
-//                }
-                
-//                if !selectionIsEmpty() {
-//                    Button("Ingredient", systemImage: "carrot") {
-//                        showIngredients.toggle()
-//                    }
-//                }
-
-                
-//                Button("Ingredient", systemImage: editMode.isEditing ? "checkmark" : "pencil") {
-//                    withAnimation {
-//                        if editMode.isEditing {
-//                            editMode = .inactive
-//                        } else {
-//                            editMode = .active
-//                        }
-//                    }
-//                }
-//                .buttonStyle(.glassProminent)
-//                .tint(editMode.isEditing ? .green : .blue)
             }
             
             ToolbarItem(placement: .topBarLeading) {

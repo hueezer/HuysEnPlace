@@ -159,17 +159,12 @@ struct DiffView: View {
     }
     
     var pieces: [Fragment] {
-//        let splitter: (String) -> [Substring] = {
-//            $0.split(omittingEmptySubsequences: false, whereSeparator: { $0.isWhitespace })
-//        }
+
         let splitter: (String) -> [Substring] = { splitRetainingNewlines($0) }
     
         let original = splitter(keepMarkdownPhrasesTogether(in: old))
         let revised = splitter(keepMarkdownPhrasesTogether(in: new))
-        
-//        print("original: \(original)")
-//        print("revised: \(revised)")
-        
+
         let diff = revised.difference(from: original)
         // Quick lookup tables
         let removals = Dictionary(uniqueKeysWithValues: diff.removals.compactMap {
@@ -187,10 +182,6 @@ struct DiffView: View {
                 return nil
             }
         })
-        
-//        print("REMOVALS: \(removals)")
-//        print("INSERTIONS: \(insertions)")
-
         
         var result: [Fragment] = []
         var rIndex = 0, oIndex = 0
@@ -228,11 +219,7 @@ struct DiffView: View {
 //            // Now you can use `index` as needed
 //        }
     }
-    
-//    var body: some View {
-//        Text(makeAttributedString())
-//    }
-//
+
     private func makeAttributedString() -> AttributedString {
         var out = AttributedString()
         for (i, piece) in pieces.enumerated() {
@@ -248,8 +235,7 @@ struct DiffView: View {
                 out += AttributedString(" ")
             }
         }
-        
-        print("OUT: \(out)")
+
         return out
     }
 

@@ -37,9 +37,6 @@ extension OpenAISession {
                 requestBody["previousResponseId"] = self.previousResponseId
             }
         }
-        
-        print("stream previousResponseId from req body: \(requestBody["previousResponseId"])")
-
 
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
         
@@ -74,12 +71,7 @@ extension OpenAISession {
                                 }
                                 
                                 continuation.yield(responseStreamEvent)
-//                                switch decodedResponse {
-//
-//                                case .responseCreatedEvent(let event):
-//                                    print("EVENT: \(event.response)")
-//                                    continuation.yield(event.response)
-//                                }
+
                             } catch {
 //                                print("Decoding error: \(error)")
                                 if let jsonString = String(data: data, encoding: .utf8) {
@@ -155,14 +147,8 @@ extension OpenAISession {
                                 }
                                 
                                 continuation.yield(responseStreamEvent)
-//                                switch decodedResponse {
-//                                    
-//                                case .responseCreatedEvent(let event):
-//                                    print("EVENT: \(event.response)")
-//                                    continuation.yield(event.response)
-//                                }
+
                             } catch {
-//                                print("Decoding error: \(error)")
                                 if let jsonString = String(data: data, encoding: .utf8) {
                                     print("Decoding Error Stream: \(jsonString)")
                                 }
@@ -285,28 +271,7 @@ extension OpenAISession {
 
 #Playground {
     let session = OpenAISession(instructions: "You are a kitchen assistant")
-//    Task {
-//        let userMessage = ResponseInputMessageItem(
-//            id: UUID().uuidString,
-//            content: [
-//                .input_text(ResponseInputText(text: "What is ascorbic acid?"))
-//            ],
-//            role: .user,
-//            status: .in_progress,
-//            type: .message
-//        )
-//        let input: [ResponseItem] = [
-//            .input_message(userMessage)
-//        ]
-//        let stream = try await session.stream(input: input, generating: GeneratedMessage.self)
-//        do {
-//            for try await line in stream {
-//                print(line)
-//            }
-//        } catch {
-//            print("Error: \(error)")
-//        }
-//    }
+
     let userMessage = ResponseInputMessageItem(
         id: UUID().uuidString,
         content: [
@@ -319,6 +284,5 @@ extension OpenAISession {
     let input: [ResponseItem] = [
         .input_message(userMessage)
     ]
-//    let request = session.buildRequest(input: input)
 }
 
