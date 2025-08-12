@@ -463,7 +463,7 @@ struct ModifyRecipeTool: Tool, Encodable, Sendable {
     func call(arguments: Arguments) async throws -> GeneratedRecipe? {
         print("Called Modify Recipe Tool with args: \(arguments)")
         let fullPrompt = """
-            Modify the following recipe acording to these intructions:
+            Modify the following recipe acording to these intructions, while only modifying necessary text:
             \(arguments.prompt)
             Recipe:
             \(Recipe(from: arguments.recipe).toJson())

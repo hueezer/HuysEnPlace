@@ -37,11 +37,7 @@ class Recipe: Identifiable, Equatable, Codable, Hashable {
         self.title = generatedRecipe.title
         self.ingredients = generatedRecipe.ingredients
         self.steps = generatedRecipe.steps.map {
-//            Step(text: $0.text, timers: $0.timers)
-            
-            let toAdd = String($0.text.prefix(120))
-            print("STEP STEP: \(toAdd)")
-            return Step(text: toAdd)
+            Step(text: $0.text, timers: $0.timers)
         }
     }
     
@@ -154,7 +150,7 @@ struct GeneratedRecipe: Codable {
 @Generable
 struct IngredientQuantity: Codable, Identifiable, Equatable {
     var id: String = UUID().uuidString
-    @Guide(description: "Amount and quantity in grams. Example: 30 g")
+    @Guide(description: "Amount and quantity in grams. Example: 30 g. This should not be in markdown.")
     var quantity: String = ""
     var ingredientText: String = ""
     var note: String = ""

@@ -70,8 +70,6 @@ struct RecipeView: View {
 
             ScrollView {
                 LazyVStack(pinnedViews: .sectionHeaders) {
-                    DiffView(old: "Hello, world!", new: "Hello")
-                    RecipeDiffView(recipe: banhMiRecipe, updatedRecipe: .constant(banhMiRecipeDiff))
                     Section {
                         if modifiedRecipe == nil {
                             VStack(alignment: .center, spacing: 16) {
@@ -140,6 +138,23 @@ struct RecipeView: View {
                                 }
                             }
                         } else {
+                            Button(action: {
+                                withAnimation {
+//                                                showRecipeDiff = false
+                                    if let modifiedRecipe = modifiedRecipe {
+                                        showModifyChat = false
+                                        recipe.title = modifiedRecipe.title
+                                        recipe.ingredients = modifiedRecipe.ingredients
+                                        recipe.steps = modifiedRecipe.steps
+                                        self.modifiedRecipe = nil
+                                    }
+                                    
+                                }
+                            }, label: {
+                                Label("Apply", systemImage: "checkmark")
+                            })
+                            .buttonStyle(.glassProminent)
+                            .tint(.blue)
                             RecipeDiffView(recipe: recipe, updatedRecipe: $modifiedRecipe)
                         }
                     } header: {
@@ -176,6 +191,8 @@ struct RecipeView: View {
                                         
                                         Button(action: {
                                             withAnimation {
+                                                print("Applying this recipe: \(modifiedRecipe.steps)")
+                                                
 //                                                showRecipeDiff = false
                                                 showModifyChat = false
                                                 recipe.title = modifiedRecipe.title
@@ -286,9 +303,9 @@ struct RecipeView: View {
             .contentMargins(.horizontal, 12.0, for: .scrollContent)
 
         }
-        .attributedTextFormattingDefinition(
-            RecipeFormattingDefinition(ingredients: Set(ingredients.map(\.id)))
-        )
+//        .attributedTextFormattingDefinition(
+//            RecipeFormattingDefinition(ingredients: Set(ingredients.map(\.id)))
+//        )
         .onAppear {
             recipe.content = banhMiRecipeContent
         }
