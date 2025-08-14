@@ -27,8 +27,11 @@ class OpenAISession: @unchecked Sendable {
     var previousResponseId: String? = nil
     
     init(tools: [AnyEncodableTool] = [], instructions: String) {
-        self.tools = tools
+        self.tools = []
         self.instructions = instructions
+        self.tools = tools.map {
+            $0.withSession(self)
+        }
     }
 
 }
@@ -201,7 +204,7 @@ extension OpenAISession {
 
 // Methods for generating a specific type
 extension OpenAISession {
-    func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions()) async throws -> Content? where Content: Generable & Decodable {
+    func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions(), previousResponseId: String? = nil) async throws -> Content? where Content: Generable & Decodable {
         
         let inputMessage: ResponseInputMessageItem = .init(id: "", content: [
             .input_text(.init(text: prompt))
@@ -217,6 +220,8 @@ extension OpenAISession {
             self.previousResponseId = openaiResponse.id
             let structuredResponse = try await handleResponse(openaiResponse, generating: type)
             return structuredResponse
+        } else {
+            print("previousREsponseId was nil NO RESPONSE from openai")
         }
         
         return nil
@@ -413,6 +418,16 @@ enum AnyEncodableTool: Sendable, Encodable {
             return try await tool.call(arguments: typedArgs)
         }
     }
+    
+    func withSession(_ session: OpenAISession) -> AnyEncodableTool {
+        switch self {
+        case .breadDatabase(let tool):
+            return .breadDatabase(tool)
+        case .modifyRecipe(let tool):
+            return .modifyRecipe(ModifyRecipeTool(name: tool.name, session: session, onCall: tool.onCall))
+        }
+    }
+
 }
 
 
@@ -458,10 +473,18 @@ struct BreadDatabaseTool: Tool, Encodable, Sendable {
 }
 
 struct ModifyRecipeTool: Tool, Encodable, Sendable {
-    let name = "modifyRecipe"
+    var name: String = "modifyRecipe"
     let description = "Modifies a recipe based on input from the user."
     let type = "function"
     var onCall: @Sendable (GeneratedRecipe) -> Void = { _ in }
+    var session: OpenAISession? = nil
+    
+    init(name: String = "modifyRecipe", session: OpenAISession? = nil, onCall: @Sendable @escaping (GeneratedRecipe) -> Void = { _ in }) {
+        print("previousResponseId init with session: \(session)")
+        self.name = name
+        self.session = session
+        self.onCall = onCall
+    }
     
     @Generable
     struct Arguments: Decodable, Sendable {
@@ -479,11 +502,23 @@ struct ModifyRecipeTool: Tool, Encodable, Sendable {
             \(Recipe(from: arguments.recipe).toJson())
             """
         print("Full Prompt: \(fullPrompt)")
-
-        if let response = try? await OpenAISession(instructions: sharedInstructions).respond(to: fullPrompt, generating: GeneratedRecipe.self) {
-            onCall(response)
-            return response
+        print("previousResponseId call session: \(self.session)")
+        if let session = self.session {
+            do {
+                if let response = try await OpenAISession(instructions: sharedInstructions).respond(to: fullPrompt, generating: GeneratedRecipe.self) {
+                    print("previousResponseId: RESOPONSE: \(response)")
+                    onCall(response)
+                    return response
+                } else {
+                    print("NO TOOL SESSION previousResponseId")
+                }
+            } catch {
+                print("prviousResponseId error: \(error)")
+            }
+        } else {
+            
         }
+
         return nil
 //        return generatedRecipeResponse
     }

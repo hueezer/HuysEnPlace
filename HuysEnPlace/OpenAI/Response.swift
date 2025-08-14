@@ -5,10 +5,17 @@
 //  Created by Huy Nguyen on 7/23/25.
 //
 
-
 import SwiftUI
 
-struct Response: Identifiable, Codable {
+struct Response: Identifiable, Codable, Equatable, Hashable {
+    static func == (lhs: Response, rhs: Response) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
     var id: String
     var status: Status
     var output: [ResponseItem]
@@ -325,7 +332,7 @@ struct ResponseOutputMessage: Identifiable, Codable {
     }
 
     let id: String
-    let content: [ResponseOutputContent]
+    var content: [ResponseOutputContent]
     let role: RoleType
     let status: ResponseStatus
     let type: MessageType
@@ -390,7 +397,7 @@ struct ResponseOutputText: Codable {
     }
     
     let type: OutputType
-    let text: String
+    var text: String
 }
 
 struct ResponseOutputRefusal: Codable {
@@ -399,7 +406,7 @@ struct ResponseOutputRefusal: Codable {
     }
     
     let type: OutputType
-    let text: String
+    var text: String
 }
 
 struct ResponseFunctionToolCall: Identifiable, Codable {
@@ -519,9 +526,48 @@ struct ResponseWebSearchCall: Identifiable, Codable {
 
 
 // Streaming
-enum ResponseStreamEvent: Codable {
+enum ResponseStreamEvent: Codable, Equatable, Hashable {
+    static func == (lhs: ResponseStreamEvent, rhs: ResponseStreamEvent) -> Bool {
+        lhs.id() == rhs.id()
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        switch self {
+        case .responseCreatedEvent(let event):
+            hasher.combine(0)
+            hasher.combine(event.response.id)
+        case .responseCompletedEvent(let event):
+            hasher.combine(1)
+            hasher.combine(event.response.id)
+        case .responseContentPartAddedEvent(let event):
+            hasher.combine(2)
+            hasher.combine(event.item_id)
+        case .responseOutputTextDeltaEvent(let event):
+            hasher.combine(3)
+            hasher.combine(event.item_id)
+            hasher.combine(event.output_index)
+            hasher.combine(event.content_index)
+            hasher.combine(event.delta)
+        case .responseFunctionCallArgumentsDoneEvent(let event):
+            hasher.combine(4)
+            hasher.combine(event.item_id)
+            hasher.combine(event.output_index)
+            hasher.combine(event.arguments)
+        case .responseOutputItemAddedEvent(let event):
+            hasher.combine(5)
+            hasher.combine(event.output_index)
+            // Optionally, you can also hash output_item if it makes sense for uniqueness
+        }
+    }
+    
     case responseCreatedEvent(ResponseCreatedEvent)
     case responseCompletedEvent(ResponseCompletedEvent)
+    
+    case responseOutputItemAddedEvent(ResponseOutputItemAddedEvent)
+    
+    case responseContentPartAddedEvent(ResponseContentPartAddedEvent)
+    
+    
     case responseOutputTextDeltaEvent(ResponseOutputTextDeltaEvent)
     case responseFunctionCallArgumentsDoneEvent(ResponseFunctionCallArgumentsDoneEvent)
     
@@ -532,6 +578,12 @@ enum ResponseStreamEvent: Codable {
     enum ResponseStreamEventType: String, Codable {
         case responseCreated = "response.created"
         case responseCompleted = "response.completed"
+        
+        case responseOutputItemAdded = "response.output_item.added"
+        
+        case responseContentPartAdded = "response.content_part.added"
+        
+        
         case responseOutputTextDelta = "response.output_text.delta"
         case responseFunctionCallArgumentsDone = "response.function_call_arguments.done"
     }
@@ -546,6 +598,12 @@ enum ResponseStreamEvent: Codable {
         case .responseCompleted:
             let event = try ResponseCompletedEvent(from: decoder)
             self = .responseCompletedEvent(event)
+        case .responseOutputItemAdded:
+            let event = try ResponseOutputItemAddedEvent(from: decoder)
+            self = .responseOutputItemAddedEvent(event)
+        case .responseContentPartAdded:
+            let event = try ResponseContentPartAddedEvent(from: decoder)
+            self = .responseContentPartAddedEvent(event)
         case .responseOutputTextDelta:
             let event = try ResponseOutputTextDeltaEvent(from: decoder)
             self = .responseOutputTextDeltaEvent(event)
@@ -560,6 +618,10 @@ enum ResponseStreamEvent: Codable {
         case .responseCreatedEvent(let event):
             try event.encode(to: encoder)
         case .responseCompletedEvent(let event):
+            try event.encode(to: encoder)
+        case .responseContentPartAddedEvent(let event):
+            try event.encode(to: encoder)
+        case .responseOutputItemAddedEvent(let event):
             try event.encode(to: encoder)
         case .responseOutputTextDeltaEvent(let event):
             try event.encode(to: encoder)
@@ -576,8 +638,30 @@ enum ResponseStreamEvent: Codable {
             return event.response.id
         case .responseOutputTextDeltaEvent(let event):
             return nil
+        case .responseContentPartAddedEvent(let event):
+            return nil
         case .responseFunctionCallArgumentsDoneEvent(let event):
             return nil
+        case .responseOutputItemAddedEvent(let event):
+            return nil
+        }
+    }
+    
+    func status() -> String? {
+        switch self {
+        case .responseCreatedEvent(let event):
+            return event.type.rawValue
+        case .responseCompletedEvent(let event):
+            return event.type.rawValue
+        case .responseOutputItemAddedEvent(let event):
+            return event.type.rawValue
+        case .responseContentPartAddedEvent(let event):
+            return event.type.rawValue
+        case .responseOutputTextDeltaEvent(let event):
+            return "\(event.type.rawValue) \(event.sequence_number)"
+        case .responseFunctionCallArgumentsDoneEvent(let event):
+            return event.type.rawValue
+
         }
     }
 }
@@ -604,6 +688,30 @@ struct ResponseCompletedEvent: Codable {
     let response: Response
 }
 
+struct ResponseOutputItemAddedEvent: Codable {
+    enum EventType: String, Codable {
+        case responseOutputItemAdded = "response.output_item.added"
+    }
+    let type: EventType
+    let item: ResponseItem
+    let output_index: Int
+    let sequence_number: Int
+}
+
+struct ResponseContentPartAddedEvent: Codable {
+    enum EventType: String, Codable {
+        case responseContentPartAdded = "response.content_part.added"
+    }
+    let type: EventType
+    let content_index: Int
+    let item_id: String
+    let output_index: Int
+    let part: ResponseOutputContent
+    let sequence_number: Int
+}
+
+
+
 struct ResponseOutputTextDeltaEvent: Codable {
     enum EventType: String, Codable {
         case responseOutputTextDelta = "response.output_text.delta"
@@ -614,6 +722,7 @@ struct ResponseOutputTextDeltaEvent: Codable {
     let output_index: Int
     let content_index: Int
     let delta: String
+    let obfuscation: String
 }
 
 struct ResponseFunctionCallArgumentsDoneEvent: Codable {
@@ -626,3 +735,4 @@ struct ResponseFunctionCallArgumentsDoneEvent: Codable {
     let output_index: Int
     let arguments: String
 }
+

@@ -183,6 +183,8 @@ struct RecipeIngredientInfoView: View {
                         
                     case .responseFunctionCallArgumentsDoneEvent(let event):
                         print("responseFunctionCallArgumentsDoneEvent: \(event)")
+                    default:
+                        print("RecipeIngredientInfoView unhandled event: \(streamEvent)")
                     }
                     
                 }

@@ -32,7 +32,7 @@ struct ContentView: View {
 
 
             Tab("Podcasts", systemImage: "carrot") {
-                StreamTestView()
+                ResponseInspector()
                     .environment(app)
             }
             .badge("!")

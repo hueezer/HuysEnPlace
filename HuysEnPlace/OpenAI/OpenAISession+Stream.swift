@@ -264,6 +264,8 @@ extension OpenAISession {
                 
             case .responseFunctionCallArgumentsDoneEvent(let event):
                 print("responseFunctionCallArgumentsDoneEvent: \(event)")
+            default:
+                print("OpenAISession stream unhandled: \(streamEvent)")
             }
             
         }
