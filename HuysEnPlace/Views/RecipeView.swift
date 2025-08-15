@@ -524,14 +524,16 @@ struct RecipeView: View {
                             }
                         }
                     }
-                    .padding()
+                    .padding(8)
+                    
                     .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity)
-                        .onTapGesture {
-                            minimizedChatResponse = nil
-                            showMinimizedChat = false
-                            showChat.toggle()
-                        }
+                    .frame(maxWidth: .infinity)
+//                    .glassEffect(in: RoundedRectangle(cornerRadius: 32))
+                    .onTapGesture {
+                        minimizedChatResponse = nil
+                        showMinimizedChat = false
+                        showChat.toggle()
+                    }
                 } else {
                     Button(action: {
                         showChat.toggle()
@@ -542,14 +544,16 @@ struct RecipeView: View {
                 }
 
             }
+            
         }
-//        .onAppear {
-//            showMinimizedChat = true
-//            minimizedChatResponse = Response(id: "2", status: .completed, output: [
-//                .output_message(.init(id: "2", content: [.output_text(.init(type: .output_text, text: "Ascorbic acid removed; all other quantities and steps stay the same."))], role: .assistant, status: .completed, type: .message))
-//            ])
-//            
-//        }
+        .toolbarBackground(.blue, for: .bottomBar)
+        .onAppear {
+            showMinimizedChat = true
+            minimizedChatResponse = Response(id: "2", status: .completed, output: [
+                .output_message(.init(id: "2", content: [.output_text(.init(type: .output_text, text: "Ascorbic acid removed; all other quantities and steps stay the same."))], role: .assistant, status: .completed, type: .message))
+            ])
+            
+        }
         
 //        .task {
 //            do {
