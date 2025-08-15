@@ -79,7 +79,7 @@ struct ChatView: View {
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 16) {
                         ForEach(responses) { response in
-                            ResponseInspectorView(response: response)
+                            ChatResponseView(response: response)
                         }
 //                        ForEach(messages) { message in
 //                            HStack(spacing: 0) {
@@ -203,6 +203,8 @@ struct ChatView: View {
             onSubmit(inputItems)
         }
 }
+
+
 
 #Preview {
     @Previewable @State var messages: [Message] = [
