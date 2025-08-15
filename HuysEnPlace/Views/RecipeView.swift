@@ -23,8 +23,6 @@ struct RecipeView: View {
     
     @State private var shareJsonUrl: URL?
     
-    
-    @State private var showModifyChat: Bool = false
     @State private var modifyRecipeMessage: String = ""
     
     @State private var modifiedRecipe: Recipe?
@@ -124,7 +122,6 @@ struct RecipeView: View {
                                 withAnimation {
 //                                                showRecipeDiff = false
                                     if let modifiedRecipe = modifiedRecipe {
-                                        showModifyChat = false
                                         recipe.title = modifiedRecipe.title
                                         recipe.ingredients = modifiedRecipe.ingredients
                                         recipe.steps = modifiedRecipe.steps
@@ -140,140 +137,7 @@ struct RecipeView: View {
                             RecipeDiffView(recipe: recipe, updatedRecipe: $modifiedRecipe)
                         }
                     } header: {
-                        if showModifyChat {
-                            VStack {
-                                
-                                if let modifiedRecipe = modifiedRecipe {
-                                    if let response = modifyRecipeResponse {
-                                        Text(response.message)
-                                            .multilineTextAlignment(.center)
-                                            .lineLimit(nil)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                            .frame(maxWidth: .infinity)
-                                            .padding()
-                                            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
-                                            
-                                    }
-                                    
-                                    HStack {
-                                        Button(action: {
-                                            withAnimation {
-//                                                showRecipeDiff = false
-                                                showModifyChat = false
-                                                self.modifiedRecipe = nil
-                                                
-                                            }
-                                        }, label: {
-                                            Label("Cancel", systemImage: "xmark")
-                                        })
-                                        .buttonStyle(.glass)
-                                        .tint(.red)
-                                        
-                                        
-                                        Button(action: {
-                                            withAnimation {
-                                                print("Applying this recipe: \(modifiedRecipe.steps)")
-                                                
-//                                                showRecipeDiff = false
-                                                showModifyChat = false
-                                                recipe.title = modifiedRecipe.title
-                                                recipe.ingredients = modifiedRecipe.ingredients
-                                                recipe.steps = modifiedRecipe.steps
-                                                self.modifiedRecipe = nil
-                                                
-                                            }
-                                        }, label: {
-                                            Label("Apply", systemImage: "checkmark")
-                                        })
-                                        .buttonStyle(.glassProminent)
-                                        .tint(.blue)
-                                    }
-                                } else {
-                                    TextField("How would you change this recipe?", text: $modifyRecipeMessage, axis: .vertical)
-                                        .multilineTextAlignment(.center)
-                                        .lineLimit(1...10)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                        .disabled(updateRecipeIsGenerating)
-                                    
-                                    Button(action: {
-                                        Task {
-//                                            showRecipeDiff = true
-                                            updateRecipeIsGenerating = true
-                                            
-                                            let fullPrompt = modifyRecipeMessage
-                                            
-                                            var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
-                                                Task { @MainActor in
-                                                    print("ON CALL RECIPE: \(generatedRecipe.title)")
-                                                    print("generatedRecipe: \(generatedRecipe)")
-                                                    withAnimation {
-                                                        modifiedRecipe = Recipe(from: generatedRecipe)
-                                                    }
-                                                }
-                                            })
-
-                                            let session = OpenAISession(
-                                                tools: [
-                                                    .modifyRecipe(modifyRecipeTool)
-                                                ],
-                                                instructions: """
-                                                    # Identity
-
-                                                    You contain all culinary knowledge in the world.
-                                                    When generating recipes, the unit should always be in metric.
-                                                
-                                                    # Current Recipe
-                                                    The user is currently viewing this recipe:
-                                                    \(recipe.toJson())
-                                                """
-                                            )
-                                            
-//                                            let message = try? await session.respondTest(to: fullPrompt, generating: GeneratedMessage.self)
-//                                            
-//                                            print("HERE IS message: ", message)
-                                            
-                                            let _ = try await session.stream(input: fullPrompt) { text in
-//                                                incomingMessage = Message(text: "Incoming...", role: .assistant)
-                                            } onDelta: { delta in
-                                                print("onDelta: \(delta)")
-//                                                if let current = incomingMessage {
-//                                                    var updated = current
-//                                                    updated.text += delta
-//                                                    incomingMessage = updated
-//                                                } else {
-//                                                    print("NO DELTA")
-//                                                    incomingMessage = Message(text: delta, role: .assistant)
-//                                                }
-                                            } onCompleted: { text in
-                                                print("onComplete: \(text)")
-//                                                if let current = incomingMessage {
-//                                                    var updated = current
-//                                                    updated.text = text
-//                                                    messages.append(updated)
-//                                                    incomingMessage = nil
-//                                                }
-                                            }
-
-                                            modifyRecipeMessage = ""
-                                            
-                                            updateRecipeIsGenerating = false
-            //                                showModifyChat = false
-                                        }
-                                    }, label: {
-                                        Label(updateRecipeIsGenerating ? "Thinking..." : "Modify", systemImage: "sparkles")
-                                        
-                                    })
-                                    .buttonStyle(.glassProminent)
-                                    .symbolEffect(.rotate, isActive: updateRecipeIsGenerating)
-                                }
-                            
-                                
-                            }
-                            .padding()
-                            .frame(minHeight: 160)
-                            .glassEffect(in: RoundedRectangle(cornerRadius: 32))
-                            .padding(10)
-                        }
+                        Text("REMOVE")
                     }
                 }
                 
@@ -380,14 +244,6 @@ struct RecipeView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                
-                Button("Modify", systemImage: "square.and.pencil") {
-                    withAnimation {
-                        showModifyChat.toggle()
-                    }
-                }
-                .tint(.blue)
-                .buttonStyle(.glassProminent)
                 
                 Button("Test") {
                     modifiedRecipe = banhMiRecipeDiff
