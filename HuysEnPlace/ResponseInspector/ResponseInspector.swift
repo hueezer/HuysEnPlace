@@ -60,7 +60,7 @@ struct ResponseInspector: View {
             }
         }
         .onAppear {
-            var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
+            let modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
                 Task { @MainActor in
                     print("ON CALL RECIPE: \(generatedRecipe.title)")
                     print("generatedRecipe: \(generatedRecipe)")
@@ -79,8 +79,6 @@ struct ResponseInspector: View {
                     \(banhMiRecipe.toText())
                     """
             )
-            
-//            currentResponse = Response(id: "resp_689d52cc752081969db6c8956cf424430b38e41cb30a9b37", status: HuysEnPlace.Response.Status.in_progress, output: [], previous_response_id: Optional("resp_689d52b575ac819693136d12b6beedea0b38e41cb30a9b37"), output_text: nil)
         }
         .task {
             await sendMessage("Hi")

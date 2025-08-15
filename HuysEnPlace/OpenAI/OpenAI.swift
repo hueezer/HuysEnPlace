@@ -86,13 +86,6 @@ extension OpenAI {
 
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
         
-//        let (bytes, response) = try await URLSession.shared.bytes(for: request)
-//        
-//        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-//            throw URLError(.badServerResponse)
-//        }
-        
-//        return buildResponseStream(bytes: bytes)
         return buildResponseStream(request: request)
     }
     
@@ -122,12 +115,6 @@ extension OpenAI {
         }
 
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
-        
-//        let (bytes, response) = try await URLSession.shared.bytes(for: request)
-//        
-//        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-//            throw URLError(.badServerResponse)
-//        }
         
         return buildResponseStream(request: request)
     }
@@ -163,10 +150,6 @@ extension OpenAI {
                                             if let functionCallResponse = try await makeFunctionCall(functionCall) {
                                                 input.append(functionCallResponse)
                                             }
-                                            
-//                                            let functionCallResponse = try await handleFunctionCall(functionCall, previousResponseId: event.response.id)
-//                                            print("functionCallResponse HERE: \(functionCallResponse)")
-//                                            await onCompleted?(functionCallResponse?.output_text ?? "NO FUNCTION CALL OUTPUT")
                                             
                                         default:
                                             print("Default")
@@ -220,42 +203,12 @@ extension OpenAI {
                 toolResponseString = String(describing: toolResponse)
             }
             let toolCallOutput: ResponseFunctionToolCallOutput = .init(call_id: functionCall.call_id, output: toolResponseString)
-
-            
-//            let input: [ResponseItem] = [
-//                .function_call_output(toolCallOutput)
-//            ]
             
             return ResponseItem.function_call_output(toolCallOutput)
             
         }
         return nil
     }
-    
-//    func handleFunctionCall<Content>(_ functionCall: ResponseFunctionToolCall, generating type: Content.Type = Content.self, previousResponseId: String? = nil) async throws -> Content? where Content: Generable & Decodable {
-//        if let tool = tools.first(where: { $0.name == functionCall.name }) {
-//            let toolResponse = try await tool.call(arguments: functionCall.arguments)
-//            
-//            let toolResponseString: String
-//            if let encodableResponse = toolResponse as? Encodable,
-//               let data = try? JSONEncoder().encode(AnyEncodable(erasing: encodableResponse)),
-//               let jsonString = String(data: data, encoding: .utf8) {
-//                toolResponseString = jsonString
-//            } else {
-//                toolResponseString = String(describing: toolResponse)
-//            }
-//            let toolCallOutput: ResponseFunctionToolCallOutput = .init(call_id: functionCall.call_id, output: toolResponseString)
-//            
-//            let input: [ResponseItem] = [
-//                .function_call_output(toolCallOutput)
-//            ]
-//            
-//            if let response = try await getResponse(input: input, generating: type, previousResponseId: previousResponseId) {
-//                return try await handleResponse(response, generating: type)
-//            }
-//        }
-//        return nil
-//    }
 }
 
 extension OpenAI {
