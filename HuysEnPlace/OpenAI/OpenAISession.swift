@@ -419,6 +419,24 @@ enum AnyEncodableTool: Sendable, Encodable {
         }
     }
     
+    func callWithOpenAI(arguments: String) async throws -> Any {
+        guard let data = arguments.data(using: .utf8) else {
+            throw NSError(domain: "AnyEncodableTool", code: 2, userInfo: [NSLocalizedDescriptionKey: "Arguments string is not valid UTF-8"])
+        }
+        
+        switch self {
+        case .breadDatabase(let tool):
+            guard let typedArgs = arguments as? BreadDatabaseTool.Arguments else {
+                throw NSError(domain: "AnyEncodableTool", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid arguments type for BreadDatabaseTool"])
+            }
+            return try await tool.call(arguments: typedArgs)
+        case .modifyRecipe(let tool):
+
+            let typedArgs = try JSONDecoder().decode(ModifyRecipeTool.Arguments.self, from: data)
+            return try await tool.callWithOpenAI(arguments: typedArgs)
+        }
+    }
+    
     func withSession(_ session: OpenAISession) -> AnyEncodableTool {
         switch self {
         case .breadDatabase(let tool):
@@ -490,16 +508,19 @@ struct ModifyRecipeTool: Tool, Encodable, Sendable {
     struct Arguments: Decodable, Sendable {
         @Guide(description: "How the recipe should be modified.")
         var prompt: String
+        @Guide(description: "The recipe after being modified")
         var recipe: GeneratedRecipe
     }
     
     func call(arguments: Arguments) async throws -> GeneratedRecipe? {
         print("Called Modify Recipe Tool with args: \(arguments)")
+        let recipe = Recipe(from: arguments.recipe)
+        print("CALLING MODIFY RECIPE TOOL with ingredients: \(recipe.ingredients)")
         let fullPrompt = """
             Modify the following recipe acording to these intructions, while only modifying necessary text:
             \(arguments.prompt)
             Recipe:
-            \(Recipe(from: arguments.recipe).toJson())
+            \(recipe.toJson())
             """
         print("Full Prompt: \(fullPrompt)")
         print("previousResponseId call session: \(self.session)")
@@ -518,6 +539,35 @@ struct ModifyRecipeTool: Tool, Encodable, Sendable {
         } else {
             
         }
+
+        return nil
+//        return generatedRecipeResponse
+    }
+    
+    func callWithOpenAI(arguments: Arguments) async throws -> GeneratedRecipe? {
+        print("Called Modify Recipe Tool with args: \(arguments)")
+        let recipe = Recipe(from: arguments.recipe)
+        print("CALLING MODIFY RECIPE TOOL with ingredients: \(recipe.ingredients.map { $0.items.map { $0.ingredientText }})")
+        let fullPrompt = """
+            Modify the following recipe acording to these intructions, while only modifying necessary text:
+            \(arguments.prompt)
+            Recipe:
+            \(Recipe(from: arguments.recipe).toJson())
+            """
+        print("Full Prompt: \(fullPrompt)")
+        print("previousResponseId call session: \(self.session)")
+        onCall(arguments.recipe)
+//        do {
+//            if let response = try await OpenAI(instructions: sharedInstructions).respond(to: fullPrompt, generating: GeneratedRecipe.self) {
+//                print("previousResponseId: RESOPONSE: \(response)")
+//                onCall(response)
+//                return response
+//            } else {
+//                print("NO TOOL SESSION previousResponseId")
+//            }
+//        } catch {
+//            print("prviousResponseId error: \(error)")
+//        }
 
         return nil
 //        return generatedRecipeResponse

@@ -13,28 +13,16 @@ struct ResponseInspector: View {
     @State private var responses: [Response] = []
     @State private var prompt: String = ""
     
-    @State private var session2 = OpenAI(instructions: """
-                    ## Identity
+    @State private var modifiedRecipe: Recipe?
+    
 
-                    You contain all culinary knowledge in the world. Produce content that is both interesting, concise and factual. It should be the most interesting culinary book ever to exist.
-                    
-                    ## Format
-                    Each section should have a title and should be bold.
-                    Sections should be no longer than 5 sentences.
-                    Italicize any important information that should be emphasized.
-                    Use lists with bullet points when needed.
-                    Respond in markdown.
-                    
-                    ## Here is the markdown supported:
-                    This is regular text.
-                    * This is **bold** text, this is *italic* text, and this is ***bold, italic*** text.
-                    ~~A strikethrough example~~
-                    `Monospaced works too`
-                    
-                    Only use these supported markdown styles
-                    """)
+    
+    @State private var session2 = OpenAI(instructions: "")
     
     var body: some View {
+        
+
+        
         VStack {
             ScrollView {
                 LazyVStack(spacing: 16) {
@@ -72,7 +60,27 @@ struct ResponseInspector: View {
             }
         }
         .onAppear {
-            currentResponse = Response(id: "resp_689d52cc752081969db6c8956cf424430b38e41cb30a9b37", status: HuysEnPlace.Response.Status.in_progress, output: [], previous_response_id: Optional("resp_689d52b575ac819693136d12b6beedea0b38e41cb30a9b37"), output_text: nil)
+            var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
+                Task { @MainActor in
+                    print("ON CALL RECIPE: \(generatedRecipe.title)")
+                    print("generatedRecipe: \(generatedRecipe)")
+                    withAnimation {
+                        modifiedRecipe = Recipe(from: generatedRecipe)
+                    }
+                }
+            })
+            
+            session2 = OpenAI(
+                tools: [
+                    .modifyRecipe(modifyRecipeTool)
+                ],
+                instructions: """
+                    Help the user with any questions related to this recipe. Be very concise.
+                    \(banhMiRecipe.toText())
+                    """
+            )
+            
+//            currentResponse = Response(id: "resp_689d52cc752081969db6c8956cf424430b38e41cb30a9b37", status: HuysEnPlace.Response.Status.in_progress, output: [], previous_response_id: Optional("resp_689d52b575ac819693136d12b6beedea0b38e41cb30a9b37"), output_text: nil)
         }
         .task {
             await sendMessage("Hi")
