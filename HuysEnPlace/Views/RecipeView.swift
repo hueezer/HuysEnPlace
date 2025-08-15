@@ -32,6 +32,8 @@ struct RecipeView: View {
     @State private var updateRecipeIsGenerating: Bool = false
     
     @State private var showChat: Bool = false
+    @State private var showMinimizedChat: Bool = false
+    @State private var minimizedChatResponse: Response?
     
     @Namespace private var namespace
     
@@ -289,6 +291,7 @@ struct RecipeView: View {
                 Task { @MainActor in
                     print("ON CALL RECIPE: \(generatedRecipe.title)")
                     print("generatedRecipe: \(generatedRecipe)")
+                    showMinimizedChat = true
                     withAnimation {
                         modifiedRecipe = Recipe(from: generatedRecipe)
                     }
@@ -309,24 +312,10 @@ struct RecipeView: View {
             ChatView(responses: $responses, prompt: $prompt, incomingMessage: $incomingMessage) { inputItems in
                 Task {
                     do {
-//                        let userMessage = ResponseInputMessageItem(
-//                            id: UUID().uuidString,
-//                            content: [
-//                                .input_text(ResponseInputText(text: prompt))
-//                            ],
-//                            role: .user,
-//                            type: .message
-//                        )
-//                        let inputItems: [ResponseItem] = [
-//                            .input_message(userMessage)
-//                        ]
-//                        
                         let response = Response(id: UUID().uuidString, status: .completed, output: inputItems)
-                        print("DEBUG RESPONSE TO APPEND: \(response)")
                         responses.append(response)
                         
                         let stream = try await session.stream(input: inputItems)
-                        print("Stream: \(stream)")
                         try await handleStream(stream)
                     } catch {
                         print("Streaming failed:", error)
@@ -334,60 +323,7 @@ struct RecipeView: View {
                 }
             }
             .safeAreaPadding()
-            
-            //            var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
-            //                Task { @MainActor in
-            //                    print("ON CALL RECIPE: \(generatedRecipe.title)")
-            //                    print("generatedRecipe: \(generatedRecipe)")
-            //                    withAnimation {
-            //                        modifiedRecipe = Recipe(from: generatedRecipe)
-            //                    }
-            //                }
-            //            })
-            //
-            //            var session = OpenAISession(
-            //                tools: [
-            //                    .modifyRecipe(modifyRecipeTool)
-            //                ],
-            //                instructions: """
-            //                    # Help the user with any questions related to this recipe. Be very concise.
-            //                    \(recipe.toText())
-            //                    """
-            //            )
-            
-            
-//            ChatView(messages: $messages, prompt: $prompt, incomingMessage: $incomingMessage) { message in
-//                Task {
-//                    
-//                    do {
-//                        let _ = try await session.stream(input: message.text) { text in
-//                            incomingMessage = Message(text: "Incoming...", role: .assistant)
-//                        } onDelta: { delta in
-//                            if let current = incomingMessage {
-//                                var updated = current
-//                                updated.text += delta
-//                                incomingMessage = updated
-//                            } else {
-//                                print("NO DELTA")
-//                                incomingMessage = Message(text: delta, role: .assistant)
-//                            }
-//                        } onCompleted: { text in
-//                            print("onComplete text: \(text)")
-//                            if let current = incomingMessage {
-//                                var updated = current
-//                                updated.text = text
-//                                messages.append(updated)
-//                                incomingMessage = nil
-//                            } else {
-//                                messages.append(Message(text: text, role: .assistant))
-//                            }
-//                        }
-//                    } catch {
-//                        print("Streaming failed:", error)
-//                    }
-//                }
-//            }
-//            .safeAreaPadding()
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showIngredients) {
             let name = self.recipe.content[selection]
@@ -571,14 +507,50 @@ struct RecipeView: View {
             }
             
             ToolbarItem(placement: .bottomBar) {
-                Button(action: {
-                    showChat.toggle()
-                }, label: {
-                    Label("Chat", systemImage: "message")
-                })
-                .buttonStyle(.glassProminent)
+                if showMinimizedChat, let response = minimizedChatResponse {
+                    VStack {
+                        ForEach(response.output) { item in
+                            switch item {
+                            case .output_message(let message):
+                                ForEach(message.content.indices, id: \.self) { idx in
+                                    let content = message.content[idx]
+                                    
+                                    if case .output_text(let text) = content {
+                                        Text(LocalizedStringKey(text.text))
+                                    }
+                                }
+                            default:
+                                EmptyView()
+                            }
+                        }
+                    }
+                    .padding()
+                    .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity)
+                        .onTapGesture {
+                            minimizedChatResponse = nil
+                            showMinimizedChat = false
+                            showChat.toggle()
+                        }
+                } else {
+                    Button(action: {
+                        showChat.toggle()
+                    }, label: {
+                        Label("Chat", systemImage: "message")
+                    })
+                    .buttonStyle(.glassProminent)
+                }
+
             }
         }
+//        .onAppear {
+//            showMinimizedChat = true
+//            minimizedChatResponse = Response(id: "2", status: .completed, output: [
+//                .output_message(.init(id: "2", content: [.output_text(.init(type: .output_text, text: "Ascorbic acid removed; all other quantities and steps stay the same."))], role: .assistant, status: .completed, type: .message))
+//            ])
+//            
+//        }
+        
 //        .task {
 //            do {
 //                let r = try Recipe.fromJsonFile(name: "recipe31")
@@ -675,7 +647,18 @@ struct RecipeView: View {
 //                }
             case .responseCompletedEvent(let event):
                 responses.append(event.response)
-//                currentResponse = nil
+                
+                if case .output_message(let _) = event.response.output.first {
+                    if showMinimizedChat {
+                        print("Setting Minimized Chat response: \(event.response)")
+                        minimizedChatResponse = event.response
+                        showChat = false
+                    }
+                }
+//                if showMinimizedChat {
+//                    print("Setting Minimized Chat response: \(event.response)")
+//                    minimizedChatResponse = event.response
+//                }
             default:
                 print("UNHANDLED responseStreamEvent: \(streamEvent)")
             }

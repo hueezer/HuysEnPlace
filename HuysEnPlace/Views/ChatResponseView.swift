@@ -34,19 +34,22 @@ struct ChatResponseView: View {
                     ForEach(response.output) { item in
                         switch item {
                         case .reasoning(let reasoning):
-                            VStack(alignment: .leading) {
-                                Text("Reasoning: ").bold()
-                                VStack {
-                                    ForEach(reasoning.summary, id: \.self) { summaryText in
-                                        Text(summaryText)
+                            if !reasoning.summary.isEmpty {
+                                VStack(alignment: .leading) {
+                                    Text("Reasoning: ").bold()
+                                    VStack {
+                                        ForEach(reasoning.summary, id: \.self) { summaryText in
+                                            Text(summaryText)
+                                        }
                                     }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding()
+                                    .background(.blue.opacity(0.2))
+                                    .clipped()
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
-                                .background(.blue.opacity(0.2))
-                                .clipped()
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
                             }
+
                         case .output_message(let message):
                             ForEach(message.content.indices, id: \.self) { idx in
                                 let content = message.content[idx]
@@ -57,22 +60,6 @@ struct ChatResponseView: View {
                                 case .output_refusal(let refusal):
                                     Text("[Refusal] ").foregroundStyle(.red) + Text(refusal.text)
                                 }
-                            }
-                            
-                        case .function_call(let functionCall):
-                            VStack(alignment: .leading) {
-                                Text("Function Call: \(functionCall.name)").bold()
-                                Text("Arguments: \(functionCall.arguments)")
-                            }
-                        case .function_call_output(let functionCallOutput):
-                            VStack(alignment: .leading) {
-                                Text("Function Call Output: ").bold()
-                                Text(functionCallOutput.output)
-                            }
-                        case .web_search_call(let webSearchCall):
-                            VStack(alignment: .leading) {
-                                Text("Web Search Call: ").bold()
-                                Text("Status: \(webSearchCall.status.rawValue)")
                             }
                         default:
                             EmptyView()
