@@ -39,10 +39,13 @@ struct RecipeView: View {
     
     // Chat
     @State private var messages: [Message] = []
+    @State private var responses: [Response] = []
     @State private var prompt: String = ""
 
     
     @State private var incomingMessage: Message?
+    
+    @State private var session = OpenAI(instructions: "")
 
     var body: some View {
         @Bindable var recipe = recipe
@@ -281,9 +284,8 @@ struct RecipeView: View {
 //        )
         .onAppear {
             recipe.content = banhMiRecipeContent
-        }
-        .sheet(isPresented: $showChat) {
-            var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
+            
+            let modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
                 Task { @MainActor in
                     print("ON CALL RECIPE: \(generatedRecipe.title)")
                     print("generatedRecipe: \(generatedRecipe)")
@@ -293,53 +295,99 @@ struct RecipeView: View {
                 }
             })
             
-            var session = OpenAISession(
+            session = OpenAI(
                 tools: [
                     .modifyRecipe(modifyRecipeTool)
                 ],
                 instructions: """
-                    # Help the user with any questions related to this recipe. Be very concise.
-                    \(recipe.toText())
+                    Help the user with any questions related to this recipe. Be very concise.
+                    \(banhMiRecipe.toText())
                     """
             )
-            ChatView(messages: $messages, prompt: $prompt, incomingMessage: $incomingMessage) { message in
+        }
+        .sheet(isPresented: $showChat) {
+            ChatView(responses: $responses, prompt: $prompt, incomingMessage: $incomingMessage) { inputItems in
                 Task {
-
-    //                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
-    //                    let message = Message(text: response.text, role: .assistant)
-    //                    messages.append(message)
-    //                }
-                    
                     do {
-                        let _ = try await session.stream(input: message.text) { text in
-                            incomingMessage = Message(text: "Incoming...", role: .assistant)
-                        } onDelta: { delta in
-                            if let current = incomingMessage {
-                                var updated = current
-                                updated.text += delta
-                                incomingMessage = updated
-                            } else {
-                                print("NO DELTA")
-                                incomingMessage = Message(text: delta, role: .assistant)
-                            }
-                        } onCompleted: { text in
-                            print("onComplete text: \(text)")
-                            if let current = incomingMessage {
-                                var updated = current
-                                updated.text = text
-                                messages.append(updated)
-                                incomingMessage = nil
-                            } else {
-                                messages.append(Message(text: text, role: .assistant))
-                            }
-                        }
-        //                let streamEvents = try await session.stream(input: input)
+//                        let userMessage = ResponseInputMessageItem(
+//                            id: UUID().uuidString,
+//                            content: [
+//                                .input_text(ResponseInputText(text: prompt))
+//                            ],
+//                            role: .user,
+//                            type: .message
+//                        )
+//                        let inputItems: [ResponseItem] = [
+//                            .input_message(userMessage)
+//                        ]
+//                        
+                        let response = Response(id: UUID().uuidString, status: .completed, output: inputItems)
+                        print("DEBUG RESPONSE TO APPEND: \(response)")
+                        responses.append(response)
+                        
+                        let stream = try await session.stream(input: inputItems)
+                        print("Stream: \(stream)")
+                        try await handleStream(stream)
                     } catch {
                         print("Streaming failed:", error)
                     }
                 }
             }
             .safeAreaPadding()
+            
+            //            var modifyRecipeTool = ModifyRecipeTool(onCall: { generatedRecipe in
+            //                Task { @MainActor in
+            //                    print("ON CALL RECIPE: \(generatedRecipe.title)")
+            //                    print("generatedRecipe: \(generatedRecipe)")
+            //                    withAnimation {
+            //                        modifiedRecipe = Recipe(from: generatedRecipe)
+            //                    }
+            //                }
+            //            })
+            //
+            //            var session = OpenAISession(
+            //                tools: [
+            //                    .modifyRecipe(modifyRecipeTool)
+            //                ],
+            //                instructions: """
+            //                    # Help the user with any questions related to this recipe. Be very concise.
+            //                    \(recipe.toText())
+            //                    """
+            //            )
+            
+            
+//            ChatView(messages: $messages, prompt: $prompt, incomingMessage: $incomingMessage) { message in
+//                Task {
+//                    
+//                    do {
+//                        let _ = try await session.stream(input: message.text) { text in
+//                            incomingMessage = Message(text: "Incoming...", role: .assistant)
+//                        } onDelta: { delta in
+//                            if let current = incomingMessage {
+//                                var updated = current
+//                                updated.text += delta
+//                                incomingMessage = updated
+//                            } else {
+//                                print("NO DELTA")
+//                                incomingMessage = Message(text: delta, role: .assistant)
+//                            }
+//                        } onCompleted: { text in
+//                            print("onComplete text: \(text)")
+//                            if let current = incomingMessage {
+//                                var updated = current
+//                                updated.text = text
+//                                messages.append(updated)
+//                                incomingMessage = nil
+//                            } else {
+//                                messages.append(Message(text: text, role: .assistant))
+//                            }
+//                        }
+//                    } catch {
+//                        print("Streaming failed:", error)
+//                    }
+//                }
+//            }
+//            .safeAreaPadding()
         }
         .sheet(isPresented: $showIngredients) {
             let name = self.recipe.content[selection]
@@ -584,6 +632,53 @@ struct RecipeView: View {
             text[ranges].ingredient = ingredient.id
             text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
             text[ranges].foregroundColor = .red
+        }
+    }
+    
+    func handleStream(_ stream: AsyncThrowingStream<ResponseStreamEvent, Error>) async throws {
+        for try await streamEvent in stream {
+//            print("Received event: \(streamEvent)")
+//            currentEvent = streamEvent
+//            events.append(streamEvent)
+            switch streamEvent {
+                
+//            case .responseCreatedEvent(let event):
+//                currentResponse = event.response
+//            case .responseOutputItemAddedEvent(let event):
+//                currentResponse?.output.append(event.item)
+//            case .responseContentPartAddedEvent(let event):
+//                if var responseItem = currentResponse?.output[event.output_index] {
+//                    if case .output_message(var message) = responseItem {
+//                        message.content.append(event.part)
+//                        currentResponse?.output[event.output_index] = .output_message(message)
+//                    }
+//                }
+//            case .responseOutputTextDeltaEvent(let event):
+//                guard var response = currentResponse, response.output.indices.contains(event.output_index) else { break }
+//                
+//                var responseItem = response.output[event.output_index]
+//                if case .output_message(var message) = responseItem {
+//                    print("debug message.content: \(message.content)")
+//                    print("debug message.content.indices: \(message.content.indices)")
+//                    print("debug event.content_index: \(event.content_index)")
+//                    if message.content.indices.contains(event.content_index) {
+//                        var content = message.content[event.content_index]
+//                        if case .output_text(var outputText) = content {
+//                            outputText.text += event.delta
+//                            content = .output_text(outputText)
+//                            message.content[event.content_index] = content
+//                            responseItem = .output_message(message)
+//                            response.output[event.output_index] = responseItem
+//                            currentResponse = response
+//                        }
+//                    }
+//                }
+            case .responseCompletedEvent(let event):
+                responses.append(event.response)
+//                currentResponse = nil
+            default:
+                print("UNHANDLED responseStreamEvent: \(streamEvent)")
+            }
         }
     }
 }

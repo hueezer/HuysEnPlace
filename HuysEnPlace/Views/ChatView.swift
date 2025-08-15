@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChatContainer: View {
     @State private var messages: [Message] = []
+    @State private var responses: [Response] = []
     @State private var prompt: String = ""
     @State private var session = OpenAISession(instructions: """
                     # Identity
@@ -21,7 +22,7 @@ struct ChatContainer: View {
     
     var body: some View {
         @Bindable var session = session
-        ChatView(messages: $messages, prompt: $prompt, incomingMessage: $incomingMessage) { message in
+        ChatView(responses: $responses, prompt: $prompt, incomingMessage: $incomingMessage) { inputItems in
             Task {
 
 //                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
@@ -29,30 +30,30 @@ struct ChatContainer: View {
 //                    messages.append(message)
 //                }
                 
-                do {
-                    let _ = try await session.stream(input: message.text) { text in
-                        incomingMessage = Message(text: "Incoming...", role: .assistant)
-                    } onDelta: { delta in
-                        if let current = incomingMessage {
-                            var updated = current
-                            updated.text += delta
-                            incomingMessage = updated
-                        } else {
-                            print("NO DELTA")
-                            incomingMessage = Message(text: delta, role: .assistant)
-                        }
-                    } onCompleted: { text in
-                        if let current = incomingMessage {
-                            var updated = current
-                            updated.text = text
-                            messages.append(updated)
-                            incomingMessage = nil
-                        }
-                    }
-    //                let streamEvents = try await session.stream(input: input)
-                } catch {
-                    print("Streaming failed:", error)
-                }
+//                do {
+//                    let _ = try await session.stream(input: inputItems) { text in
+//                        incomingMessage = Message(text: "Incoming...", role: .assistant)
+//                    } onDelta: { delta in
+//                        if let current = incomingMessage {
+//                            var updated = current
+//                            updated.text += delta
+//                            incomingMessage = updated
+//                        } else {
+//                            print("NO DELTA")
+//                            incomingMessage = Message(text: delta, role: .assistant)
+//                        }
+//                    } onCompleted: { text in
+//                        if let current = incomingMessage {
+//                            var updated = current
+//                            updated.text = text
+//                            messages.append(updated)
+//                            incomingMessage = nil
+//                        }
+//                    }
+//    //                let streamEvents = try await session.stream(input: input)
+//                } catch {
+//                    print("Streaming failed:", error)
+//                }
             }
         }
         .safeAreaPadding()
@@ -63,69 +64,73 @@ struct ChatView: View {
     
     @Namespace private var namespace
     
-    @Binding var messages: [Message]
+//    @Binding var messages: [Message]
+    @Binding var responses: [Response]
     @Binding var prompt: String
     @Binding var incomingMessage: Message?
     
     @State private var scrolledID: Message.ID?
     
-    var onSubmit: (Message) -> Void = { _ in }
+    var onSubmit: ([ResponseItem]) -> Void = { _ in }
     
     var body: some View {
         ScrollViewReader { value in
             GlassEffectContainer(spacing: 20) {
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 16) {
-                        ForEach(messages) { message in
-                            HStack(spacing: 0) {
-                                if message.role == .user {
-                                    Spacer(minLength: 50)
-                                }
-                                Text("\(message.text)")
-                                    .padding()
-                                    .glassEffect(message.role == .user ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
-                                    .glassEffectID(message.id, in: namespace)
-                                    .foregroundStyle(message.role == .user ? .white : .primary)
-                                if message.role == .assistant {
-                                    Spacer(minLength: 0)
-                                }
-                                
-                                if message.role == .assistant && message.text.isEmpty {
-                                    ProgressView()
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .id(message.id)
-                            
+                        ForEach(responses) { response in
+                            ResponseInspectorView(response: response)
                         }
-                        if let message = incomingMessage {
-                            HStack(spacing: 0) {
-                                if message.role == .user {
-                                    Spacer(minLength: 50)
-                                }
-                                Text("\(message.text)")
-                                    .padding()
-                                    .glassEffect(message.role == .user ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
-                                    .glassEffectID(message.id, in: namespace)
-                                    .foregroundStyle(message.role == .user ? .white : .primary)
-                                if message.role == .assistant {
-                                    Spacer(minLength: 0)
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .id(message.id)
-                        }
+//                        ForEach(messages) { message in
+//                            HStack(spacing: 0) {
+//                                if message.role == .user {
+//                                    Spacer(minLength: 50)
+//                                }
+//                                Text("\(message.text)")
+//                                    .padding()
+//                                    .glassEffect(message.role == .user ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
+//                                    .glassEffectID(message.id, in: namespace)
+//                                    .foregroundStyle(message.role == .user ? .white : .primary)
+//                                if message.role == .assistant {
+//                                    Spacer(minLength: 0)
+//                                }
+//                                
+//                                if message.role == .assistant && message.text.isEmpty {
+//                                    ProgressView()
+//                                }
+//                            }
+//                            .frame(maxWidth: .infinity)
+//                            .id(message.id)
+//                            
+//                        }
+//                        if let message = incomingMessage {
+//                            HStack(spacing: 0) {
+//                                if message.role == .user {
+//                                    Spacer(minLength: 50)
+//                                }
+//                                Text("\(message.text)")
+//                                    .padding()
+//                                    .glassEffect(message.role == .user ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
+//                                    .glassEffectID(message.id, in: namespace)
+//                                    .foregroundStyle(message.role == .user ? .white : .primary)
+//                                if message.role == .assistant {
+//                                    Spacer(minLength: 0)
+//                                }
+//                            }
+//                            .frame(maxWidth: .infinity)
+//                            .id(message.id)
+//                        }
                     }
                     .scrollTargetLayout()
                 }
                 .scrollPosition(id: $scrolledID)
-                .onChange(of: messages.count, { old, new in
-                    withAnimation {
-                        if let lastMessageID = messages.last?.id {
-                            value.scrollTo(lastMessageID, anchor: .top)
-                        }
-                    }
-                })
+//                .onChange(of: messages.count, { old, new in
+//                    withAnimation {
+//                        if let lastMessageID = messages.last?.id {
+//                            value.scrollTo(lastMessageID, anchor: .top)
+//                        }
+//                    }
+//                })
             }
             
             VStack(spacing: 0) {
@@ -170,12 +175,33 @@ struct ChatView: View {
         }
     }
     
-    func submitMessage() {
-        let message = Message(text: prompt, role: .user)
-        messages.append(message)
-        prompt = ""
-        onSubmit(message)
-    }
+//    func submitMessage() {
+//        let message = Message(text: prompt, role: .user)
+//        messages.append(message)
+//        prompt = ""
+//        onSubmit(message)
+//    }
+        func submitMessage() {
+//            let message = Message(text: prompt, role: .user)
+//            messages.append(message)
+//            prompt = ""
+            
+            let userMessage = ResponseInputMessageItem(
+                id: UUID().uuidString,
+                content: [
+                    .input_text(ResponseInputText(text: prompt))
+                ],
+                role: .user,
+                type: .message
+            )
+            let inputItems: [ResponseItem] = [
+                .input_message(userMessage)
+            ]
+            
+//            let response = Response(id: UUID().uuidString, status: .completed, output: inputItems)
+            prompt = ""
+            onSubmit(inputItems)
+        }
 }
 
 #Preview {
