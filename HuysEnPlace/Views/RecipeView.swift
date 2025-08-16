@@ -203,7 +203,9 @@ struct RecipeView: View {
                 Task { @MainActor in
                     print("ON CALL RECIPE: \(generatedRecipe.title)")
                     print("generatedRecipe: \(generatedRecipe)")
+                    showChat = false
                     showMinimizedChat = true
+                    minimizedChatResponse = Response(id: UUID().uuidString, status: .in_progress, output: [.output_message(.init(id: UUID().uuidString, content: [.output_text(.init(type: .output_text, text: ""))], role: .assistant, status: .in_progress, type: .message))])
                     withAnimation {
                         modifiedRecipe = Recipe(from: generatedRecipe)
                     }
@@ -515,6 +517,10 @@ struct RecipeView: View {
                             response.id = UUID().uuidString
                             incomingResponse = response
                             
+                            if showMinimizedChat {
+                                minimizedChatResponse = response
+                                
+                            }
                         }
                     }
                 }
@@ -522,13 +528,13 @@ struct RecipeView: View {
                 incomingResponse = nil
                 responses.append(event.response)
                 
-                if case .output_message(let _) = event.response.output.first {
-                    if showMinimizedChat {
-                        print("Setting Minimized Chat response: \(event.response)")
-                        minimizedChatResponse = event.response
-                        showChat = false
-                    }
-                }
+//                if case .output_message(let _) = event.response.output.first {
+//                    if showMinimizedChat {
+//                        print("Setting Minimized Chat response: \(event.response)")
+//                        minimizedChatResponse = event.response
+//                        showChat = false
+//                    }
+//                }
 
             default:
                 print("UNHANDLED responseStreamEvent: \(streamEvent)")
