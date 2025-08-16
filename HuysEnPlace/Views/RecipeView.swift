@@ -422,13 +422,13 @@ struct RecipeView: View {
         }
         .toolbarBackground(.blue, for: .bottomBar)
         
-        .onAppear {
-            showMinimizedChat = true
-            minimizedChatResponse = Response(id: "2", status: .completed, output: [
-                .output_message(.init(id: "2", content: [.output_text(.init(type: .output_text, text: "Ascorbic acid removed; all other quantities and steps stay the same."))], role: .assistant, status: .completed, type: .message))
-            ])
-            
-        }
+//        .onAppear {
+//            showMinimizedChat = true
+//            minimizedChatResponse = Response(id: "2", status: .completed, output: [
+//                .output_message(.init(id: "2", content: [.output_text(.init(type: .output_text, text: "Ascorbic acid removed; all other quantities and steps stay the same."))], role: .assistant, status: .completed, type: .message))
+//            ])
+//            
+//        }
         
 //        .task {
 //            do {
@@ -488,9 +488,6 @@ struct RecipeView: View {
     
     func handleStream(_ stream: AsyncThrowingStream<ResponseStreamEvent, Error>) async throws {
         for try await streamEvent in stream {
-//            print("Received event: \(streamEvent)")
-//            currentEvent = streamEvent
-//            events.append(streamEvent)
             switch streamEvent {
                 
             case .responseCreatedEvent(let event):
@@ -499,70 +496,24 @@ struct RecipeView: View {
                 incomingResponse?.output.append(event.item)
             case .responseContentPartAddedEvent(let event):
                 if case .output_message(var outputMessage) = incomingResponse?.output[event.output_index] {
-                    print("DEBUG CONTENT PART ADDED")
                     outputMessage.content.append(event.part)
                     incomingResponse?.output[event.output_index] = .output_message(outputMessage)
                 }
-//                if var responseItem = incomingResponse?.output[event.output_index] {
-//                    if case .output_message(var message) = responseItem {
-//                        message.content.append(event.part)
-//                        incomingResponse?.output[event.output_index] = .output_message(message)
-//                        incomingResponse?.id = UUID().uuidString
-//                        print("DD_1")
-//                        if message.content.isEmpty {
-//                            print("DD_2")
-//                            message.content.append(.output_text(.init(type: .output_text, text: "")))
-//                            incomingResponse?.output[event.output_index] = .output_message(message)
-//                        } else {
-//                            print("DD_3")
-//                            if case .output_text(var outputText) = message.content[event.content_index] {
-//
-//                            }
-//                        }
-//                    }
-//                }
-                
-//                if case .output_message(var message) = response3.output[0] {
-//                    status = "CASE 0"
-//                    if message.content.indices.contains(0),
-//                       case .output_text(var textItem) = message.content[0] {
-//                        status = "CASE 1"
-//                        var newResponse = response3
-//                        newResponse.id = textItem.text
-//                        var newText = textItem.text
-//                        newText += "Hello"
-//                        message.content[0] = .output_text(.init(type: .output_text, text: newText))
-//                        
-//                        newResponse.output[0] = .output_message(message)
-//                        response3 = newResponse
-//                        status = "\(response3)"
-//                    } else {
-//                        status = "CASE 2"
-//                        message.content.append(.output_text(.init(type: .output_text, text: "")))
-//                        response3.output[0] = .output_message(message)
-//                    }
-//                }
             case .responseOutputTextDeltaEvent(let event):
                 guard var response = incomingResponse, response.output.indices.contains(event.output_index) else { break }
                 
                 var responseItem = response.output[event.output_index]
                 if case .output_message(var message) = responseItem {
-                    print("debug message.content: \(message.content)")
-                    print("debug message.content.indices: \(message.content.indices)")
-                    print("debug event.content_index: \(event.content_index)")
                     if message.content.indices.contains(event.content_index) {
                         var content = message.content[event.content_index]
                         if case .output_text(var outputText) = content {
                             outputText.text += event.delta
-                            print("DEBUG OUTPUT TEXT: \(outputText.text)")
                             content = .output_text(outputText)
                             message.content[event.content_index] = content
                             responseItem = .output_message(message)
                             response.output[event.output_index] = responseItem
-                            print("DEBUG RESPONSE: \(response.output)")
                             response.id = UUID().uuidString
                             incomingResponse = response
-//                            incomingResponse?.output[event.output_index] = responseItem
                             
                         }
                     }
@@ -578,10 +529,7 @@ struct RecipeView: View {
                         showChat = false
                     }
                 }
-//                if showMinimizedChat {
-//                    print("Setting Minimized Chat response: \(event.response)")
-//                    minimizedChatResponse = event.response
-//                }
+
             default:
                 print("UNHANDLED responseStreamEvent: \(streamEvent)")
             }
