@@ -43,14 +43,14 @@ struct RecipeIngredientInfoView: View {
     @State private var infoState = RecipeIngredientInfo(name: "", overview: "", roleTitle: "", roleDetails: "", ingredient: Ingredient())
     @State private var description: String = ""
     
-    @State private var session = OpenAISession(instructions: """
+    @State private var session = OpenAI(instructions: """
                     ## Identity
 
                     You contain all culinary knowledge in the world. Produce content that is both interesting, concise and factual. It should be the most interesting culinary book ever to exist.
                     
                     ## Outline
                     Include these sections:
-                    - Overview (this should never be a list)
+                    - Overview (2 sentences)
                     - Role Ingredient in the context of the recipe. Create a concise, relevant title for this section
                     - Description
                     - Any other interesting sections go here
@@ -60,7 +60,6 @@ struct RecipeIngredientInfoView: View {
                     Include a new line between the title and the body.
                     Sections should be no longer than 5 sentences.
                     Italicize any important information that should be emphasized.
-                    Use lists with bullet points when needed.
                     Respond in markdown.
                     
                     ## Here is the markdown supported:
@@ -88,6 +87,9 @@ struct RecipeIngredientInfoView: View {
                 .aspectRatio(1, contentMode: .fit)
             }
             VStack(alignment: .leading, spacing: 16) {
+                Text(ingredientQuantity.ingredientText)
+                    .font(.title)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Text(LocalizedStringKey(infoState.overview))
                     .font(.body)
 //                Text(infoState.name)
@@ -116,6 +118,7 @@ struct RecipeIngredientInfoView: View {
 //                        .font(.subheadline)
 //                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
         }
 //        .task {
@@ -138,7 +141,7 @@ struct RecipeIngredientInfoView: View {
                 content: [
                     .input_text(ResponseInputText(text: """
                 Ingredient name: \(ingredientQuantity.ingredientText)
-                Recipe name: \(recipe.title)
+                Recipe: \(recipe.toText())
                 """))
                 ],
                 role: .user,

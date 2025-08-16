@@ -445,6 +445,10 @@ struct RecipeView: View {
 //        }
         .toolbarVisibility(.hidden, for: .tabBar)
         .environment(\.editMode, $editMode)
+        .environment(\.openURL, OpenURLAction { url in
+            handleURL(url)
+            return .systemAction
+        })
     }
     
     func selectionIsEmpty() -> Bool {
@@ -458,21 +462,21 @@ struct RecipeView: View {
         }
     }
     
-//    private func handleURL(_ url: URL) {
-//        // Any side effect you need—navigation, async task, analytics, …
-//        print("Link tapped:", url.absoluteString)
-//        if let host = url.host() {
-//            if host == "ingredients" {
-//                print("Tapped Ingredients")
-//                print("path components last: \(url.pathComponents.last)")
-//                if let pathId = url.pathComponents.last, let ingredient = ingredients.first(where: { $0.id == pathId }) {
+    private func handleURL(_ url: URL) {
+        // Any side effect you need—navigation, async task, analytics, …
+        print("Link tapped:", url.absoluteString)
+        if let host = url.host() {
+            if host == "ingredients" {
+                print("Tapped Ingredients")
+                print("path components last: \(url.pathComponents.last)")
+                if let pathId = url.pathComponents.last, let ingredient = ingredients.first(where: { $0.id == pathId }) {
 //                    ingredientInfo = ingredient
-//                } else {
-//                    print("DID NOT FIND INGREDIENT")
-//                }
-//            }
-//        }
-//    }
+                } else {
+                    print("DID NOT FIND INGREDIENT")
+                }
+            }
+        }
+    }
     
     func autotag(ingredients: [Ingredient]) {
         
