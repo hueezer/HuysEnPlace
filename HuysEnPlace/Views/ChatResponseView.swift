@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ChatResponseView: View {
-    var response: Response
-    @State private var showJSON = false
+    @Binding var response: Response
+    var showJSON = false
     var isUser: Bool {
         isUserMessage(response) != nil
     }
@@ -18,19 +18,31 @@ struct ChatResponseView: View {
             if isUser {
                 Spacer(minLength: 50)
             }
+
             VStack(spacing: 16) {
+//                if showJSON {
+//                    VStack(alignment: .leading, spacing: 0) {
+//                        
+//                        Text(JSONString(for: response, format: .prettyPrinted))
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                            .padding()
+//                            .background(.black.opacity(0.8))
+//                    }
+//                    .clipped()
+//                    .clipShape(RoundedRectangle(cornerRadius: 16))
+//                    .foregroundStyle(.white)
+//                    .font(.caption)
+//                }
+                
+
                 if let responseInputText = isUserMessage(response) {
                     Text(responseInputText.text)
-                    //                    .padding()
-                    //                    .background(.indigo.opacity(0.2))
-                    //                    .clipped()
-                    //                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    //                    .padding()
-                    //                    .glassEffect(message.role == .user ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
-                    //                    .glassEffectID(message.id, in: namespace)
-                    //                    .foregroundStyle(message.role == .user ? .white : .primary)
                     
                 } else {
+                    if response.output.isEmpty {
+                        ProgressView()
+                    }
+                    
                     ForEach(response.output) { item in
                         switch item {
                         case .reasoning(let reasoning):
@@ -51,12 +63,15 @@ struct ChatResponseView: View {
                             }
 
                         case .output_message(let message):
+                            if message.content.isEmpty {
+                                ProgressView()
+                            }
+                            
                             ForEach(message.content.indices, id: \.self) { idx in
                                 let content = message.content[idx]
                                 switch content {
                                 case .output_text(let text):
                                     Text(LocalizedStringKey(text.text))
-                                    
                                 case .output_refusal(let refusal):
                                     Text("[Refusal] ").foregroundStyle(.red) + Text(refusal.text)
                                 }
@@ -72,9 +87,9 @@ struct ChatResponseView: View {
             //        .glassEffectID(message.id, in: namespace)
             .foregroundStyle(isUser ? .white : .primary)
             .font(.system(.body, design: .monospaced))
-            .onTapGesture {
-                showJSON.toggle()
-            }
+//            .onTapGesture {
+//                showJSON.toggle()
+//            }
             
             if !isUser {
                 Spacer(minLength: 0)
@@ -111,13 +126,62 @@ struct ChatResponseView: View {
 }
 
 #Preview {
-    @Previewable var response: Response = Response(id: "1", status: .completed, output: [
+    @Previewable @State var response: Response = Response(id: "1", status: .completed, output: [
         .input_message(.init(id: "1", content: [.input_text(.init(text: "Hello"))], role: .user, type: .message))
     ])
     
-    @Previewable var response2: Response = Response(id: "2", status: .completed, output: [
+    @Previewable @State var response2: Response = Response(id: "2", status: .completed, output: [
         .output_message(.init(id: "2", content: [.output_text(.init(type: .output_text, text: "Hello"))], role: .assistant, status: .completed, type: .message))
     ])
-    ChatResponseView(response: response)
-    ChatResponseView(response: response2)
+    
+    @Previewable @State var response3: Response = Response(id: "3", status: .completed, output: [
+        .output_message(.init(id: "3", content: [], role: .assistant, status: .completed, type: .message))
+    ])
+    
+    @Previewable @State var status: String = "NONE"
+    VStack {
+        ChatResponseView(response: $response)
+        ChatResponseView(response: $response2)
+        Text(status)
+        ChatResponseView(response: $response3)
+        Button("Update") {
+//            response3.output[0] = .output_message(.init(id: "3", content: [.output_text(.init(type: .output_text, text: "Hello"))], role: .assistant, status: .completed, type: .message))
+//            response3.output[0].content[0].text += "Hello"
+            if case .output_message(var message) = response3.output[0] {
+                status = "CASE 0"
+                if message.content.indices.contains(0),
+                   case .output_text(var textItem) = message.content[0] {
+                    status = "CASE 1"
+                    var newResponse = response3
+                    newResponse.id = textItem.text
+                    var newText = textItem.text
+                    newText += "Hello"
+                    message.content[0] = .output_text(.init(type: .output_text, text: newText))
+                    
+                    newResponse.output[0] = .output_message(message)
+                    response3 = newResponse
+                    status = "\(response3)"
+                } else {
+                    status = "CASE 2"
+                    message.content.append(.output_text(.init(type: .output_text, text: "")))
+                    response3.output[0] = .output_message(message)
+                }
+            } else {
+                status = "CASE 3"
+            }
+        }
+        
+        Button("Update") {
+            if case .output_message(var message) = response3.output[0] {
+                // Safe: Check for at least one text item
+                for idx in message.content.indices {
+                    if case .output_text(var textItem) = message.content[idx] {
+                        textItem.text += "Hello"
+                        message.content[idx] = .output_text(textItem)
+                    }
+                }
+                response3.output[0] = .output_message(message)
+            }
+        }
+    }
 }

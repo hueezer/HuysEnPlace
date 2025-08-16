@@ -18,11 +18,11 @@ struct ChatContainer: View {
                     When generating recipes, the unit should always be in metric.
                     """)
     
-    @State private var incomingMessage: Message?
+    @State private var incomingResponse: Response?
     
     var body: some View {
         @Bindable var session = session
-        ChatView(responses: $responses, prompt: $prompt, incomingMessage: $incomingMessage) { inputItems in
+        ChatView(responses: $responses, prompt: $prompt, incomingResponse: $incomingResponse) { inputItems in
             Task {
 
 //                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
@@ -67,7 +67,7 @@ struct ChatView: View {
 //    @Binding var messages: [Message]
     @Binding var responses: [Response]
     @Binding var prompt: String
-    @Binding var incomingMessage: Message?
+    @Binding var incomingResponse: Response?
     
     @State private var scrolledID: Message.ID?
     
@@ -78,48 +78,15 @@ struct ChatView: View {
             GlassEffectContainer(spacing: 20) {
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 16) {
-                        ForEach(responses) { response in
+                        ForEach($responses) { response in
                             ChatResponseView(response: response)
                         }
-//                        ForEach(messages) { message in
-//                            HStack(spacing: 0) {
-//                                if message.role == .user {
-//                                    Spacer(minLength: 50)
-//                                }
-//                                Text("\(message.text)")
-//                                    .padding()
-//                                    .glassEffect(message.role == .user ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
-//                                    .glassEffectID(message.id, in: namespace)
-//                                    .foregroundStyle(message.role == .user ? .white : .primary)
-//                                if message.role == .assistant {
-//                                    Spacer(minLength: 0)
-//                                }
-//                                
-//                                if message.role == .assistant && message.text.isEmpty {
-//                                    ProgressView()
-//                                }
-//                            }
-//                            .frame(maxWidth: .infinity)
-//                            .id(message.id)
-//                            
-//                        }
-//                        if let message = incomingMessage {
-//                            HStack(spacing: 0) {
-//                                if message.role == .user {
-//                                    Spacer(minLength: 50)
-//                                }
-//                                Text("\(message.text)")
-//                                    .padding()
-//                                    .glassEffect(message.role == .user ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 16))
-//                                    .glassEffectID(message.id, in: namespace)
-//                                    .foregroundStyle(message.role == .user ? .white : .primary)
-//                                if message.role == .assistant {
-//                                    Spacer(minLength: 0)
-//                                }
-//                            }
-//                            .frame(maxWidth: .infinity)
-//                            .id(message.id)
-//                        }
+                        if let _ = incomingResponse {
+                            ChatResponseView(response: Binding(
+                                get: { incomingResponse! },
+                                set: { incomingResponse = $0 }
+                            ))
+                        }
                     }
                     .scrollTargetLayout()
                 }

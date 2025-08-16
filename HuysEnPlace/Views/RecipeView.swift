@@ -23,11 +23,7 @@ struct RecipeView: View {
     
     @State private var shareJsonUrl: URL?
     
-    @State private var modifyRecipeMessage: String = ""
-    
     @State private var modifiedRecipe: Recipe?
-    @State private var modifyRecipeResponse: GeneratedRecipeResponse?
-    @State private var updateRecipeIsGenerating: Bool = false
     
     @State private var showChat: Bool = false
     @State private var showMinimizedChat: Bool = false
@@ -38,12 +34,13 @@ struct RecipeView: View {
     @State private var previousResponseid: String? = nil
     
     // Chat
-    @State private var messages: [Message] = []
+//    @State private var messages: [Message] = []
     @State private var responses: [Response] = []
+    @State private var incomingResponse: Response?
     @State private var prompt: String = ""
 
     
-    @State private var incomingMessage: Message?
+//    @State private var incomingMessage: Message?
     
     @State private var session = OpenAI(instructions: "")
 
@@ -62,88 +59,139 @@ struct RecipeView: View {
 
             ScrollView {
                 LazyVStack(pinnedViews: .sectionHeaders) {
-                    Section {
-                        if modifiedRecipe == nil {
-                            VStack(alignment: .center, spacing: 16) {
-                                Text(recipe.title)
-                                    .font(.title)
-                                    .bold()
-                                    .multilineTextAlignment(.center)
-                                
-                                Text("Ingredients")
-                                    .font(.headline)
-                                
-                                if editMode == .active {
-                                    HStack {
-                                        Button(action: {
-                                            recipe.ingredients.append(IngredientList(title: "", items: []))
-                                            if let lastIngredientList = recipe.ingredients.last {
-                                                editingIngredientList = lastIngredientList
-                                            }
-                                        }) {
-                                            Label("Ingredients", systemImage: "plus")
+                    if modifiedRecipe == nil {
+                        VStack(alignment: .center, spacing: 16) {
+                            Text(recipe.title)
+                                .font(.title)
+                                .bold()
+                                .multilineTextAlignment(.center)
+                            
+                            Text("Ingredients")
+                                .font(.headline)
+                            
+                            if editMode == .active {
+                                HStack {
+                                    Button(action: {
+                                        recipe.ingredients.append(IngredientList(title: "", items: []))
+                                        if let lastIngredientList = recipe.ingredients.last {
+                                            editingIngredientList = lastIngredientList
                                         }
-                                        .buttonStyle(.glassProminent)
+                                    }) {
+                                        Label("Ingredients", systemImage: "plus")
                                     }
-                                }
-                                
-                                ForEach($recipe.ingredients) { $list in
-                                    IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
-                                        ingredientQuantityDetails = ingredientQuantity
-                                    }, onTapList: { list in
-                                        editingIngredientList = $list.wrappedValue
-                                    })
-                                    .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
-                                    .environment(\.editMode, $editMode)
-                                }
-                                
-                                Text("Steps")
-                                    .font(.headline)
-                                
-                                ForEach(Array(zip(recipe.steps.indices, $recipe.steps)), id: \.1.id) { index, $step in
-                                    StepView(index: index, step: $step)
-                                        .environment(recipe)
-                                        .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
-                                }
-                                
-                                if editMode == .active {
-                                    HStack {
-                                        Button(action: {
-                                            recipe.steps.append(.init())
-                                        }) {
-                                            Label("Add Step", systemImage: "plus")
-                                        }
-                                        .buttonStyle(.glassProminent)
-                                    }
+                                    .buttonStyle(.glassProminent)
                                 }
                             }
-                        } else {
-                            Button(action: {
-                                withAnimation {
-//                                                showRecipeDiff = false
-                                    if let modifiedRecipe = modifiedRecipe {
-                                        recipe.title = modifiedRecipe.title
-                                        recipe.ingredients = modifiedRecipe.ingredients
-                                        recipe.steps = modifiedRecipe.steps
-                                        self.modifiedRecipe = nil
+                            
+                            ForEach($recipe.ingredients) { $list in
+                                IngredientListView(list: $list, onTapIngredient: { ingredientQuantity in
+                                    ingredientQuantityDetails = ingredientQuantity
+                                }, onTapList: { list in
+                                    editingIngredientList = $list.wrappedValue
+                                })
+                                .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
+                                .environment(\.editMode, $editMode)
+                            }
+                            
+                            Text("Steps")
+                                .font(.headline)
+                            
+                            ForEach(Array(zip(recipe.steps.indices, $recipe.steps)), id: \.1.id) { index, $step in
+                                StepView(index: index, step: $step)
+                                    .environment(recipe)
+                                    .shadow(color: editMode == .active ? .blue : .clear, radius: 0)
+                            }
+                            
+                            if editMode == .active {
+                                HStack {
+                                    Button(action: {
+                                        recipe.steps.append(.init())
+                                    }) {
+                                        Label("Add Step", systemImage: "plus")
                                     }
-                                    
+                                    .buttonStyle(.glassProminent)
                                 }
-                            }, label: {
-                                Label("Apply", systemImage: "checkmark")
-                            })
-                            .buttonStyle(.glassProminent)
-                            .tint(.blue)
-                            RecipeDiffView(recipe: recipe, updatedRecipe: $modifiedRecipe)
+                            }
                         }
-                    } header: {
-                        Text("REMOVE")
+                    } else {
+                        Button(action: {
+                            withAnimation {
+//                                                showRecipeDiff = false
+                                if let modifiedRecipe = modifiedRecipe {
+                                    recipe.title = modifiedRecipe.title
+                                    recipe.ingredients = modifiedRecipe.ingredients
+                                    recipe.steps = modifiedRecipe.steps
+                                    self.modifiedRecipe = nil
+                                }
+                                
+                            }
+                        }, label: {
+                            Label("Apply", systemImage: "checkmark")
+                        })
+                        .buttonStyle(.glassProminent)
+                        .tint(.blue)
+                        RecipeDiffView(recipe: recipe, updatedRecipe: $modifiedRecipe)
                     }
                 }
                 
             }
             .contentMargins(.horizontal, 12.0, for: .scrollContent)
 
+        }
+        .overlay(alignment: .top) {
+            if showMinimizedChat, let response = minimizedChatResponse {
+                VStack(spacing: 16) {
+                    ForEach(response.output) { item in
+                        switch item {
+                        case .output_message(let message):
+                            ForEach(message.content.indices, id: \.self) { idx in
+                                let content = message.content[idx]
+                                
+                                if case .output_text(let text) = content {
+                                    Text(LocalizedStringKey(text.text))
+                                }
+                            }
+                        default:
+                            EmptyView()
+                        }
+                    }
+                    
+                    HStack(spacing: 16) {
+                        Button("Reject") {
+                            
+                        }
+                        .tint(.red)
+                        .buttonStyle(.borderedProminent)
+                        Button("Accept") {
+                            withAnimation {
+                                if let modifiedRecipe = modifiedRecipe {
+                                    recipe.title = modifiedRecipe.title
+                                    recipe.ingredients = modifiedRecipe.ingredients
+                                    recipe.steps = modifiedRecipe.steps
+                                    self.modifiedRecipe = nil
+                                }
+                                
+                            }
+                        }
+                        .tint(.green)
+                        .buttonStyle(.borderedProminent)
+                    }
+                    
+                    
+                }
+                .padding()
+                
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
+                
+                .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 32))
+                .safeAreaPadding(.horizontal)
+                .onTapGesture {
+                    minimizedChatResponse = nil
+                    showMinimizedChat = false
+                    showChat.toggle()
+                }
+            }
         }
 //        .attributedTextFormattingDefinition(
 //            RecipeFormattingDefinition(ingredients: Set(ingredients.map(\.id)))
@@ -173,7 +221,7 @@ struct RecipeView: View {
             )
         }
         .sheet(isPresented: $showChat) {
-            ChatView(responses: $responses, prompt: $prompt, incomingMessage: $incomingMessage) { inputItems in
+            ChatView(responses: $responses, prompt: $prompt, incomingResponse: $incomingResponse) { inputItems in
                 Task {
                     do {
                         let response = Response(id: UUID().uuidString, status: .completed, output: inputItems)
@@ -362,47 +410,18 @@ struct RecipeView: View {
                 }
             }
             
-            ToolbarItem(placement: .bottomBar) {
-                if showMinimizedChat, let response = minimizedChatResponse {
-                    VStack {
-                        ForEach(response.output) { item in
-                            switch item {
-                            case .output_message(let message):
-                                ForEach(message.content.indices, id: \.self) { idx in
-                                    let content = message.content[idx]
-                                    
-                                    if case .output_text(let text) = content {
-                                        Text(LocalizedStringKey(text.text))
-                                    }
-                                }
-                            default:
-                                EmptyView()
-                            }
-                        }
-                    }
-                    .padding(8)
-                    
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity)
-//                    .glassEffect(in: RoundedRectangle(cornerRadius: 32))
-                    .onTapGesture {
-                        minimizedChatResponse = nil
-                        showMinimizedChat = false
-                        showChat.toggle()
-                    }
-                } else {
-                    Button(action: {
-                        showChat.toggle()
-                    }, label: {
-                        Label("Chat", systemImage: "message")
-                    })
-                    .buttonStyle(.glassProminent)
-                }
-
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: {
+                    showChat.toggle()
+                }, label: {
+                    Label("Chat", systemImage: "message")
+                })
+                .buttonStyle(.glassProminent)
             }
             
         }
         .toolbarBackground(.blue, for: .bottomBar)
+        
         .onAppear {
             showMinimizedChat = true
             minimizedChatResponse = Response(id: "2", status: .completed, output: [
@@ -474,38 +493,82 @@ struct RecipeView: View {
 //            events.append(streamEvent)
             switch streamEvent {
                 
-//            case .responseCreatedEvent(let event):
-//                currentResponse = event.response
-//            case .responseOutputItemAddedEvent(let event):
-//                currentResponse?.output.append(event.item)
-//            case .responseContentPartAddedEvent(let event):
-//                if var responseItem = currentResponse?.output[event.output_index] {
+            case .responseCreatedEvent(let event):
+                incomingResponse = event.response
+            case .responseOutputItemAddedEvent(let event):
+                incomingResponse?.output.append(event.item)
+            case .responseContentPartAddedEvent(let event):
+                if case .output_message(var outputMessage) = incomingResponse?.output[event.output_index] {
+                    print("DEBUG CONTENT PART ADDED")
+                    outputMessage.content.append(event.part)
+                    incomingResponse?.output[event.output_index] = .output_message(outputMessage)
+                }
+//                if var responseItem = incomingResponse?.output[event.output_index] {
 //                    if case .output_message(var message) = responseItem {
 //                        message.content.append(event.part)
-//                        currentResponse?.output[event.output_index] = .output_message(message)
-//                    }
-//                }
-//            case .responseOutputTextDeltaEvent(let event):
-//                guard var response = currentResponse, response.output.indices.contains(event.output_index) else { break }
-//                
-//                var responseItem = response.output[event.output_index]
-//                if case .output_message(var message) = responseItem {
-//                    print("debug message.content: \(message.content)")
-//                    print("debug message.content.indices: \(message.content.indices)")
-//                    print("debug event.content_index: \(event.content_index)")
-//                    if message.content.indices.contains(event.content_index) {
-//                        var content = message.content[event.content_index]
-//                        if case .output_text(var outputText) = content {
-//                            outputText.text += event.delta
-//                            content = .output_text(outputText)
-//                            message.content[event.content_index] = content
-//                            responseItem = .output_message(message)
-//                            response.output[event.output_index] = responseItem
-//                            currentResponse = response
+//                        incomingResponse?.output[event.output_index] = .output_message(message)
+//                        incomingResponse?.id = UUID().uuidString
+//                        print("DD_1")
+//                        if message.content.isEmpty {
+//                            print("DD_2")
+//                            message.content.append(.output_text(.init(type: .output_text, text: "")))
+//                            incomingResponse?.output[event.output_index] = .output_message(message)
+//                        } else {
+//                            print("DD_3")
+//                            if case .output_text(var outputText) = message.content[event.content_index] {
+//
+//                            }
 //                        }
 //                    }
 //                }
+                
+//                if case .output_message(var message) = response3.output[0] {
+//                    status = "CASE 0"
+//                    if message.content.indices.contains(0),
+//                       case .output_text(var textItem) = message.content[0] {
+//                        status = "CASE 1"
+//                        var newResponse = response3
+//                        newResponse.id = textItem.text
+//                        var newText = textItem.text
+//                        newText += "Hello"
+//                        message.content[0] = .output_text(.init(type: .output_text, text: newText))
+//                        
+//                        newResponse.output[0] = .output_message(message)
+//                        response3 = newResponse
+//                        status = "\(response3)"
+//                    } else {
+//                        status = "CASE 2"
+//                        message.content.append(.output_text(.init(type: .output_text, text: "")))
+//                        response3.output[0] = .output_message(message)
+//                    }
+//                }
+            case .responseOutputTextDeltaEvent(let event):
+                guard var response = incomingResponse, response.output.indices.contains(event.output_index) else { break }
+                
+                var responseItem = response.output[event.output_index]
+                if case .output_message(var message) = responseItem {
+                    print("debug message.content: \(message.content)")
+                    print("debug message.content.indices: \(message.content.indices)")
+                    print("debug event.content_index: \(event.content_index)")
+                    if message.content.indices.contains(event.content_index) {
+                        var content = message.content[event.content_index]
+                        if case .output_text(var outputText) = content {
+                            outputText.text += event.delta
+                            print("DEBUG OUTPUT TEXT: \(outputText.text)")
+                            content = .output_text(outputText)
+                            message.content[event.content_index] = content
+                            responseItem = .output_message(message)
+                            response.output[event.output_index] = responseItem
+                            print("DEBUG RESPONSE: \(response.output)")
+                            response.id = UUID().uuidString
+                            incomingResponse = response
+//                            incomingResponse?.output[event.output_index] = responseItem
+                            
+                        }
+                    }
+                }
             case .responseCompletedEvent(let event):
+                incomingResponse = nil
                 responses.append(event.response)
                 
                 if case .output_message(let _) = event.response.output.first {
