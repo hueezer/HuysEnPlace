@@ -33,17 +33,11 @@ struct RecipeView: View {
     
     @Namespace private var namespace
     
-    @State private var previousResponseid: String? = nil
-    
     // Chat
-//    @State private var messages: [Message] = []
     @State private var responses: [Response] = []
     @State private var incomingResponse: Response?
     @State private var prompt: String = ""
 
-    
-//    @State private var incomingMessage: Message?
-    
     @State private var session = OpenAI(instructions: "")
 
     var body: some View {
@@ -116,22 +110,6 @@ struct RecipeView: View {
                             }
                         }
                     } else {
-                        Button(action: {
-                            withAnimation {
-//                                                showRecipeDiff = false
-                                if let modifiedRecipe = modifiedRecipe {
-                                    recipe.title = modifiedRecipe.title
-                                    recipe.ingredients = modifiedRecipe.ingredients
-                                    recipe.steps = modifiedRecipe.steps
-                                    self.modifiedRecipe = nil
-                                }
-                                
-                            }
-                        }, label: {
-                            Label("Apply", systemImage: "checkmark")
-                        })
-                        .buttonStyle(.glassProminent)
-                        .tint(.blue)
                         RecipeDiffView(recipe: recipe, updatedRecipe: $modifiedRecipe)
                     }
                 }
