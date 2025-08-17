@@ -67,10 +67,16 @@ struct ModifyRecipeTool: Tool, Encodable, Sendable {
         let recipe = Recipe(from: arguments.recipe)
         print("CALLING MODIFY RECIPE TOOL with ingredients: \(recipe.ingredients.map { $0.items.map { $0.ingredientText }})")
         let fullPrompt = """
+            <tool_preambles>
+            - Always begin by rephrasing the user's goal in a friendly, clear, and concise manner, before calling any tools.
+            - Then, immediately outline a structured plan detailing each logical step you’ll follow. - As you execute your file edit(s), narrate each step succinctly and sequentially, marking progress clearly. 
+            - Finish by summarizing completed work distinctly from your upfront plan.
+            </tool_preambles>
             Modify the following recipe acording to these intructions, while only modifying necessary text:
             \(arguments.prompt)
             Recipe:
             \(String(describing: Recipe(from: arguments.recipe).toJson()))
+
             """
         print("Full Prompt: \(fullPrompt)")
         print("previousResponseId call session: \(String(describing: self.session))")

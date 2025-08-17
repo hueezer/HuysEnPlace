@@ -28,6 +28,8 @@ struct RecipeView: View {
     @State private var showChat: Bool = false
     @State private var showMinimizedChat: Bool = false
     @State private var minimizedChatResponse: Response?
+    @State private var shouldShowMinimizedChatActions: Bool = false
+    @State private var showMinimizedChatActions: Bool = false
     
     @Namespace private var namespace
     
@@ -156,27 +158,33 @@ struct RecipeView: View {
                         }
                     }
                     
-                    HStack(spacing: 16) {
-                        Button("Reject") {
-                            
-                        }
-                        .tint(.red)
-                        .buttonStyle(.borderedProminent)
-                        Button("Accept") {
-                            withAnimation {
-                                if let modifiedRecipe = modifiedRecipe {
-                                    recipe.title = modifiedRecipe.title
-                                    recipe.ingredients = modifiedRecipe.ingredients
-                                    recipe.steps = modifiedRecipe.steps
+                    if showMinimizedChatActions {
+                        HStack(spacing: 16) {
+                            Button("Reject") {
+                                withAnimation {
                                     self.modifiedRecipe = nil
+                                    resetChatDefaults()
                                 }
-                                
                             }
+                            .tint(.red)
+                            .buttonStyle(.borderedProminent)
+                            
+                            Button("Accept") {
+                                withAnimation {
+                                    if let modifiedRecipe = modifiedRecipe {
+                                        recipe.title = modifiedRecipe.title
+                                        recipe.ingredients = modifiedRecipe.ingredients
+                                        recipe.steps = modifiedRecipe.steps
+                                        self.modifiedRecipe = nil
+                                        resetChatDefaults()
+                                    }
+                                    
+                                }
+                            }
+                            .tint(.green)
+                            .buttonStyle(.borderedProminent)
                         }
-                        .tint(.green)
-                        .buttonStyle(.borderedProminent)
                     }
-                    
                     
                 }
                 .padding()
@@ -206,6 +214,7 @@ struct RecipeView: View {
                     showChat = false
                     showMinimizedChat = true
                     minimizedChatResponse = Response(id: UUID().uuidString, status: .in_progress, output: [.output_message(.init(id: UUID().uuidString, content: [.output_text(.init(type: .output_text, text: ""))], role: .assistant, status: .in_progress, type: .message))])
+                    shouldShowMinimizedChatActions = true
                     withAnimation {
                         modifiedRecipe = Recipe(from: generatedRecipe)
                     }
@@ -532,6 +541,12 @@ struct RecipeView: View {
                 incomingResponse = nil
                 responses.append(event.response)
                 
+                if shouldShowMinimizedChatActions {
+                    withAnimation {
+                        showMinimizedChatActions = true
+                    }
+                }
+                
 //                if case .output_message(let _) = event.response.output.first {
 //                    if showMinimizedChat {
 //                        print("Setting Minimized Chat response: \(event.response)")
@@ -544,6 +559,14 @@ struct RecipeView: View {
                 print("UNHANDLED responseStreamEvent: \(streamEvent)")
             }
         }
+    }
+    
+    func resetChatDefaults() {
+        showChat = false
+        showMinimizedChat = false
+        minimizedChatResponse = nil
+        shouldShowMinimizedChatActions = false
+        showMinimizedChatActions = false
     }
 }
 
