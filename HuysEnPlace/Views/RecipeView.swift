@@ -226,58 +226,9 @@ struct RecipeView: View {
             .safeAreaPadding()
             .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $showIngredients) {
-            let name = self.recipe.content[selection]
-            let nameString = String(name.characters)
-            ForEach(ingredients) { ingredient in
-                HStack {
-                    Text("\(ingredient.name)")
-                    
-                    Button(action: {
-//                        let ranges = RangeSet(self.recipe.content.characters.ranges(of: name.characters))
-//                        recipe.content.transform(updating: &self.selection) { text in
-//                            print("text ranges: \(text[ranges])")
-//                            print("ingredient id: \(ingredient.id)")
-//                            text[ranges].ingredient = ingredient.id
-//                            text[ranges].link = .init(string: "miseenplace://ingredients/\(ingredient.id)")
-//                            text[ranges].foregroundColor = .red
-////                            text[ranges]
-//                        }
-//                        showIngredients = false
-                        autotag(ingredient: ingredient)
-                        showIngredients = false
-                    }, label: {
-                        Text("Ingredient And Link")
-                    })
-                }
-                .buttonStyle(.bordered)
-            }
-            
-            Button(action: {
-                let ranges = RangeSet(self.recipe.content.characters.ranges(of: name.characters))
-                let newIngredient = Ingredient(id: "new-\(nameString)", name: .init(nameString))
-                ingredients.append(newIngredient)
-                recipe.content.transform(updating: &self.selection) { text in
-                    print("text ranges: \(text[ranges])")
-//                    print("ingredient id: \(ingredient.id)")
-                    text[ranges].ingredient = "new-\(nameString)"
-                    text[ranges].link = .init(string: "miseenplace://ingredients/\(newIngredient.id)")
-                }
-                
-                showIngredients = false
-                
-            }, label: {
-                Text(nameString)
-            })
-        }
         .sheet(item: $ingredientQuantityDetails) { ingredientQuantity in
             RecipeIngredientInfoView(recipe: recipe, ingredientQuantity: ingredientQuantity)
                 .presentationDetents([.fraction(0.6), .large])
-        }
-        .sheet(item: $editingIngredientList) { list in
-            if let listIndex = recipe.ingredients.firstIndex(where: { $0.id == list.id }) {
-                IngredientListEditor(list: $recipe.ingredients[listIndex])
-            }
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
@@ -432,10 +383,6 @@ struct RecipeView: View {
 //        }
         .toolbarVisibility(.hidden, for: .tabBar)
         .environment(\.editMode, $editMode)
-        .environment(\.openURL, OpenURLAction { url in
-            handleURL(url)
-            return .systemAction
-        })
     }
     
     func selectionIsEmpty() -> Bool {
@@ -446,22 +393,6 @@ struct RecipeView: View {
             return true
         case .ranges(_):
             return false
-        }
-    }
-    
-    private func handleURL(_ url: URL) {
-        // Any side effect you need—navigation, async task, analytics, …
-        print("Link tapped:", url.absoluteString)
-        if let host = url.host() {
-            if host == "ingredients" {
-                print("Tapped Ingredients")
-                print("path components last: \(url.pathComponents.last)")
-                if let pathId = url.pathComponents.last, let ingredient = ingredients.first(where: { $0.id == pathId }) {
-//                    ingredientInfo = ingredient
-                } else {
-                    print("DID NOT FIND INGREDIENT")
-                }
-            }
         }
     }
     
@@ -524,14 +455,6 @@ struct RecipeView: View {
                         showMinimizedChatActions = true
                     }
                 }
-                
-//                if case .output_message(let _) = event.response.output.first {
-//                    if showMinimizedChat {
-//                        print("Setting Minimized Chat response: \(event.response)")
-//                        minimizedChatResponse = event.response
-//                        showChat = false
-//                    }
-//                }
 
             default:
                 print("UNHANDLED responseStreamEvent: \(streamEvent)")
