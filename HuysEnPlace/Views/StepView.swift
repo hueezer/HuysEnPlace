@@ -12,9 +12,11 @@ struct StepView: View {
     @Environment(\.editMode) private var editMode
     var index: Int = 0
     @Binding var step: Step
+    @Environment(Recipe.self) private var recipe
     @State private var showEditor = false
     @State private var viewTimer: KitchenTimer?
     @State private var viewInfo: Bool = false
+    @State private var viewInfoSubjectName: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -106,9 +108,11 @@ struct StepView: View {
             })
         }
         .sheet(isPresented: $viewInfo) {
-            VStack {
-                Text("View Info")
-            }
+            InfoView(
+                subjectName: viewInfoSubjectName ?? "", context: """
+                    The user is currently viewing this step: \(step.text) within this recipe: \(recipe.toText())
+                    """
+            )
         }
         .task {
 //            let openai = OpenAI(prompt: "You are an expert in culinary knowledge. Your task is to find all the the timers in the text.")
@@ -127,12 +131,10 @@ struct StepView: View {
             if host == "ingredients" {
                 print("Tapped Ingredients")
                 print("path components last: \(url.pathComponents.last)")
-                viewInfo = true
-//                if let pathId = url.pathComponents.last, let ingredient = ingredients.first(where: { $0.id == pathId }) {
-//                    ingredientInfo = ingredient
-//                } else {
-//                    print("DID NOT FIND INGREDIENT")
-//                }
+                if let word = url.pathComponents.last?.split(separator: "-") {
+                    viewInfoSubjectName = word.joined(separator: " ")
+                    viewInfo = true
+                }
             }
             
             if host == "timers" {
@@ -146,6 +148,7 @@ struct StepView: View {
             }
         }
     }
+
     
     private func formattedDuration(_ duration: TimeInterval) -> String {
         let formatter = DateComponentsFormatter()
