@@ -19,10 +19,17 @@ struct ChatContainer: View {
                     """)
     
     @State private var incomingResponse: Response?
+    @State private var faq: [String] = [
+        "Can I skip or substitute ascorbic acid?",
+        "Do I really need lava rocks?",
+        "Can I make this without a stand mixer?",
+        "can replace the egg in the recipe?",
+        "Why is the salt so low? Can I increase it?"
+    ]
     
     var body: some View {
         @Bindable var session = session
-        ChatView(responses: $responses, prompt: $prompt, incomingResponse: $incomingResponse) { inputItems in
+        ChatView(responses: $responses, prompt: $prompt, incomingResponse: $incomingResponse, faq: $faq) { inputItems in
             Task {
 
 //                if let response = try await session.respondTest(to: message.text, generating: GeneratedMessage.self) {
@@ -68,6 +75,7 @@ struct ChatView: View {
     @Binding var responses: [Response]
     @Binding var prompt: String
     @Binding var incomingResponse: Response?
+    @Binding var faq: [String]
     
     @State private var scrolledID: Message.ID?
     
@@ -91,14 +99,22 @@ struct ChatView: View {
                     .scrollTargetLayout()
                 }
                 .scrollPosition(id: $scrolledID)
-//                .onChange(of: messages.count, { old, new in
-//                    withAnimation {
-//                        if let lastMessageID = messages.last?.id {
-//                            value.scrollTo(lastMessageID, anchor: .top)
-//                        }
-//                    }
-//                })
             }
+            HStack {
+                Spacer()
+                Menu {
+                    ForEach(faq, id: \.self) { question in
+                        Button(question) {
+                            submitMessage(question)
+                        }
+                    }
+                } label: {
+                    Label("FAQ", systemImage: "message")
+                    
+                }
+                .buttonStyle(.borderless)
+            }
+            .padding()
             
             VStack(spacing: 0) {
                 TextField("Type your message...", text: $prompt)
@@ -107,7 +123,7 @@ struct ChatView: View {
                     .padding()
                     .submitLabel(.send)
                     .onSubmit {
-                        submitMessage()
+                        submitMessage(prompt)
                     }
                 HStack(spacing: 0) {
                     Spacer()
@@ -133,7 +149,7 @@ struct ChatView: View {
                         .clipShape(Circle())
                         .glassEffect(.regular.tint(.blue).interactive())
                         .onTapGesture {
-                            submitMessage()
+                            submitMessage(prompt)
                         }
                 }
             }
@@ -148,27 +164,27 @@ struct ChatView: View {
 //        prompt = ""
 //        onSubmit(message)
 //    }
-        func submitMessage() {
+    func submitMessage(_ message: String) {
 //            let message = Message(text: prompt, role: .user)
 //            messages.append(message)
 //            prompt = ""
             
-            let userMessage = ResponseInputMessageItem(
-                id: UUID().uuidString,
-                content: [
-                    .input_text(ResponseInputText(text: prompt))
-                ],
-                role: .user,
-                type: .message
-            )
-            let inputItems: [ResponseItem] = [
-                .input_message(userMessage)
-            ]
+        let userMessage = ResponseInputMessageItem(
+            id: UUID().uuidString,
+            content: [
+                .input_text(ResponseInputText(text: message))
+            ],
+            role: .user,
+            type: .message
+        )
+        let inputItems: [ResponseItem] = [
+            .input_message(userMessage)
+        ]
             
 //            let response = Response(id: UUID().uuidString, status: .completed, output: inputItems)
-            prompt = ""
-            onSubmit(inputItems)
-        }
+        prompt = ""
+        onSubmit(inputItems)
+    }
 }
 
 

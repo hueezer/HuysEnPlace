@@ -82,11 +82,13 @@ struct ChatResponseView: View {
                     }
                 }
             }
-            .padding()
+            .padding(16)
+            .padding(.horizontal, 8)
             .glassEffect(isUser ? .regular.tint(.blue).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 32))
             //        .glassEffectID(message.id, in: namespace)
             .foregroundStyle(isUser ? .white : .primary)
-            .font(.system(.body, design: .monospaced))
+//            .font(.system(.subheadline, design: .monospaced))
+            .font(.system(.callout, design: .rounded))
 //            .onTapGesture {
 //                showJSON.toggle()
 //            }
@@ -127,11 +129,11 @@ struct ChatResponseView: View {
 
 #Preview {
     @Previewable @State var response: Response = Response(id: "1", status: .completed, output: [
-        .input_message(.init(id: "1", content: [.input_text(.init(text: "Hello"))], role: .user, type: .message))
+        .input_message(.init(id: "1", content: [.input_text(.init(text: "Hello, this is just a test."))], role: .user, type: .message))
     ])
     
     @Previewable @State var response2: Response = Response(id: "2", status: .completed, output: [
-        .output_message(.init(id: "2", content: [.output_text(.init(type: .output_text, text: "Hello"))], role: .assistant, status: .completed, type: .message))
+        .output_message(.init(id: "2", content: [.output_text(.init(type: .output_text, text: "Hello. Make this some longer pience of text to make sure it's rendering correctly."))], role: .assistant, status: .completed, type: .message))
     ])
     
     @Previewable @State var response3: Response = Response(id: "3", status: .completed, output: [
