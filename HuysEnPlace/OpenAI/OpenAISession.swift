@@ -19,7 +19,7 @@ let sharedInstructions = """
 
 @Observable
 class OpenAISession: @unchecked Sendable {
-    let endpoint = "https://57a173deb08e.ngrok-free.app/functions/v1/response"
+    let endpoint = "https://2a8b58bcb14e.ngrok-free.app/functions/v1/response"
     let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
     
     var tools: [AnyEncodableTool] = []
