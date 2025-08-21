@@ -62,30 +62,7 @@ final class OpenAI {
 }
 
 extension OpenAI {
-
-    func makeFunctionCall(_ functionCall: ResponseFunctionToolCall) async throws -> ResponseItem? {
-        if var tool = tools.first(where: { $0.name == functionCall.name }) {
-            
-            let toolResponse = try await tool.callWithOpenAI(arguments: functionCall.arguments)
-            let toolResponseString: String
-            if let encodableResponse = toolResponse as? Encodable,
-               let data = try? JSONEncoder().encode(AnyEncodable(erasing: encodableResponse)),
-               let jsonString = String(data: data, encoding: .utf8) {
-                toolResponseString = jsonString
-            } else {
-                toolResponseString = String(describing: toolResponse)
-            }
-            let toolCallOutput: ResponseFunctionToolCallOutput = .init(call_id: functionCall.call_id, output: toolResponseString)
-            
-            return ResponseItem.function_call_output(toolCallOutput)
-            
-        }
-        return nil
-    }
-}
-
-extension OpenAI {
-    func respond<Content>(to prompt: String, generating type: Content.Type = Content.self, includeSchemaInPrompt: Bool = true, options: GenerationOptions = GenerationOptions(), previousResponseId: String? = nil) async throws -> Content? where Content: Generable & Decodable {
+    func respond<Content>(to prompt: String, generating type: Content.Type = Content.self) async throws -> Content? where Content: Generable & Decodable {
         
         let inputMessage: ResponseInputMessageItem = .init(id: "", content: [
             .input_text(.init(text: prompt))
@@ -96,7 +73,7 @@ extension OpenAI {
         ]
         
         print("using previousResponseId: \(previousResponseId)")
-        if let openaiResponse = try await getResponse(input: input, generating: type.self, previousResponseId: previousResponseId) {
+        if let openaiResponse = try await makeRequest(input: input, generating: type.self, previousResponseId: previousResponseId) {
             print("setting previousResponseId to: \(openaiResponse.id)")
             self.previousResponseId = openaiResponse.id
             let structuredResponse = try await handleResponse(openaiResponse, generating: type)
@@ -107,71 +84,12 @@ extension OpenAI {
         
         return nil
     }
-    
-    func handleResponse<Content>(_ response: Response, generating type: Content.Type = Content.self) async throws -> Content? where Content: Generable & Decodable {
-        print("handleResponse: \(response)")
-        for output in response.output {
-            switch output {
-            case .reasoning(let responseReasoning):
-                print("Handling reasoning: \(responseReasoning)")
-            case .output_message(let message):
-                print("Handling output_message: \(message)")
-                let items = try await handleOutputMessage(message, generating: type)
-                return items
-            case .function_call(let functionCall):
-                print("Handling function_call: \(functionCall)")
-                let items = try await handleFunctionCall(functionCall, generating: type, previousResponseId: response.id)
-                return items
-            case .web_search_call(let responseWebSearchCall):
-                print("Unhandled web_search_call: \(responseWebSearchCall)")
-            default:
-                print("Unhandled output: \(output)")
-            }
-        }
-        return nil
-    }
-    
-    func handleOutputMessage<Content>(_ message: ResponseOutputMessage, generating type: Content.Type = Content.self) async throws -> Content? where Content: Generable & Decodable {
-        for content in message.content {
-            switch content {
-            case .output_text(let responseOutputText):
-                if let data = responseOutputText.text.data(using: .utf8) {
-                    let decoded = try? JSONDecoder().decode(type.self, from: data)
-                    return decoded
-                }
-            case .output_refusal(let responseOutputRefusal):
-                print("Unhandle output_refusal: \(responseOutputRefusal)")
-            }
-        }
-        return nil
-    }
-    
-    func handleFunctionCall<Content>(_ functionCall: ResponseFunctionToolCall, generating type: Content.Type = Content.self, previousResponseId: String? = nil) async throws -> Content? where Content: Generable & Decodable {
-        if let tool = tools.first(where: { $0.name == functionCall.name }) {
-            let toolResponse = try await tool.call(arguments: functionCall.arguments)
-            
-            let toolResponseString: String
-            if let encodableResponse = toolResponse as? Encodable,
-               let data = try? JSONEncoder().encode(AnyEncodable(erasing: encodableResponse)),
-               let jsonString = String(data: data, encoding: .utf8) {
-                toolResponseString = jsonString
-            } else {
-                toolResponseString = String(describing: toolResponse)
-            }
-            let toolCallOutput: ResponseFunctionToolCallOutput = .init(call_id: functionCall.call_id, output: toolResponseString)
-            
-            let input: [ResponseItem] = [
-                .function_call_output(toolCallOutput)
-            ]
-            
-            if let response = try await getResponse(input: input, generating: type, previousResponseId: previousResponseId) {
-                return try await handleResponse(response, generating: type)
-            }
-        }
-        return nil
-    }
-    
-    func getResponse<Content>(input: [ResponseItem], generating type: Content.Type = Content.self, previousResponseId: String? = nil) async throws -> Response? where Content: Generable & Decodable {
+}
+
+
+extension OpenAI {
+
+    func makeRequest<Content>(input: [ResponseItem], generating type: Content.Type = Content.self, previousResponseId: String? = nil) async throws -> Response? where Content: Generable & Decodable {
         guard let url = URL(string: endpoint) else {
             throw URLError(.badURL)
         }
@@ -247,15 +165,96 @@ extension OpenAI {
             throw error
         }
     }
+    
+    func handleResponse<Content>(_ response: Response, generating type: Content.Type = Content.self) async throws -> Content? where Content: Generable & Decodable {
+        print("handleResponse: \(response)")
+        for output in response.output {
+            switch output {
+            case .reasoning(let responseReasoning):
+                print("Handling reasoning: \(responseReasoning)")
+            case .output_message(let message):
+                print("Handling output_message: \(message)")
+                let items = try await handleOutputMessage(message, generating: type)
+                return items
+            case .function_call(let functionCall):
+                print("Handling function_call: \(functionCall)")
+                let items = try await handleFunctionCall(functionCall, generating: type, previousResponseId: response.id)
+                return items
+            case .web_search_call(let responseWebSearchCall):
+                print("Unhandled web_search_call: \(responseWebSearchCall)")
+            default:
+                print("Unhandled output: \(output)")
+            }
+        }
+        return nil
+    }
+    
+    func handleOutputMessage<Content>(_ message: ResponseOutputMessage, generating type: Content.Type = Content.self) async throws -> Content? where Content: Generable & Decodable {
+        for content in message.content {
+            switch content {
+            case .output_text(let responseOutputText):
+                if let data = responseOutputText.text.data(using: .utf8) {
+                    let decoded = try? JSONDecoder().decode(type.self, from: data)
+                    return decoded
+                }
+            case .output_refusal(let responseOutputRefusal):
+                print("Unhandle output_refusal: \(responseOutputRefusal)")
+            }
+        }
+        return nil
+    }
+}
+
+extension OpenAI {
+
+    func makeFunctionCall(_ functionCall: ResponseFunctionToolCall) async throws -> ResponseItem? {
+        if var tool = tools.first(where: { $0.name == functionCall.name }) {
+            
+            let toolResponse = try await tool.callWithOpenAI(arguments: functionCall.arguments)
+            let toolResponseString: String
+            if let encodableResponse = toolResponse as? Encodable,
+               let data = try? JSONEncoder().encode(AnyEncodable(erasing: encodableResponse)),
+               let jsonString = String(data: data, encoding: .utf8) {
+                toolResponseString = jsonString
+            } else {
+                toolResponseString = String(describing: toolResponse)
+            }
+            let toolCallOutput: ResponseFunctionToolCallOutput = .init(call_id: functionCall.call_id, output: toolResponseString)
+            
+            return ResponseItem.function_call_output(toolCallOutput)
+            
+        }
+        return nil
+    }
+    
+    func handleFunctionCall<Content>(_ functionCall: ResponseFunctionToolCall, generating type: Content.Type = Content.self, previousResponseId: String? = nil) async throws -> Content? where Content: Generable & Decodable {
+        if let tool = tools.first(where: { $0.name == functionCall.name }) {
+            let toolResponse = try await tool.call(arguments: functionCall.arguments)
+            
+            let toolResponseString: String
+            if let encodableResponse = toolResponse as? Encodable,
+               let data = try? JSONEncoder().encode(AnyEncodable(erasing: encodableResponse)),
+               let jsonString = String(data: data, encoding: .utf8) {
+                toolResponseString = jsonString
+            } else {
+                toolResponseString = String(describing: toolResponse)
+            }
+            let toolCallOutput: ResponseFunctionToolCallOutput = .init(call_id: functionCall.call_id, output: toolResponseString)
+            
+            let input: [ResponseItem] = [
+                .function_call_output(toolCallOutput)
+            ]
+            
+            if let response = try await makeRequest(input: input, generating: type, previousResponseId: previousResponseId) {
+                return try await handleResponse(response, generating: type)
+            }
+        }
+        return nil
+    }
+
 }
 
 #Playground {
-    let stream1 = try await OpenAI(instructions: "You are a kitchen assistant.").stream(input: [])
-    Task {
-        for try await event in stream1 {
-            print(event)
-            let e = event
-        }
-    }
+    let response = try await OpenAI(instructions: "You are a kitchen assistant. ").respond(to: "Sourdough Bread ", generating: GeneratedRecipe.self)
 }
 
