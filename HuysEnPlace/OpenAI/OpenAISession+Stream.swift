@@ -275,7 +275,7 @@ extension OpenAISession {
 }
 
 #Playground {
-    let session = OpenAISession(instructions: "You are a kitchen assistant")
+    let session = OpenAI(instructions: "You are a kitchen assistant")
 
     let userMessage = ResponseInputMessageItem(
         id: UUID().uuidString,
@@ -289,5 +289,12 @@ extension OpenAISession {
     let input: [ResponseItem] = [
         .input_message(userMessage)
     ]
+    
+    let stream = try await session.streamResponse(input: input, generating: GeneratedStep.self)
+    
+    for try await partial in stream {
+        print(partial)
+    }
+    
 }
 

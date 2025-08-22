@@ -20,9 +20,7 @@ struct ResponseInspector: View {
     @State private var session2 = OpenAI(instructions: "")
     
     var body: some View {
-        
 
-        
         VStack {
             ScrollView {
                 LazyVStack(spacing: 16) {
@@ -102,9 +100,14 @@ struct ResponseInspector: View {
             let response = Response(id: UUID().uuidString, status: .completed, output: inputItems)
             responses.append(response)
             
-            let stream = try await session2.stream(input: inputItems)
+//            let stream = try await session2.stream(input: inputItems)
+//            print("Stream: \(stream)")
+//            try await handleStream(stream)
+            let stream = try await session2.streamResponse(input: inputItems, generating: GeneratedStep.self)
             print("Stream: \(stream)")
-            try await handleStream(stream)
+            for try await partial in stream {
+                print("PARTIAL: \(partial)")
+            }
         } catch {
             print("Streaming failed:", error)
         }

@@ -6,8 +6,109 @@
 //
 
 import SwiftUI
+import FoundationModels
+
+@Generable
+struct GeneratedInfo: Codable {
+    
+    @Guide(description: "The sections within the content. Make sure the titles are brief and don't sound redundant. The first section should be an overview.")
+    var content: [ContentSection]? = []
+}
+
+@Generable
+struct ContentSection: Codable, Hashable {
+
+    @Guide(description: "A short title for the section.")
+    var title: String?
+    
+    @Guide(description: "The text of the section")
+    var text: String?
+}
 
 struct InfoView: View {
+    var subjectName: String
+    var context: String
+    
+    @State private var pageContent: String = ""
+    @State private var info: GeneratedInfo.PartiallyGenerated?
+    
+    @State private var session = OpenAI(instructions: """
+        ## Identity
+
+        You contain all culinary knowledge in the world. Produce content that is both interesting, concise and factual. It should be the most interesting written culinary content ever to exist.
+        
+        Use markdown, italicizing important phrases.
+        """
+    )
+    
+    @State private var isLoading = true
+    
+    let line1 = (0..<5).map { _ in Int.random(in: 50...90) }
+    let line2 = (0..<5).map { _ in Int.random(in: 50...90) }
+    let line3 = (0..<5).map { _ in Int.random(in: 50...90) }
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(subjectName.capitalized)
+                    .font(.title)
+                    .bold()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Divider()
+                
+                if isLoading {
+                    ParagraphLoadingPlaceholder(lines: line1)
+                    ParagraphLoadingPlaceholder(lines: line2)
+                    ParagraphLoadingPlaceholder(lines: line3)
+                }
+                
+                ForEach(info?.content ?? [], id: \.self) { item in
+                    VStack(alignment: .leading) {
+                        Text(LocalizedStringKey((item.title?.capitalized ?? "").trimmingCharacters(in: .whitespacesAndNewlines)))
+                            .bold()
+                        Text(LocalizedStringKey((item.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)))
+                    }
+                }
+
+                Text(LocalizedStringKey(pageContent))
+                    .font(.body)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+        }
+        .task {
+            let userMessage = ResponseInputMessageItem(
+                id: UUID().uuidString,
+                content: [
+                    .input_text(ResponseInputText(text: """
+                    Write some content on the subject: \(subjectName).
+                    Write in within the context of: \(context)
+                """))
+                ],
+                role: .developer,
+                status: .in_progress,
+                type: .message
+            )
+            let input: [ResponseItem] = [
+                .input_message(userMessage)
+            ]
+            
+            do {
+                isLoading = false
+                let stream = try await session.streamResponse(input: input, generating: GeneratedInfo.self)
+                for try await partial in stream {
+                    print("PARTIAL PARTIAL: \(partial)")
+                    info = partial
+                }
+            } catch {
+                print("Streaming failed:", error)
+            }
+
+        }
+    }
+}
+
+struct InfoViewOld: View {
     var subjectName: String
     var context: String
     

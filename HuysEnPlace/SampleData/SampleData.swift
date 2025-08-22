@@ -101,7 +101,7 @@ let banhMiRecipeContent: AttributedString = """
     Razor Blades https://amzn.to/3zbK1pI
      
     Instructions:
-    In a mixing bowl, add egg, water, yeast, sugar, salt and ascorbic acid. Add in flour and combine.
+    In a mixing bowl, add egg, water, yeast, sugar, salt and [ascorbic acid](miseenplace://ingredients/bread-flour). Add in [bread flour](miseenplace://ingredients/ascorbic-acid) and combine.
 
     In a stand mixer, mix on low speed for 7 minutes. Then 3 minutes on high speed. Continue mixing until gluten is fully developed. (Total mixing times will vary depending on mixer).
 
@@ -152,9 +152,9 @@ let allIngredients: [Ingredient] = [
         ])
     ],
     steps: [
-//        .init(id: "step-1", text: "Combine egg, water, yeast, sugar, salt, and ascorbic acid in a mixing bowl. Add the flour and mix together."),
-//        .init(id: "step-2", text: "Using a stand mixer, knead on low speed for 7 minutes, then on high speed for 3 minutes. Continue until the gluten is well developed. (Mixing times may vary by mixer.)", timers: [.init(name: "Low speed mix", duration: 420), .init(name: "High speed mix", duration: 180)]),
-//        .init(id: "step-3", text: "Lightly oil your work surface. Remove the dough from the bowl, slap and fold it 4–6 times, shape into a ball, cover, and let it rest.", timers: [.init(name: "Bench rest", duration: 1200)]),
+        .init(id: "step-1", text: "In a mixing bowl, add egg, water, yeast, sugar, salt and [ascorbic acid](miseenplace://ingredients/ascorbic-acid). Add in [bread flour](miseenplace://ingredients/ascorbic-acid) and combine"),
+        .init(id: "step-2", text: "Using a stand mixer, knead on low speed for 7 minutes, then on high speed for 3 minutes. Continue until the gluten is well developed. (Mixing times may vary by mixer.)", timers: [.init(name: "Low speed mix", duration: 420), .init(name: "High speed mix", duration: 180)]),
+        .init(id: "step-3", text: "Lightly oil your work surface. Remove the dough from the bowl, slap and fold it 4–6 times, shape into a ball, cover, and let it rest.", timers: [.init(name: "Bench rest", duration: 1200)]),
         .init(id: "step-4", text: "Divide the dough into six 120g portions. Roll into small balls. Cover and let rest.", timers: [.init(name: "Portion rest", duration: 1200)]),
         .init(id: "step-5", text: "Shape each using the method demonstrated in the video. Place the shaped dough onto a lightly oiled baguette pan."),
         .init(id: "step-6", text: "Proof in the oven with the light on and a pot of warm water for 60 minutes. Spray with water every 15 minutes.", timers: [.init(name: "Oven proof", duration: 3600)]),

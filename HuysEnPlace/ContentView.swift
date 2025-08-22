@@ -20,7 +20,7 @@ struct ContentView: View {
 
 
             Tab("Ingredients", systemImage: "carrot") {
-                RecipesView()
+                InfoView(subjectName: "Ascorbic Acid", context: "In Banh Mi")
                     .environment(app)
             }
             
