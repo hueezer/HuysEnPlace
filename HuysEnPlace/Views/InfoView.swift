@@ -10,19 +10,55 @@ import FoundationModels
 
 @Generable
 struct GeneratedInfo: Codable {
-    
-    @Guide(description: "The sections within the content. Make sure the titles are brief and don't sound redundant. The first section should be an overview.")
+    @Guide(description: """
+    Break the content into clear sections with concise, non-redundant titles.
+    The first section must be an Overview.
+    Use normal markdown (paragraphs, bullet lists, numbered steps) by default.
+    """)
     var content: [ContentSection]? = []
+    
+    @Guide(description: "Translation of the subject name in Vietnamese")
+    var titleInVietnamese: String?
 }
 
 @Generable
 struct ContentSection: Codable, Hashable {
-
-    @Guide(description: "A short title for the section.")
+    @Guide(description: "A short title for the section (3–6 words). Avoid repeating words across sections.")
     var title: String?
-    
-    @Guide(description: "The text of the section")
+
+    @Guide(description: """
+    The body of the section in markdown. Prefer paragraphs and lists. 
+    Never try to format text as a table inside this field.
+    """)
     var text: String?
+
+    @Guide(description: """
+    1) The section’s sole purpose is to compare items side-by-side, AND
+    2) There are 2–6 columns with clear comparable attributes (e.g., spec, metric, measurement), AND
+    3) There are ≥3 rows (i.e., multiple items being compared), AND
+    4) At least 70% of the cells are short numeric/spec values (numbers, units, yes/no, version tags).
+
+    If a table is used, ensure the section title contains a comparison cue like “Comparison,” “Specs,” or “Matrix.”
+    """)
+    var table: InfoTable?
+    
+    @Guide(description: "If a table would be useful in this section, set to true.")
+    var includeTable: Bool?
+}
+
+@Generable
+struct InfoTable: Codable, Hashable {
+    @Guide(description: """
+    Column names, 2–6 max. Keep them brief (1–3 words). Use units in the column header when applicable (e.g., Weight (g)).
+    """)
+    var columns: [String] = []
+
+    @Guide(description: """
+    Each row aligns with the columns. Provide ≥3 rows.
+    Cells should be short values (numbers, units, ticks like Yes/No). 
+    Do not include long sentences here.
+    """)
+    var rows: [[String]] = []
 }
 
 struct InfoView: View {
@@ -33,11 +69,28 @@ struct InfoView: View {
     @State private var info: GeneratedInfo.PartiallyGenerated?
     
     @State private var session = OpenAI(instructions: """
-        ## Identity
-
-        You contain all culinary knowledge in the world. Produce content that is both interesting, concise and factual. It should be the most interesting written culinary content ever to exist.
+        <maximize_context_understanding>
+        Be THOROUGH when gathering information. Make sure you have the FULL picture before replying.
+        </maximize_context_understanding>
         
-        Use markdown, italicizing important phrases.
+        ## Identity
+        You a culinary encyclopedia. 
+        Produce content that is interesting, very concise, and factual — the most engaging written culinary content ever.
+
+        ## Style
+        - Use markdown.
+        - Italicize important phrases.
+        - Use paragraphs and bullet/numbered lists by default.
+        - The first section should always be an *Overview*.
+
+        ## Sections
+        - Keep section titles short (3–6 words) and non-redundant.
+        - Avoid repeating words across sections.
+        - Default to text most content.
+        - Only use a table if the title clearly signals a comparison (e.g., “Comparison,” “Specs,” “Matrix”).
+        
+        ## Tables
+        -- Add one or two tables where it makes the most sense, especaially when the content seems to be listing a lot of numbers. If a table is included make the text complementary and not redundant
         """
     )
     
@@ -54,6 +107,7 @@ struct InfoView: View {
                     .font(.title)
                     .bold()
                     .frame(maxWidth: .infinity, alignment: .leading)
+                
                 Divider()
                 
                 if isLoading {
@@ -62,11 +116,19 @@ struct InfoView: View {
                     ParagraphLoadingPlaceholder(lines: line3)
                 }
                 
+                Text((info?.titleInVietnamese ?? "").capitalized)
+                    .font(.title2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
                 ForEach(info?.content ?? [], id: \.self) { item in
                     VStack(alignment: .leading) {
                         Text(LocalizedStringKey((item.title?.capitalized ?? "").trimmingCharacters(in: .whitespacesAndNewlines)))
                             .bold()
                         Text(LocalizedStringKey((item.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)))
+                        Text("\(item.includeTable ?? false ? "Table" : "No table")")
+                        if let table = item.table, let columns = table.columns, let rows = table.rows {
+                            TableView(table: InfoTable(columns: columns, rows: rows))
+                        }
                     }
                 }
 
@@ -81,7 +143,8 @@ struct InfoView: View {
                 id: UUID().uuidString,
                 content: [
                     .input_text(ResponseInputText(text: """
-                    Write some content on the subject: \(subjectName).
+                    Subject Name: \(subjectName)
+                    Write some content on the subject.
                     Write in within the context of: \(context)
                 """))
                 ],
@@ -94,10 +157,12 @@ struct InfoView: View {
             ]
             
             do {
-                isLoading = false
                 let stream = try await session.streamResponse(input: input, generating: GeneratedInfo.self)
                 for try await partial in stream {
                     print("PARTIAL PARTIAL: \(partial)")
+                    if isLoading {
+                        isLoading = false
+                    }
                     info = partial
                 }
             } catch {
@@ -108,128 +173,6 @@ struct InfoView: View {
     }
 }
 
-struct InfoViewOld: View {
-    var subjectName: String
-    var context: String
-    
-    @State private var pageContent: String = ""
-    
-    @State private var session = OpenAI(instructions: """
-        ## Identity
-
-        You contain all culinary knowledge in the world. Produce content that is both interesting, concise and factual. It should be the most interesting written culinary content ever to exist.
-        
-        ## Format
-        Each section should have a title and should be bold.
-        Include a new line between the title and the body.
-        Sections should be no longer than 5 sentences.
-        Italicize any important information that should be emphasized.
-        Respond in markdown.
-        
-        ## Here is the markdown supported:
-        This is regular text.
-        * This is **bold** text, this is *italic* text, and this is ***bold, italic*** text.
-        ~~A strikethrough example~~
-        `Monospaced works too`
-        
-        Only use these supported markdown styles
-        """
-    )
-    
-    @State private var isLoading = true
-    
-    let line1 = (0..<5).map { _ in Int.random(in: 50...90) }
-    let line2 = (0..<5).map { _ in Int.random(in: 50...90) }
-    let line3 = (0..<5).map { _ in Int.random(in: 50...90) }
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(subjectName.capitalized)
-                    .font(.title)
-                    .bold()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Divider()
-                
-                if isLoading {
-                    ParagraphLoadingPlaceholder(lines: line1)
-                    ParagraphLoadingPlaceholder(lines: line2)
-                    ParagraphLoadingPlaceholder(lines: line3)
-                }
-                
-                Text(LocalizedStringKey(pageContent))
-                    .font(.body)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-        }
-        .task {
-            let userMessage = ResponseInputMessageItem(
-                id: UUID().uuidString,
-                content: [
-                    .input_text(ResponseInputText(text: """
-                    Write some content on the subject: \(subjectName).
-                    Write in within the context of: \(context)
-                """))
-                ],
-                role: .developer,
-                status: .in_progress,
-                type: .message
-            )
-            let input: [ResponseItem] = [
-                .input_message(userMessage)
-            ]
-            
-            do {
-                let streamEvents = try await session.stream(input: input)
-                for try await streamEvent in streamEvents {
-                    switch streamEvent {
-                        
-                    case .responseCreatedEvent(let event):
-                        print("responseCreated: \(event.response)")
-                        
-                        if let text = event.response.output_text {
-                            pageContent = text
-                        }
-                    case .responseCompletedEvent(let event):
-                        print("responseCreated: \(event.response.output)")
-                        for item in event.response.output {
-                            switch item {
-                            case .output_message(let message):
-                                print("output_message: \(message)")
-                                for content in message.content {
-                                    switch content {
-                                    case .output_text(let outputTextItem):
-                                        pageContent = outputTextItem.text
-                                    default:
-                                        print("Default")
-                                    }
-                                }
-                            default:
-                                print("Default")
-                            }
-                        }
-                    case .responseOutputTextDeltaEvent(let event):
-                        print("responseOutputTextDeltaEvent: \(event)")
-                        if isLoading {
-                            isLoading = false
-                        }
-                        pageContent += event.delta
-                        
-                    case .responseFunctionCallArgumentsDoneEvent(let event):
-                        print("responseFunctionCallArgumentsDoneEvent: \(event)")
-                    default:
-                        print("RecipeIngredientInfoView unhandled event: \(streamEvent)")
-                    }
-                    
-                }
-            } catch {
-                print("Streaming failed:", error)
-            }
-
-        }
-    }
-}
 
 struct ParagraphLoadingPlaceholder: View {
     // Using an array and map:
@@ -258,3 +201,4 @@ struct ParagraphLoadingPlaceholder: View {
         InfoView(subjectName: "Ascorbic Acid", context: "This is being used in a banh mi recipe.")
     }
 }
+
