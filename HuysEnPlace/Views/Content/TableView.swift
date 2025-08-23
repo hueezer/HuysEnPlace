@@ -26,23 +26,12 @@ struct TableView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             Grid(alignment: .center, horizontalSpacing: 0, verticalSpacing: 0) {
-//                GridRow {
-//                    ForEach(Array(table.columns.enumerated()), id: \.element) { colIndex, column in
-//                        //                        let containsLongContent = columnContentLengths[colIndex] > 3
-//                        Text(column)
-//                            .bold()
-//                            .padding(8)
-//                            .lineLimit(1, reservesSpace: true)
-//                            .fixedSize(horizontal: true, vertical: true)
-//                    }
-//                }
-//                .font(.caption2)
-                
                 GridRow {
                     HStack {
                         ForEach(Array(table.columns.enumerated()), id: \.element) { colIndex, column in
                             let hasLongContent = columnContentLengths[colIndex] > 3
                             Text(column)
+                                .bold()
                                 .frame(maxWidth: 200)
                                 .frame(maxHeight: .infinity)
                                 .frame(width: hasLongContent ? UIScreen.main.bounds.size.width*0.5 :  UIScreen.main.bounds.size.width*0.25)
@@ -82,9 +71,10 @@ struct TableView: View {
             .clipped()
             .clipShape(RoundedRectangle(cornerRadius: 16))
         }
-        .defaultScrollAnchor(table.columns.count > 3 ? .leading : .center)
+//        .defaultScrollAnchor(table.columns.count > 2 ? .leading : .center)
         .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
-        .font(.caption)
+        .font(.footnote)
+        .fontWeight(.light)
     }
 }
 

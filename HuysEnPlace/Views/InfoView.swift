@@ -107,36 +107,43 @@ struct InfoView: View {
                     .font(.title)
                     .bold()
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .safeAreaPadding(.horizontal)
                 
                 Divider()
                 
                 if isLoading {
-                    ParagraphLoadingPlaceholder(lines: line1)
-                    ParagraphLoadingPlaceholder(lines: line2)
-                    ParagraphLoadingPlaceholder(lines: line3)
+                    VStack(alignment: .leading) {
+                        ParagraphLoadingPlaceholder(lines: line1)
+                        ParagraphLoadingPlaceholder(lines: line2)
+                        ParagraphLoadingPlaceholder(lines: line3)
+                    }
+                    .safeAreaPadding(.horizontal)
                 }
                 
                 Text((info?.titleInVietnamese ?? "").capitalized)
                     .font(.title2)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .safeAreaPadding(.horizontal)
                 
                 ForEach(info?.content ?? [], id: \.self) { item in
                     VStack(alignment: .leading) {
                         Text(LocalizedStringKey((item.title?.capitalized ?? "").trimmingCharacters(in: .whitespacesAndNewlines)))
                             .bold()
                         Text(LocalizedStringKey((item.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)))
-                        Text("\(item.includeTable ?? false ? "Table" : "No table")")
-                        if let table = item.table, let columns = table.columns, let rows = table.rows {
-                            TableView(table: InfoTable(columns: columns, rows: rows))
+//                        Text("\(item.includeTable ?? false ? "Table" : "No table")")
+                        if item.includeTable ?? false {
+                            if let table = item.table, let columns = table.columns, let rows = table.rows {
+                                TableView(table: InfoTable(columns: columns, rows: rows))
+                            }
                         }
                     }
+                    .safeAreaPadding(.horizontal)
                 }
 
                 Text(LocalizedStringKey(pageContent))
                     .font(.body)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
         }
         .task {
             let userMessage = ResponseInputMessageItem(
