@@ -38,23 +38,44 @@ struct TableView: View {
 //                }
 //                .font(.caption2)
                 
-                ForEach(Array(table.rows.enumerated()), id: \.element) { rowIndex, row in
-                    GridRow {
-                        ForEach(Array(row.enumerated()), id: \.element) { cellIndex, cell in
-                            var hasLongContent = columnContentLengths[cellIndex] > 3
-                            Text("\(cell) \(hasLongContent)")
+                GridRow {
+                    HStack {
+                        ForEach(Array(table.columns.enumerated()), id: \.element) { colIndex, column in
+                            let hasLongContent = columnContentLengths[colIndex] > 3
+                            Text(column)
                                 .frame(maxWidth: 200)
                                 .frame(maxHeight: .infinity)
-                                .frame(width: hasLongContent ? UIScreen.main.bounds.size.width*0.5 :  UIScreen.main.bounds.size.width*0.2)
-                                
+                                .frame(width: hasLongContent ? UIScreen.main.bounds.size.width*0.5 :  UIScreen.main.bounds.size.width*0.25)
+                            
                                 .fixedSize(horizontal: false, vertical: true)
                                 .lineLimit(nil)
                                 .padding(8)
                                 .multilineTextAlignment(.center)
-                                
                         }
                     }
-                    .background((rowIndex % 2 == 0) ? Color.gray.opacity(0.4) : Color.gray.opacity(0.1))
+                }
+                .font(.caption2)
+                
+                ForEach(Array(table.rows.enumerated()), id: \.element) { rowIndex, row in
+                    GridRow {
+                        HStack {
+                            ForEach(Array(row.enumerated()), id: \.element) { cellIndex, cell in
+                                var hasLongContent = columnContentLengths[cellIndex] > 3
+                                Text(cell)
+                                    .frame(maxWidth: 200)
+                                    .frame(maxHeight: .infinity)
+                                    .frame(width: hasLongContent ? UIScreen.main.bounds.size.width*0.5 :  UIScreen.main.bounds.size.width*0.25)
+                                
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineLimit(nil)
+                                    .padding(8)
+                                    .multilineTextAlignment(.center)
+                                
+                            }
+                        }
+                        .background((rowIndex % 2 == 0) ? Color.gray.opacity(0.4) : Color.gray.opacity(0.1))
+                    }
+                    
                 }
             }
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(style: StrokeStyle(lineWidth: 1)))
