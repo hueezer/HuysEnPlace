@@ -67,6 +67,7 @@ struct InfoView: View {
     
     @State private var pageContent: String = ""
     @State private var info: GeneratedInfo.PartiallyGenerated?
+    @State private var editableTexts: [String] = []
     
     @State private var session = OpenAI(instructions: """
         <maximize_context_understanding>
@@ -130,7 +131,8 @@ struct InfoView: View {
                         Text(LocalizedStringKey((item.title?.capitalized ?? "").trimmingCharacters(in: .whitespacesAndNewlines)))
                             .bold()
                         Text(LocalizedStringKey((item.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)))
-//                        Text("\(item.includeTable ?? false ? "Table" : "No table")")
+                            .textSelection(.enabled)
+                        Text("\(item.includeTable ?? false ? "Table" : "No table")")
                         if item.includeTable ?? false {
                             if let table = item.table, let columns = table.columns, let rows = table.rows {
                                 TableView(table: InfoTable(columns: columns, rows: rows))
@@ -171,6 +173,7 @@ struct InfoView: View {
                         isLoading = false
                     }
                     info = partial
+                    editableTexts = partial.content?.map { $0.text ?? "" } ?? []
                 }
             } catch {
                 print("Streaming failed:", error)
