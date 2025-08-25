@@ -33,6 +33,7 @@ struct ChatResponseView: View {
 //                    .foregroundStyle(.white)
 //                    .font(.caption)
 //                }
+                Text("\(response)")
                 
 
                 if let responseInputText = isUserMessage(response) {

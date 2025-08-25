@@ -479,7 +479,10 @@ struct RecipeView: View {
                 }
             case .responseCompletedEvent(let event):
                 incomingResponse = nil
+                
+                // TODO Don't append if it is a tool or function call
                 responses.append(event.response)
+                print("RESPONSE COMPLETED EVENT: \(event)")
                 
                 if shouldShowMinimizedChatActions {
                     withAnimation {

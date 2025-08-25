@@ -19,7 +19,7 @@ let sharedInstructions = """
 
 @Observable
 class OpenAISession: @unchecked Sendable {
-    let endpoint = "https://2a8b58bcb14e.ngrok-free.app/functions/v1/response"
+    let endpoint = "https://4910bc73291d.ngrok-free.app/functions/v1/response"
     let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
     
     var tools: [AnyEncodableTool] = []
@@ -433,7 +433,7 @@ enum AnyEncodableTool: Sendable, Encodable {
         case .modifyRecipe(let tool):
 
             let typedArgs = try JSONDecoder().decode(ModifyRecipeTool.Arguments.self, from: data)
-            return try await tool.callWithOpenAI(arguments: typedArgs)
+            return try await tool.call(arguments: typedArgs)
         }
     }
     
@@ -442,7 +442,8 @@ enum AnyEncodableTool: Sendable, Encodable {
         case .breadDatabase(let tool):
             return .breadDatabase(tool)
         case .modifyRecipe(let tool):
-            return .modifyRecipe(ModifyRecipeTool(name: tool.name, session: session, onCall: tool.onCall))
+//            return .modifyRecipe(ModifyRecipeTool(name: tool.name, session: session, onCall: tool.onCall))
+            return .modifyRecipe(ModifyRecipeTool(onCall: tool.onCall))
         }
     }
 
