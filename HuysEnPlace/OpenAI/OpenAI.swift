@@ -11,7 +11,7 @@ import Playgrounds
 
 @MainActor
 final class OpenAI {
-    let endpoint = "https://4910bc73291d.ngrok-free.app/functions/v1/response"
+    let endpoint = "https://3ccdf34499f7.ngrok-free.app/functions/v1/response"
     let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
     
     var tools: [AnyEncodableTool]
