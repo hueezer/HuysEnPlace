@@ -24,28 +24,37 @@ struct ContentView: View {
                     .environment(app)
             }
             
-            Tab("Chat", systemImage: "bubble.left.and.bubble.right") {
-                ChatContainer()
-                    .environment(app)
-            }
-            .badge("!")
-
-
-            Tab("Podcasts", systemImage: "carrot") {
-                ResponseInspector()
-                    .environment(app)
-            }
-            .badge("!")
-            
-            Tab("Recipe Diff", systemImage: "carrot") {
-                ScrollView {
-                    RecipeDiffView(recipe: banhMiRecipe, updatedRecipe: .constant(banhMiRecipeDiff))
-                        .safeAreaPadding()
-                        .padding(.top, 50)
+            Tab("Cooking", systemImage: "carrot") {
+                NavigationStack {
+                    CookingView()
+                        .environment(app)
                 }
-                .environment(app)
+//                CookingView()
+//                    .environment(app)
             }
-            .badge("!")
+            
+//            Tab("Chat", systemImage: "bubble.left.and.bubble.right") {
+//                ChatContainer()
+//                    .environment(app)
+//            }
+//            .badge("!")
+//
+//
+//            Tab("Podcasts", systemImage: "carrot") {
+//                ResponseInspector()
+//                    .environment(app)
+//            }
+//            .badge("!")
+//            
+//            Tab("Recipe Diff", systemImage: "carrot") {
+//                ScrollView {
+//                    RecipeDiffView(recipe: banhMiRecipe, updatedRecipe: .constant(banhMiRecipeDiff))
+//                        .safeAreaPadding()
+//                        .padding(.top, 50)
+//                }
+//                .environment(app)
+//            }
+//            .badge("!")
             
 
             
